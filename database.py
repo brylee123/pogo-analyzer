@@ -92,38 +92,32 @@ def set_cache(h: str, label: str, response: str) -> None:
 
 # ── State persistence ─────────────────────────────────────────────────────────
 
-def load_last_state() -> None:
-    """Restore last uploaded JSON from DB so state survives server restarts."""
-    # Lazy imports to avoid circular dependency (parser → data, not → database)
-    from parser import parse_pgo_json  # noqa: PLC0415
-    from state import _state           # noqa: PLC0415
-    try:
-        with get_db() as db:
-            row = db.execute("SELECT raw_json FROM last_upload WHERE id=1").fetchone()
-        if not row:
-            return
-        raw    = json.loads(row["raw_json"])
-        if isinstance(raw, dict) and raw.get("source") == "pokegenie":
-            parsed = raw["data"]
-        else:
-            parsed = parse_pgo_json(raw)
-        _state["pokemons"]  = parsed["pokemons"]
-        _state["items"]     = parsed["items"]
-        _state["player"]    = parsed.get("player")
-        _state["pvp_stats"] = parsed.get("pvp_stats")
-        _state["loaded"]    = True
-        log.info("Restored last upload: %d pokemons", len(parsed["pokemons"]))
-    except Exception as exc:
-        log.warning("Could not restore last upload: %s", exc)
+def load_user_state(user_id):
+    """Load only this signed-in user's latest snapshot into request-local state."""
+    from parser import parse_pgo_json
+    from state import _state
+    with get_db() as db:
+        row=db.execute("SELECT raw_json FROM user_latest_upload WHERE user_id=?",(user_id,)).fetchone()
+    if row is None:
+        return
+    raw=json.loads(row["raw_json"])
+    parsed=raw["data"] if raw.get("source")=="pokegenie" else parse_pgo_json(raw)
+    _state["pokemons"]=parsed["pokemons"]
+    _state["items"]=parsed["items"]
+    _state["player"]=parsed.get("player")
+    _state["pvp_stats"]=parsed.get("pvp_stats")
+    _state["loaded"]=True
 
-
-def save_upload(raw: dict) -> None:
-    """Persist raw JSON so state survives server restarts."""
-    try:
-        with get_db() as db:
-            db.execute(
-                "INSERT OR REPLACE INTO last_upload (id, raw_json, saved_at) VALUES (1, ?, ?)",
-                (json.dumps(raw), _now_iso()),
-            )
-    except Exception as exc:
-        log.warning("Could not persist upload: %s", exc)
+def save_upload(raw):
+    """Save latest uploaded analyzer state for the current authenticated user."""
+    from auth import current_user_id
+    uid=current_user_id()
+    if uid is None:raise PermissionError("Login required")
+    account=raw.get("account",{}).get("name") if isinstance(raw,dict) else None
+    with get_db() as db:
+        if account:
+            owner=db.execute("SELECT user_id FROM trainer_ownership WHERE trainer=?",(account,)).fetchone()
+            if not owner or owner["user_id"]!=uid:raise PermissionError("Verify this trainer before uploading")
+        db.execute("""INSERT INTO user_latest_upload(user_id,raw_json,saved_at) VALUES(?,?,?)
+                      ON CONFLICT(user_id) DO UPDATE SET raw_json=excluded.raw_json,saved_at=excluded.saved_at""",
+                      (uid,json.dumps(raw),_now_iso()))
