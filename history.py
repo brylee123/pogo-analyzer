@@ -17,13 +17,14 @@ def init_history():
     with get_db() as db:
         db.executescript("""
         CREATE TABLE IF NOT EXISTS history_snapshots(
-          id INTEGER PRIMARY KEY, account TEXT NOT NULL,
-          captured_at TEXT NOT NULL, hash TEXT NOT NULL UNIQUE,
+          id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES app_users(id), account TEXT NOT NULL,
+          captured_at TEXT NOT NULL, hash TEXT NOT NULL,
           source TEXT NOT NULL, raw_json TEXT NOT NULL);
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_history_user_hash ON history_snapshots(user_id,hash);
         CREATE INDEX IF NOT EXISTS idx_history_account_time
           ON history_snapshots(account,captured_at,id);
         CREATE TABLE IF NOT EXISTS history_sessions(
-          id INTEGER PRIMARY KEY, account TEXT NOT NULL,
+          id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES app_users(id), account TEXT NOT NULL,
           from_id INTEGER NOT NULL, to_id INTEGER NOT NULL UNIQUE,
           started_at TEXT NOT NULL, ended_at TEXT NOT NULL,
           changes_json TEXT NOT NULL, totals_json TEXT NOT NULL);
@@ -96,20 +97,23 @@ def difference(a,b):
             "coins":money.get("POKECOIN",0)}
     return changes,totals,bool(added or removed or modified or item_delta or money or stats)
 
-def rebuild(db,account):
-    rows=db.execute("SELECT * FROM history_snapshots WHERE account=? ORDER BY captured_at,id",(account,)).fetchall()
-    db.execute("DELETE FROM history_sessions WHERE account=?",(account,))
+def rebuild(db,account,uid):
+    rows=db.execute("SELECT * FROM history_snapshots WHERE user_id=? AND account=? ORDER BY captured_at,id",(uid,account)).fetchall()
+    db.execute("DELETE FROM history_sessions WHERE user_id=? AND account=?",(uid,account))
     previous=None
     for current in rows:
         if previous is not None:
             changes,totals,material=difference(json.loads(previous["raw_json"]),json.loads(current["raw_json"]))
             if material:
-                db.execute("""INSERT INTO history_sessions(account,from_id,to_id,started_at,ended_at,changes_json,totals_json)
-                    VALUES(?,?,?,?,?,?,?)""",(account,previous["id"],current["id"],previous["captured_at"],current["captured_at"],
+                db.execute("""INSERT INTO history_sessions(user_id,account,from_id,to_id,started_at,ended_at,changes_json,totals_json)
+                    VALUES(?,?,?,?,?,?,?,?)""",(uid,account,previous["id"],current["id"],previous["captured_at"],current["captured_at"],
                     json.dumps(changes,separators=(",",":")),json.dumps(totals,separators=(",",":"))))
         previous=current
 
-def ingest(raw,source="manual"):
+def ingest(raw,source="manual",uid=None):
+    from auth import current_user_id
+    if uid is None:uid=current_user_id()
+    if uid is None:raise PermissionError("Sign in before importing")
     if isinstance(raw,bytes):
         if len(raw)>MAX_BYTES:raise ValueError("File exceeds size limit")
         raw=json.loads(raw)
@@ -118,21 +122,27 @@ def ingest(raw,source="manual"):
     digest=hashlib.sha256(payload.encode("utf-8")).hexdigest()
     with LOCK:
         with get_db() as db:
-            match=db.execute("SELECT id FROM history_snapshots WHERE hash=?",(digest,)).fetchone()
+            owner=db.execute("SELECT user_id FROM trainer_ownership WHERE trainer=?",(account,)).fetchone()
+            if owner and owner["user_id"]!=uid:raise PermissionError("This trainer belongs to another profile")
+            db.execute("INSERT OR IGNORE INTO trainer_ownership(trainer,user_id) VALUES(?,?)",(account,uid))
+            match=db.execute("SELECT id FROM history_snapshots WHERE user_id=? AND hash=?",(uid,digest)).fetchone()
             if match:return {"status":"duplicate","snapshot_id":match["id"],"account":account}
-            cur=db.execute("INSERT INTO history_snapshots(account,captured_at,hash,source,raw_json) VALUES(?,?,?,?,?)",
-                           (account,stamp,digest,source,payload))
-            rebuild(db,account)
+            cur=db.execute("INSERT INTO history_snapshots(user_id,account,captured_at,hash,source,raw_json) VALUES(?,?,?,?,?,?)",
+                           (uid,account,stamp,digest,source,payload))
+            rebuild(db,account,uid)
             return {"status":"imported","snapshot_id":cur.lastrowid,"account":account,"captured_at":stamp}
 
 def read_dashboard(account=None):
+    from auth import current_user_id
+    uid=current_user_id()
+    if uid is None:raise PermissionError("Sign in required")
     with get_db() as db:
         if not account:
-            row=db.execute("SELECT account FROM history_snapshots ORDER BY captured_at DESC LIMIT 1").fetchone()
+            row=db.execute("SELECT account FROM history_snapshots WHERE user_id=? ORDER BY captured_at DESC LIMIT 1",(uid,)).fetchone()
             if not row:return {"account":None,"snapshots":0,"sessions":[],"totals":{},"insights":[]}
             account=row["account"]
-        snaps=db.execute("SELECT id,captured_at,raw_json FROM history_snapshots WHERE account=? ORDER BY captured_at,id",(account,)).fetchall()
-        sessions=db.execute("SELECT * FROM history_sessions WHERE account=? ORDER BY ended_at",(account,)).fetchall()
+        snaps=db.execute("SELECT id,captured_at,raw_json FROM history_snapshots WHERE user_id=? AND account=? ORDER BY captured_at,id",(uid,account)).fetchall()
+        sessions=db.execute("SELECT * FROM history_sessions WHERE user_id=? AND account=? ORDER BY ended_at",(account,)).fetchall()
     if not snaps:return {"account":account,"snapshots":0,"sessions":[],"totals":{},"insights":[]}
     latest=json.loads(snaps[-1]["raw_json"])
     pok=latest["pokemons"]
@@ -169,7 +179,13 @@ def scan_folder_forever():
                         imported.discard(key)
                         continue
                     if key in imported:continue
-                    ingest(path.read_bytes(),source=key)
+                    raw=path.read_bytes()
+                    obj=json.loads(raw)
+                    account,_=verify(obj)
+                    with get_db() as db:
+                        owner=db.execute("SELECT user_id FROM trainer_ownership WHERE trainer=?",(account,)).fetchone()
+                    if owner is None:continue
+                    ingest(obj,source=key,uid=owner["user_id"])
                     imported.add(key)
                 except Exception as ex:
                     print("History watcher:",path,ex,flush=True)
