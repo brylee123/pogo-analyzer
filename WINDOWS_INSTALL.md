@@ -2,7 +2,7 @@
 
 1. Install [Python 3.11+](https://www.python.org/downloads/windows/) (check **Add Python to PATH**).
 2. Download the repository from GitHub using **Code → Download ZIP**, extract it, and double-click **`start-windows.bat`**. Or clone it with Git.
-3. The script creates `.venv`, installs dependencies, and starts the server. Open **http://127.0.0.1:5000** in a browser.
+3. The script creates `.venv`, installs dependencies, and starts the server. Open **http://127.0.0.1:6090** in a browser.
 4. On the first run, point setup to an **existing local server directory** containing complete PGSharp JSON files for **one trainer only**. Create the administrator's username and password (12+ characters). The app imports files from earliest to latest and creates the initial profile.
 5. Leave the command window open while using the application. Close it or press Ctrl+C to stop it. On subsequent runs, double-click the batch file again.
 
