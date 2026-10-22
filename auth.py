@@ -87,5 +87,5 @@ def auth_gate():
 
 @bp.get("/login")
 def login_page():
-    if current_user_id() is not None:return redirect("/")
+    if current_user_id() is not None:return redirect("/verify")
     return render_template("login.html")
