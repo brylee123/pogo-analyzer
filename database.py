@@ -117,8 +117,7 @@ def save_upload(raw):
     with get_db() as db:
         if account:
             owner=db.execute("SELECT user_id FROM trainer_ownership WHERE trainer=?",(account,)).fetchone()
-            if owner and owner["user_id"]!=uid:raise PermissionError("Trainer profile belongs to a different user")
-            db.execute("INSERT OR IGNORE INTO trainer_ownership(trainer,user_id) VALUES(?,?)",(account,uid))
+            if not owner or owner["user_id"]!=uid:raise PermissionError("Verify this trainer before uploading")
         db.execute("""INSERT INTO user_latest_upload(user_id,raw_json,saved_at) VALUES(?,?,?)
                       ON CONFLICT(user_id) DO UPDATE SET raw_json=excluded.raw_json,saved_at=excluded.saved_at""",
                       (uid,json.dumps(raw),_now_iso()))
