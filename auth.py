@@ -71,7 +71,7 @@ def me():
     return jsonify({"authenticated":True,"username":row["username"],"trainers":trainers})
 
 def auth_gate():
-    if request.path.startswith("/static/") or request.endpoint in ("auth.register","auth.login","auth.me","auth.logout"):
+    if request.path.startswith("/static/") or request.endpoint in ("auth.register","auth.login","auth.me","auth.logout","auth.login_page"):
         return
     if current_user_id() is None:
         if request.path=="/":return redirect("/login")
