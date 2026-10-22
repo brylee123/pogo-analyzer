@@ -75,7 +75,9 @@ def index():
 
 
 if __name__ == "__main__":
+    from server_options import server_options
+    options = server_options()
     if _tier_refresh_needed():
         log.info("Starting background tier scrape…")
         threading.Thread(target=scrape_pokebase, daemon=True).start()
-    app.run(debug=False, host=os.environ.get('HOST','127.0.0.1'), port=int(os.environ.get('PORT','6090')))
+    app.run(debug=False, host=options.host, port=options.port)

@@ -14,6 +14,29 @@ A professional, local web application for analyzing your Pokémon GO account, ma
 ---
 
 
+## Local network access
+
+The Windows launcher explicitly starts the server on `0.0.0.0:6090`, including
+when an older `.env` contains `HOST=127.0.0.1`. It opens localhost on the server
+PC because first-run setup must run through a loopback connection.
+
+After setup, other devices on the same network can open
+`http://YOUR-PC-IP:6090`. For example, if the server PC is `192.168.1.7`, open
+[http://192.168.1.7:6090](http://192.168.1.7:6090).
+Allow Python/TCP port 6090 through Windows Firewall on Private networks if needed.
+`0.0.0.0` is a listening address, not a browser destination.
+
+For a direct start that overrides an existing `.env`:
+
+```powershell
+.venv\Scripts\python.exe app.py --host 0.0.0.0
+```
+
+For local-only access, start directly with `--host 127.0.0.1`. A direct start
+without command-line options honors `HOST` and `PORT` from the environment or
+`.env`, falling back to `0.0.0.0` and `6090`. `--port` overrides the port.
+Debug mode remains disabled. Do not port-forward this development server.
+
 ## Appearance and language
 
 The application is English-only, including forms, errors, analysis labels, and AI prompts.
@@ -163,7 +186,7 @@ This application works with data exported from two popular third-party tools:
 ```bash
 python app.py
 ```
-Open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser and upload your `PGSStats.json` export to initialize the dashboard.
+Open **[http://127.0.0.1:6090](http://127.0.0.1:5000)** in your browser and upload your `PGSStats.json` export to initialize the dashboard.
 
 ---
 

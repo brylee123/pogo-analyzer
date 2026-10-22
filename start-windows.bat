@@ -27,12 +27,14 @@ echo Installing Python dependencies...
 if errorlevel 1 goto failed
 if not exist ".env" (
   echo Creating local configuration...
-  ".venv\Scripts\python.exe" -c "import secrets,pathlib;p=pathlib.Path('.env');p.write_text('SECRET_KEY='+secrets.token_hex(48)+'\nHOST=127.0.0.1\nPORT=6090\nCOOKIE_SECURE=0\n')"
+  ".venv\Scripts\python.exe" -c "import secrets,pathlib;p=pathlib.Path('.env');p.write_text('SECRET_KEY='+secrets.token_hex(48)+'\nHOST=0.0.0.0\nPORT=6090\nCOOKIE_SECURE=0\n')"
   if errorlevel 1 goto failed
 )
-echo Starting server at http://127.0.0.1:6090
+echo Opening this PC at http://127.0.0.1:6090
+echo LAN access enabled. Other devices should use this PC's LAN IP and port 6090.
 start "" "http://127.0.0.1:6090/"
-".venv\Scripts\python.exe" app.py
+rem Explicit --host overrides HOST in an existing .env file.
+".venv\Scripts\python.exe" app.py --host 0.0.0.0
 echo Server stopped.
 pause
 exit /b 0
