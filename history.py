@@ -123,8 +123,7 @@ def ingest(raw,source="manual",uid=None):
     with LOCK:
         with get_db() as db:
             owner=db.execute("SELECT user_id FROM trainer_ownership WHERE trainer=?",(account,)).fetchone()
-            if owner and owner["user_id"]!=uid:raise PermissionError("This trainer belongs to another profile")
-            db.execute("INSERT OR IGNORE INTO trainer_ownership(trainer,user_id) VALUES(?,?)",(account,uid))
+            if not owner or owner["user_id"]!=uid:raise PermissionError("Trainer must be verified before uploading")
             match=db.execute("SELECT id FROM history_snapshots WHERE user_id=? AND hash=?",(uid,digest)).fetchone()
             if match:return {"status":"duplicate","snapshot_id":match["id"],"account":account}
             cur=db.execute("INSERT INTO history_snapshots(user_id,account,captured_at,hash,source,raw_json) VALUES(?,?,?,?,?,?)",
