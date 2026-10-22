@@ -21,6 +21,7 @@ from routes.pokemon import bp as pokemon_bp
 from services.tiers import _tier_refresh_needed, scrape_pokebase
 from history_integration import attach as attach_history
 from auth import bp as auth_bp, init_auth, auth_gate, current_user_id
+from verification import bp as verification_bp, init_verification
 from state import set_request_state, clear_request_state
 
 logging.basicConfig(
@@ -35,7 +36,9 @@ app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(32)
 app.config.update(SESSION_COOKIE_HTTPONLY=True,SESSION_COOKIE_SAMESITE='Lax',SESSION_COOKIE_SECURE=os.environ.get('COOKIE_SECURE')=='1',MAX_CONTENT_LENGTH=80*1024*1024)
 init_db()
 init_auth()
+init_verification()
 app.register_blueprint(auth_bp)
+app.register_blueprint(verification_bp)
 
 app.register_blueprint(pokemon_bp)
 app.register_blueprint(analysis_bp)
