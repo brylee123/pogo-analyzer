@@ -22,9 +22,10 @@ def init_assets():
 
 
 def safe_asset(relative):
-    candidate = (ASSET_ROOT / relative).resolve()
+    root = ASSET_ROOT.resolve()
+    candidate = (root / relative).resolve()
     try:
-        candidate.relative_to(ASSET_ROOT)
+        candidate.relative_to(root)
     except ValueError:
         return None
     if candidate.suffix.lower() not in EXTENSIONS or not candidate.is_file():
