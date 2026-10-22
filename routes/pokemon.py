@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, Response, jsonify, request
 
 from database import get_db, save_upload
+from auth import current_user_id
 from parser import parse_pgo_json, parse_pokegenie_csv
 from scoring import _best_tier, _tier_for, pvp_iv_rank
 from services.events import get_events
@@ -174,7 +175,7 @@ def api_items():
 def export_raw_csv():
     """1:1 export from raw PGSStats.json — all fields + species name."""
     db = get_db()
-    row = db.execute("SELECT raw_json FROM last_upload WHERE id=1").fetchone()
+    row = db.execute("SELECT raw_json FROM user_latest_upload WHERE user_id=?", (current_user_id(),)).fetchone()
     if not row:
         return jsonify({"error": "Brak danych — wgraj najpierw PGSStats.json"}), 404
 
@@ -259,7 +260,7 @@ def export_raw_csv():
 def export_inventory_csv():
     """Export inventory: stardust, coins, rare candy + complete items list."""
     db  = get_db()
-    row = db.execute("SELECT raw_json FROM last_upload WHERE id=1").fetchone()
+    row = db.execute("SELECT raw_json FROM user_latest_upload WHERE user_id=?", (current_user_id(),)).fetchone()
     if not row:
         return jsonify({"error": "Brak danych — wgraj najpierw PGSStats.json"}), 404
 
@@ -322,7 +323,7 @@ def api_status():
     stardust = 0
     try:
         db  = get_db()
-        row = db.execute("SELECT raw_json FROM last_upload WHERE id=1").fetchone()
+        row = db.execute("SELECT raw_json FROM user_latest_upload WHERE user_id=?", (current_user_id(),)).fetchone()
         if row:
             raw      = json.loads(row["raw_json"])
             balances = raw.get("account", {}).get("currencyBalance", [])
