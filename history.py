@@ -142,7 +142,7 @@ def read_dashboard(account=None):
             if not row:return {"account":None,"snapshots":0,"sessions":[],"totals":{},"insights":[]}
             account=row["account"]
         snaps=db.execute("SELECT id,captured_at,raw_json FROM history_snapshots WHERE user_id=? AND account=? ORDER BY captured_at,id",(uid,account)).fetchall()
-        sessions=db.execute("SELECT * FROM history_sessions WHERE user_id=? AND account=? ORDER BY ended_at",(account,)).fetchall()
+        sessions=db.execute("SELECT * FROM history_sessions WHERE user_id=? AND account=? ORDER BY ended_at",(uid,account)).fetchall()
     if not snaps:return {"account":account,"snapshots":0,"sessions":[],"totals":{},"insights":[]}
     latest=json.loads(snaps[-1]["raw_json"])
     pok=latest["pokemons"]
