@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify
 from database import get_db
 from history import ingest, read_dashboard, MAX_BYTES
+from auth import current_user_id
 bp=Blueprint("history",__name__)
 @bp.get("/api/history/dashboard")
 def dashboard():
@@ -11,11 +12,11 @@ def dashboard():
 @bp.get("/api/history/accounts")
 def accounts():
     with get_db() as db:
-        return jsonify([dict(row) for row in db.execute("SELECT account,COUNT(*) AS snapshots FROM history_snapshots GROUP BY account ORDER BY account")])
+        return jsonify([dict(row) for row in db.execute("SELECT account,COUNT(*) AS snapshots FROM history_snapshots WHERE user_id=? GROUP BY account ORDER BY account",(current_user_id(),))])
 @bp.get("/api/history/sessions/<int:sid>")
 def session(sid):
     with get_db() as db:
-        row=db.execute("SELECT * FROM history_sessions WHERE id=?",(sid,)).fetchone()
+        row=db.execute("SELECT * FROM history_sessions WHERE id=? AND user_id=?",(sid,current_user_id())).fetchone()
         if not row:return jsonify({"error":"Session not found"}),404
         return jsonify({"id":row["id"],"account":row["account"],"start":row["started_at"],"end":row["ended_at"],
           "changes":json.loads(row["changes_json"]),"totals":json.loads(row["totals_json"])})
