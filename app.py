@@ -22,6 +22,7 @@ from services.tiers import _tier_refresh_needed, scrape_pokebase
 from history_integration import attach as attach_history
 from auth import bp as auth_bp, init_auth, auth_gate, current_user_id
 from verification import bp as verification_bp, init_verification
+from setup import bp as setup_bp
 from state import set_request_state, clear_request_state
 
 logging.basicConfig(
@@ -39,6 +40,7 @@ init_auth()
 init_verification()
 app.register_blueprint(auth_bp)
 app.register_blueprint(verification_bp)
+app.register_blueprint(setup_bp)
 
 app.register_blueprint(pokemon_bp)
 app.register_blueprint(analysis_bp)
