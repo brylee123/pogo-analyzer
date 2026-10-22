@@ -28,6 +28,8 @@ def current_user_id():
 
 @bp.post("/auth/register")
 def register():
+    from setup import initialized
+    if not initialized():return jsonify({"error":"Initialize the server from a directory first"}),403
     data=request.get_json(silent=True) or request.form
     name=str(data.get("username","")).strip()
     pwd=str(data.get("password",""))
@@ -71,6 +73,11 @@ def me():
     return jsonify({"authenticated":True,"username":row["username"],"trainers":trainers})
 
 def auth_gate():
+    from setup import initialized
+    if not initialized():
+        if request.endpoint in ("setup.setup_page","setup.run_setup") or request.path.startswith("/static/"):return
+        if request.method=="GET" and request.path in ("/","/login"):return redirect("/setup")
+        return jsonify({"error":"Server setup required"}),503
     if request.path.startswith("/static/") or request.endpoint in ("auth.register","auth.login","auth.me","auth.logout","auth.login_page"):
         return
     if current_user_id() is None:
