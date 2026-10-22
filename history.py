@@ -46,7 +46,7 @@ def export_time(raw):
         return datetime.fromtimestamp(value / (1000 if value > 100000000000 else 1), timezone.utc).isoformat()
     if isinstance(value, str):
         import re
-        match = re.match(r"^(\\d{4}-\\d\\d-\\d\\d)[ T](\\d\\d:\\d\\d:\\d\\d)(?:\\s*(EDT|EST|UTC|GMT))?", value.strip())
+        match = re.match(r"^(\d{4}-\d\d-\d\d)[ T](\d\d:\d\d:\d\d)(?:\s*(EDT|EST|UTC|GMT))?", value.strip())
         if match:
             zone = {"EDT":-4, "EST":-5, "UTC":0, "GMT":0}
             offset = timezone(timedelta(hours=zone.get(match.group(3), 0)))
