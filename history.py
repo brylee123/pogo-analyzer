@@ -21,24 +21,56 @@ def current_watch_dir():
 MAX_BYTES = int(os.getenv("PGS_MAX_UPLOAD_MB", "80")) * 1024 * 1024
 
 def init_history():
-    with get_db() as db:
-        db.executescript("""
-        CREATE TABLE IF NOT EXISTS history_snapshots(
-          id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES app_users(id), account TEXT NOT NULL,
-          captured_at TEXT NOT NULL, hash TEXT NOT NULL,
-          source TEXT NOT NULL, raw_json TEXT NOT NULL);
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_history_user_hash ON history_snapshots(user_id,hash);
-        CREATE INDEX IF NOT EXISTS idx_history_account_time
-          ON history_snapshots(account,captured_at,id);
-        CREATE TABLE IF NOT EXISTS history_sessions(
-          id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES app_users(id), account TEXT NOT NULL,
-          from_id INTEGER NOT NULL, to_id INTEGER NOT NULL UNIQUE,
-          started_at TEXT NOT NULL, ended_at TEXT NOT NULL,
-          changes_json TEXT NOT NULL, totals_json TEXT NOT NULL);
-        CREATE INDEX IF NOT EXISTS idx_sessions_account_time
-          ON history_sessions(account,ended_at);
-        """)
-        
+    # DDL and data copies must roll back together (executescript commits implicitly).
+    with LOCK, get_db() as db:
+        db.execute("BEGIN IMMEDIATE")
+        schemas = {
+            "history_snapshots": """id INTEGER PRIMARY KEY,
+                user_id INTEGER REFERENCES app_users(id), account TEXT NOT NULL,
+                captured_at TEXT NOT NULL, hash TEXT NOT NULL,
+                source TEXT NOT NULL, raw_json TEXT NOT NULL""",
+            "history_sessions": """id INTEGER PRIMARY KEY,
+                user_id INTEGER REFERENCES app_users(id), account TEXT NOT NULL,
+                from_id INTEGER NOT NULL, to_id INTEGER NOT NULL UNIQUE,
+                started_at TEXT NOT NULL, ended_at TEXT NOT NULL,
+                changes_json TEXT NOT NULL, totals_json TEXT NOT NULL""",
+        }
+        for table, definition in schemas.items():
+            columns = [row["name"] for row in db.execute(f"PRAGMA table_info({table})")]
+            if columns and "user_id" not in columns:
+                # Rebuild rather than ALTER: the old snapshot hash UNIQUE constraint
+                # must become per-user. IDs, payloads and session links stay intact.
+                temporary = table + "_migration"
+                db.execute(f"CREATE TABLE {temporary}({definition})")
+                names = ",".join(columns)
+                db.execute(f"INSERT INTO {temporary}({names}) SELECT {names} FROM {table}")
+                db.execute(f"DROP TABLE {table}")
+                db.execute(f"ALTER TABLE {temporary} RENAME TO {table}")
+            else:
+                db.execute(f"CREATE TABLE IF NOT EXISTS {table}({definition})")
+        db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_history_user_hash ON history_snapshots(user_id,hash)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_history_account_time ON history_snapshots(account,captured_at,id)")
+        db.execute("CREATE INDEX IF NOT EXISTS idx_sessions_account_time ON history_sessions(account,ended_at)")
+        # NULL means preserved, unassigned legacy history. Never guess its owner.
+
+def claim_legacy_history(db, account, uid):
+    """Attach preserved history only after a successful trainer verification."""
+    owner = db.execute("SELECT user_id FROM trainer_ownership WHERE trainer=?", (account,)).fetchone()
+    if owner is None or owner["user_id"] != uid:
+        raise PermissionError("Verify this trainer before claiming history")
+    # A previously reimported snapshot may already exist for this user. Keep the
+    # legacy row unassigned in that case, preserving its original session links.
+    db.execute("""UPDATE history_snapshots SET user_id=?
+        WHERE user_id IS NULL AND account = ? COLLATE NOCASE
+        AND NOT EXISTS (SELECT 1 FROM history_snapshots AS owned
+                        WHERE owned.user_id=? AND owned.hash=history_snapshots.hash)""",
+        (uid, account, uid))
+    db.execute("""UPDATE history_sessions SET user_id=?
+        WHERE user_id IS NULL AND account = ? COLLATE NOCASE
+        AND EXISTS (SELECT 1 FROM history_snapshots s WHERE s.id=from_id AND s.user_id=?)
+        AND EXISTS (SELECT 1 FROM history_snapshots s WHERE s.id=to_id AND s.user_id=?)""",
+        (uid, account, uid, uid))
+
 def export_time(raw):
     from datetime import timedelta
     value = raw.get("time")

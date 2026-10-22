@@ -1,0 +1,14 @@
+name: History migration tests
+on:
+  push:
+    branches: [master, fix/history-schema-migration]
+  pull_request:
+jobs:
+  migration:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m unittest discover -s tests -v

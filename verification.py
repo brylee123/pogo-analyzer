@@ -47,5 +47,7 @@ def claim():
             db.execute("UPDATE trusted_trainers SET failures=failures+1 WHERE trainer=?",(name,))
             return jsonify({"error":"Verification failed"}),403
         db.execute("INSERT OR IGNORE INTO trainer_ownership(trainer,user_id) VALUES(?,?)",(name,uid))
+        from history import claim_legacy_history
+        claim_legacy_history(db, name, uid)
         db.execute("UPDATE trusted_trainers SET failures=0 WHERE trainer=?",(name,))
     return jsonify({"verified":True,"trainer":name})
