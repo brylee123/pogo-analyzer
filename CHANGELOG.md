@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-10-22
+
+### Changed
+- Removed Polish UI support and duplicate Polish documentation. Labels, tooltips,
+  errors, search terms, analysis advice, and AI prompts now use English.
+- Applied a shared Material-inspired theme and inline Material icons to the dashboard,
+  sign-in, setup, and trainer verification pages.
+- Added per-profile System/Light/Dark modes and Automatic/Mystic/Valor/Instinct accents.
+  Automatic follows the trainer's team, with Mystic blue when no team is available.
+- Embedded remote Pokémon GO Wiki artwork with graceful fallbacks. No game-image
+  files are downloaded, proxied, bundled, or cached by the application.
+- Versioned English AI cache keys and added profile/theme regression tests.
+
 ## [1.2.1] - 2026-07-16
 
 ### Refactored

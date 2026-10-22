@@ -155,7 +155,7 @@ def get_events() -> list[dict]:
             featured_pokemons.append({
                 "name": p_name,
                 "source": source,
-                "image": image or f"https://img.pokemondb.net/sprites/sword-shield/icon/{p_name.lower().replace(' ', '-')}.png",
+                "image": None,  # Artwork is referenced directly by the browser via Pokémon GO Wiki.
                 "can_be_shiny": can_be_shiny,
                 "tiers": tiers,
                 "is_evolution": is_evo,
@@ -165,7 +165,7 @@ def get_events() -> list[dict]:
         # 1. Raid battles
         if "raidbattles" in extra:
             for b in extra["raidbattles"].get("bosses", []):
-                add_poke(b.get("name"), "Rajdy (Boss)", b.get("image"), b.get("canBeShiny"))
+                add_poke(b.get("name"), "Raids (Boss)", b.get("image"), b.get("canBeShiny"))
 
         # 2. Spotlight
         if "spotlight" in extra:
@@ -186,9 +186,9 @@ def get_events() -> list[dict]:
         # 4. Title Scan
         for p in sorted_scan_names:
             if re.search(r'\b' + re.escape(p) + r'\b', row["name"] or "", re.IGNORECASE):
-                add_poke(p, "Wydarzenie")
+                add_poke(p, "Event")
             elif p.lower() in (row["name"] or "").lower():
-                add_poke(p, "Wydarzenie")
+                add_poke(p, "Event")
 
         # Extract bonuses
         bonuses = raw.get("bonuses", [])

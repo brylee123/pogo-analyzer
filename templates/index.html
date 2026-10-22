@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PokéGO Analyzer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
 <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% include 'partials/appearance_head.html' %}
 </head>
 <body>
 
@@ -21,21 +22,14 @@
   <div id="upload-zone">
     <input type="file" accept=".json,.csv" id="upload-input">
     <div class="upload-card">
-      <span class="upload-icon">📂</span>
+      <svg class="material-icon upload-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 15v3h-2v-3H8l4-4 4 4h-3zm0-8V3.5L18.5 9H13z"/></svg>
       <div class="upload-title">PokéGO Analyzer</div>
-      <div class="upload-sub" id="upload-sub-text">Wgraj plik <strong>PGSStats.json</strong> (PGSharp) lub eksport <strong>.csv</strong> (PokéGenie)<br>aby przeanalizować swoje konto</div>
-      <div class="upload-hint" id="upload-hint-text" style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6">
-        📱 <a href="https://www.pgsharp.com/" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">PGSharp Settings</a> &nbsp;→&nbsp; Export account data na <strong>ON</strong> (na samym dole) &nbsp;→&nbsp; wybierz folder dla pliku <strong>pgsstats.json</strong>
-      </div>
-      <div class="upload-tag">📌 Plik czytany lokalnie — dane nie opuszczają maszyny</div>
+      <div class="upload-sub" id="upload-sub-text">Upload <strong>PGSStats.json</strong> (PGSharp) or a <strong>CSV</strong> export (PokéGenie)<br>to explore your Pokémon GO account.</div>
+      <div class="upload-hint" id="upload-hint-text" style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6">In PGSharp Settings, enable <strong>Export account data</strong> and choose a folder for <strong>pgsstats.json</strong>.</div>
+      <div class="upload-tag">📌 Exports are processed by your local server</div>
       <details style="margin-top:12px;font-size:11px;color:var(--muted);width:100%;max-width:400px;text-align:left;border-top:1px solid rgba(255,255,255,0.06);padding-top:8px;">
-        <summary style="cursor:pointer;color:var(--accent);font-weight:600;outline:none;user-select:none" id="lbl-auto-sync-title">🚀 Automatyczna synchronizacja (API POST)</summary>
-        <div style="margin-top:6px;line-height:1.6;" id="lbl-auto-sync-desc">
-          Możesz wysłać plik automatycznie za pomocą skryptu lub aplikacji webhook (np. Tasker, curl, PowerShell), wykonując żądanie HTTP POST z zawartością pliku JSON na adres:
-          <code style="background:rgba(255,255,255,0.06);padding:3px 6px;border-radius:4px;font-family:var(--fmono);display:block;margin-top:4px;word-break:break-all;color:var(--text);border:1px solid var(--border)">http://127.0.0.1:5000/api/upload</code>
-          Przykładowy curl:
-          <code style="background:rgba(255,255,255,0.06);padding:3px 6px;border-radius:4px;font-family:var(--fmono);display:block;margin-top:4px;word-break:break-all;color:var(--text);border:1px solid var(--border)">curl -X POST -H "Content-Type: application/json" -d @pgsstats.json http://127.0.0.1:5000/api/upload</code>
-        </div>
+        <summary style="cursor:pointer;color:var(--accent);font-weight:600;outline:none;user-select:none" id="lbl-auto-sync-title">🚀 Automatic Synchronization (API POST)</summary>
+        <div style="margin-top:6px;line-height:1.6;" id="lbl-auto-sync-desc">Automated uploads require a signed-in session and a verified trainer. Use the file picker or drag an export here to upload.</div>
       </details>
     </div>
   </div>
@@ -60,20 +54,21 @@
 <div id="ai-modal">
   <div id="ai-box">
     <div id="ai-box-header">
-      <span id="ai-box-title">Analiza AI</span>
-      <span id="ai-box-cached" class="badge" style="background:rgba(57,232,122,.12);color:var(--green);border:1px solid rgba(57,232,122,.3);display:none">z cache</span>
+      <span id="ai-box-title">AI analysis</span>
+      <span id="ai-box-cached" class="badge" style="background:rgba(57,232,122,.12);color:var(--green);border:1px solid rgba(57,232,122,.3);display:none">cached</span>
       <button id="ai-box-close">✕</button>
     </div>
     <div id="ai-box-body">
       <div id="ai-loading" style="text-align:center;padding:36px;display:none">
         <div class="spinner"></div>
-        <p style="margin-top:12px;color:var(--muted);font-size:13px">Czekam na AI…</p>
+        <p style="margin-top:12px;color:var(--muted);font-size:13px">Waiting for AI…</p>
       </div>
       <div class="ai-resp" id="ai-content"></div>
     </div>
   </div>
 </div>
 
+<script src="{{ url_for('static', filename='js/assets.js') }}"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 <script src="{{ url_for('static', filename='js/auth-ui.js') }}"></script>
 </body>

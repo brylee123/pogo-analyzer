@@ -1,19 +1,19 @@
 <div class="panel" id="panel-events">
-  <div class="panel-title">📅 Eventy</div>
+  <div class="panel-title"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zm-7-9h5v5h-5z"/></svg><span>Events</span></div>
   <div class="toolbar">
-    <button class="btn btn-outline btn-sm" id="btn-refresh-events">🔄 Odśwież eventy</button>
+    <button class="btn btn-outline btn-sm" id="btn-refresh-events">🔄 Refresh events</button>
     <select id="events-filter">
-      <option value="all">Wszystkie statusy</option>
-      <option value="active">🟢 Aktywne</option>
-      <option value="upcoming">🔵 Nadchodzące</option>
-      <option value="ended">⬜ Zakończone</option>
+      <option value="all">All statuses</option>
+      <option value="active">🟢 Active</option>
+      <option value="upcoming">🔵 Upcoming</option>
+      <option value="ended">⬜ Ended</option>
     </select>
     <select id="events-tier-filter">
-      <option value="all">Wszystkie Pokemony</option>
-      <option value="meta">Wartościowe (S/A/B)</option>
-      <option value="s_only">Tylko top tier (S)</option>
+      <option value="all">All Pokémon</option>
+      <option value="meta">Valuable (S/A/B)</option>
+      <option value="s_only">Top tier only (S)</option>
     </select>
-    <input type="text" id="events-search" placeholder="Szukaj wydarzenia lub Pokémona..." style="flex: 1; max-width: 300px;">
+    <input type="text" id="events-search" placeholder="Search event or Pokémon…" style="flex: 1; max-width: 300px;">
   </div>
   <div id="events-list" class="events-grid"></div>
 </div>

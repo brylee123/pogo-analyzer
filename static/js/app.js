@@ -9,7 +9,6 @@ const S = {
   sort:     "cp",
 };
 
-let _localIp = "127.0.0.1";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const $ = id => document.getElementById(id);
@@ -106,7 +105,7 @@ async function onUploadSuccess(stats, player, pvp_stats) {
   $("stats-bar").style.display     = "flex";
   $("upload-small").style.display  = "block";
   $("tabs").style.display          = "flex";
-  $("header-sub").textContent      = "Twoje konto Pokemon GO";
+  $("header-sub").textContent      = "Your Pokémon GO account";
   const hint = document.querySelector(".sidebar-hint");
   if (hint) hint.style.display = "none";
 
@@ -117,13 +116,14 @@ async function onUploadSuccess(stats, player, pvp_stats) {
   $("s-shadow").textContent = stats.shadows;
   $("s-lucky").textContent  = stats.luckies;
   $("tb-poke").textContent  = stats.total;
-  if (stats.stardust) $("s-dust").textContent = stats.stardust.toLocaleString("pl-PL");
+  if (stats.stardust) $("s-dust").textContent = stats.stardust.toLocaleString("en-US");
   updateAnalytics();
 
   // Handle Player Card in Sidebar
+  window.PogoAppearance?.updateTeam(player?.team);
   if (player) {
     $("sidebar-player").style.display = "flex";
-    $("s-player-name").textContent = player.name || "Gracz";
+    $("s-player-name").textContent = player.name || "Trainer";
     $("s-player-level").textContent = `Lvl ${player.level || "?"} · ${player.kmWalked || 0} km`;
     
     const avatar = $("s-player-avatar");
@@ -155,7 +155,7 @@ async function onUploadSuccess(stats, player, pvp_stats) {
     $("pvp-stat-winrate").textContent = winrate;
     $("pvp-stat-ratio").textContent = `${pvp_stats.season_wins} W / ${pvp_stats.season_battles} B`;
     $("pvp-stat-streak").textContent = pvp_stats.season_longest_streak || "—";
-    $("pvp-stat-dust").textContent = pvp_stats.season_stardust ? pvp_stats.season_stardust.toLocaleString("pl-PL") : "—";
+    $("pvp-stat-dust").textContent = pvp_stats.season_stardust ? pvp_stats.season_stardust.toLocaleString("en-US") : "—";
     
     const formatLeague = (wins, total) => {
       if (!total) return "—";
@@ -187,7 +187,7 @@ $$(".tab").forEach(btn => {
   });
 });
 
-// ── Pokemony ──────────────────────────────────────────────────────────────────
+// ── Pokémon ──────────────────────────────────────────────────────────────────
 async function loadPokemons() {
   S.pokemons = await api("/api/pokemons");
   renderPokemons();
@@ -264,12 +264,12 @@ function renderPokemons() {
       p.shiny  ? `<span class="badge badge-shiny" data-tooltip="Shiny">✨</span>` : "",
       p.shadow ? `<span class="badge badge-shadow" data-tooltip="Shadow (+20% ATK)">Shadow</span>` : "",
       p.hundo  ? `<span class="badge badge-hundo" data-tooltip="100% IV">💯</span>` : "",
-      p.lucky  ? `<span class="badge badge-lucky" data-tooltip="Lucky (tańszy power-up)">🍀</span>` : "",
+      p.lucky  ? `<span class="badge badge-lucky" data-tooltip="Lucky (reduced power-up cost)">🍀</span>` : "",
       evTags,
     ].join("");
     const yr = p.year <= 2018 ? "year-old" : p.year <= 2022 ? "year-mid" : "";
     return `<tr>
-      <td class="name-cell">
+      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}
         ${p.nick ? `<span data-tooltip="${p.name}">${p.nick}</span>` : p.name}
         ${p.move1_name ? `
         <div class="moves-row">
@@ -287,7 +287,7 @@ function renderPokemons() {
       <td>${tags || '<span style="color:var(--muted);font-size:10px">—</span>'}</td>
       <td><button class="btn-ai" onclick="analyzeOnePokemon(${S.pokemons.indexOf(p)})">🤖 AI</button></td>
     </tr>`;
-  }).join("") || `<tr><td colspan="9" style="padding:24px;text-align:center;color:var(--muted)">Brak wyników</td></tr>`;
+  }).join("") || `<tr><td colspan="9" style="padding:24px;text-align:center;color:var(--muted)">No results</td></tr>`;
 }
 
 function buildPogoQuery() {
@@ -303,8 +303,6 @@ function buildPogoQuery() {
   const protectIv = $("ropt-iv").checked;
   const protectPvp = $("ropt-pvp").checked;
   const protectLvl = $("ropt-lvl").checked;
-
-  const isPl = _lang === "pl";
 
   // 1. Base query determining stars selection
   let baseQuery = "";
@@ -330,28 +328,28 @@ function buildPogoQuery() {
     parts.push("!lucky");
   }
   if (protectFav || $("ropt-ex-fav").checked) {
-    parts.push(isPl ? "!ulubione" : "!favorite");
+    parts.push("!favorite");
   }
   if ($("ropt-ex-legendary").checked) {
-    parts.push(isPl ? "!legenda" : "!legendary");
+    parts.push("!legendaryry");
   }
   if ($("ropt-ex-mythical").checked) {
-    parts.push(isPl ? "!mityczny" : "!mythical");
+    parts.push("!mythical");
   }
   if ($("ropt-ex-ub").checked) {
-    parts.push(isPl ? "!ultra bestia" : "!ultrabeast");
+    parts.push("!ultrabeast");
   }
   if ($("ropt-ex-costume").checked) {
-    parts.push(isPl ? "!kostium" : "!costume");
+    parts.push("!costume");
   }
   if ($("ropt-ex-purified").checked) {
-    parts.push(isPl ? "!oczyszczony" : "!purified");
+    parts.push("!purified");
   }
   if ($("ropt-ex-buddy").checked) {
-    parts.push(isPl ? "!pomocnik" : "!buddy");
+    parts.push("!buddy");
   }
   if ($("ropt-ex-defender").checked) {
-    parts.push(isPl ? "!obrońca" : "!defender");
+    parts.push("!defender");
   }
   if ($("ropt-ex-mega").checked) {
     parts.push("!mega");
@@ -459,8 +457,8 @@ function buildPogoQuery() {
 // ── CSV Export ────────────────────────────────────────────────────────────────
 $("btn-export-csv").addEventListener("click", () => {
   const list = sortPokes(S.pokemons);
-  const headers = ["Nazwa","Pseudonim","CP","Lvl","IV%","Atk","Def","Sta","Rok",
-                   "Shiny","Shadow","Lucky","Hundo","Ulubiony","Tier","Eventy"];
+  const headers = ["Nazwa","Pseudonim","CP","Lvl","IV%","Atk","Def","Sta","Year",
+                   "Shiny","Shadow","Lucky","Hundo","Ulubiony","Tier","Events"];
   const esc = v => `"${String(v ?? "").replace(/"/g,'""')}"`;
   const rows = list.map(p => [
     p.name, p.nick || "", p.cp, p.lvl, p.iv_pct,
@@ -487,16 +485,16 @@ $("btn-copy-regex").addEventListener("click", () => {
   const { chunks, skipped, total } = result;
 
   if (!chunks) {
-    alert(`Wszystkie ${total} gatunków mają cenne okazy (shiny/shadow/lucky/meta) — query byłoby puste.\nSprawdź filtry.`);
+    alert(`All ${total} species have protected specimens. Adjust the filters to generate a query.`);
     return;
   }
 
-  // jeśli >1 paczka — pokaż dialog z wszystkimi chunkami do ręcznego kopiowania
+  // Show multiple query batches for manual copying.
   if (chunks.length > 1) {
-    const msg = `Za dużo ID — podzielono na ${chunks.length} paczki (każda ≤300 znaków):\n\n`
+    const msg = `Too many IDs — split into ${chunks.length} batches (each ≤300 characters):\n\n`
       + chunks.map((c, i) => `Paczka ${i+1}:\n${c}`).join("\n\n");
     alert(msg);
-    $("regex-hint").textContent = `${chunks.length} paczek · ${total - skipped} gatunków`;
+    $("regex-hint").textContent = `${chunks.length} batches · ${total - skipped} species`;
     return;
   }
 
@@ -504,7 +502,7 @@ $("btn-copy-regex").addEventListener("click", () => {
   navigator.clipboard.writeText(query).then(() => {
     const btn  = $("btn-copy-regex");
     const prev = btn.textContent;
-    btn.textContent = skipped ? `✓ Skopiowano (${total - skipped}/${total} gat.)` : `✓ ${total - skipped} gatunków`;
+    btn.textContent = skipped ? `✓ Copied (${total - skipped}/${total} species)` : `✓ ${total - skipped} species`;
     btn.style.color = "var(--green)";
     btn.style.borderColor = "var(--green)";
     $("regex-hint").textContent = query.length > 60 ? query.slice(0, 57) + "…" : query;
@@ -518,7 +516,7 @@ function updatePogoQuery() {
   const hint = $("regex-hint");
   if (!result || !result.chunks || result.chunks.length === 0) {
     if (input) input.value = "";
-    if (hint) hint.textContent = _lang === "pl" ? "Wszystkie zachowane" : "All protected";
+    if (hint) hint.textContent = "All protected";
     return;
   }
   const { chunks, skipped, total } = result;
@@ -526,9 +524,7 @@ function updatePogoQuery() {
     input.value = chunks.join(" | ");
   }
   if (hint) {
-    hint.textContent = _lang === "pl"
-      ? `${chunks.length} paczek · ${total - skipped} gatunków`
-      : `${chunks.length} chunks · ${total - skipped} species`;
+    hint.textContent = `${chunks.length} chunks · ${total - skipped} species`;
   }
 }
 
@@ -541,26 +537,26 @@ async function loadItems() {
 function renderItems() {
   $("items-grid").innerHTML = S.items.map(it =>
     `<div class="item-card">
-       <span class="item-name">${it.name}</span>
+       ${gameAsset("item", it.name)}<span class="item-name">${it.name}</span>
        <span class="item-count">×${it.count}</span>
      </div>`
-  ).join("") || `<p style="color:var(--muted);font-size:13px">Brak danych ekwipunku</p>`;
+  ).join("") || `<p style="color:var(--muted);font-size:13px">No inventory data</p>`;
 }
 
 $("btn-analyze-items").addEventListener("click", async () => {
   const btn = $("btn-analyze-items");
   btn.disabled = true;
-  btn.textContent = "⏳ Analizuję…";
+  btn.textContent = "⏳ Analyzing…";
   try {
     const d = await api("/api/analyze-items", { method: "POST", body: "{}" });
-    $("items-ai-title").innerHTML = "Analiza ekwipunku " + (d.cached ? '<span class="badge badge-lucky">z cache</span>' : "");
+    $("items-ai-title").innerHTML = "Inventory analysis " + (d.cached ? '<span class="badge badge-lucky">cached</span>' : "");
     $("items-ai-body").innerHTML  = mdToHtml(d.response);
     $("items-ai-result").style.display = "block";
   } catch (e) {
-    alert("Błąd AI: " + e.message);
+    alert("AI error: " + e.message);
   }
   btn.disabled = false;
-  btn.textContent = "🤖 Analiza AI — co i na kogo";
+  btn.textContent = "🤖 AI Analysis — what to use on whom";
 });
 
 // ── Events ────────────────────────────────────────────────────────────────────
@@ -573,7 +569,7 @@ $("btn-refresh-events").addEventListener("click", async () => {
   $("btn-refresh-events").textContent = "⏳";
   await api("/api/events/refresh", { method: "POST", body: "{}" });
   await loadEvents();
-  $("btn-refresh-events").textContent = "🔄 Odśwież eventy";
+  $("btn-refresh-events").textContent = "🔄 Refresh events";
 });
 
 $("events-filter").addEventListener("change", renderEvents);
@@ -658,15 +654,15 @@ function renderEvents() {
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const text = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
-      return `<span class="event-countdown-upcoming" title="${ev.start}">⏳ Zaczyna się za: ${text}</span>`;
+      return `<span class="event-countdown-upcoming" title="${ev.start}">⏳ Starts in: ${text}</span>`;
     } else if (now >= start && now <= end) {
       const diff = end - now;
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const text = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
-      return `<span class="event-countdown-active" title="${ev.end}">⚡ Aktywne (koniec za: ${text})</span>`;
+      return `<span class="event-countdown-active" title="${ev.end}">⚡ Active (ends in: ${text})</span>`;
     } else {
-      return `<span style="color:var(--muted); font-size:11px;">⬜ Wydarzenie zakończone</span>`;
+      return `<span style="color:var(--muted); font-size:11px;">⬜ Event ended</span>`;
     }
   }
 
@@ -680,15 +676,15 @@ function renderEvents() {
     const statusCls   = { active:"status-active", upcoming:"status-upcoming", ended:"status-ended" }[ev.status] || "";
     let statusLabel = "";
     if (ev.status === "active") {
-      statusLabel = "🟢 Aktywny";
+      statusLabel = "🟢 Active";
     } else if (ev.status === "upcoming") {
       if (ev.days_until !== null && ev.days_until !== undefined) {
-        statusLabel = ev.days_until > 0 ? `🔵 Za ${ev.days_until}d` : "🔵 Za <24h";
+        statusLabel = ev.days_until > 0 ? `🔵 In ${ev.days_until}d` : "🔵 In <24h";
       } else {
-        statusLabel = "🔵 Nadchodzący";
+        statusLabel = "🔵 Upcoming";
       }
     } else {
-      statusLabel = "⬜ Zakończony";
+      statusLabel = "⬜ Ended";
     }
     const bonuses = ev.bonuses.slice(0,6).map(b => `<span style="font-size:11px">• ${typeof b === "string" ? b : JSON.stringify(b)}</span>`).join("<br>");
     
@@ -718,8 +714,8 @@ function renderEvents() {
       });
       
       const pokeCards = sortedPokes.map(p => {
-        const shinyBadge = p.can_be_shiny ? `<span style="color:var(--yellow); font-size:11px;" title="Może być shiny">✨</span>` : "";
-        const evoLabel = p.is_evolution && p.evolves_to ? `<div class="event-poke-evo">Ewoluuje w: <b>${p.evolves_to}</b></div>` : "";
+        const shinyBadge = p.can_be_shiny ? `<span style="color:var(--yellow); font-size:11px;" title="Shiny available">✨</span>` : "";
+        const evoLabel = p.is_evolution && p.evolves_to ? `<div class="event-poke-evo">Evolves into: <b>${p.evolves_to}</b></div>` : "";
         const sourceTag = p.source ? `<span class="event-poke-source">${p.source}</span>` : "";
         
         const tierBadges = [];
@@ -732,13 +728,13 @@ function renderEvents() {
         
         const tiersHtml = tierBadges.length > 0 
           ? `<div class="event-poke-tiers">${tierBadges.join("")}</div>` 
-          : `<div style="font-size: 10px; color: var(--muted); font-style: italic;">Brak danych meta</div>`;
+          : `<div style="font-size: 10px; color: var(--muted); font-style: italic;">No meta data</div>`;
           
-        const isRaidBoss = p.source && p.source.toLowerCase().includes("rajd");
-        const counterBtn = isRaidBoss ? `<button class="btn btn-outline btn-xs" style="margin-top:6px;width:100%;font-size:9px" onclick="showRaidCounters('${p.name.replace(/'/g, "\\'")}')">⚔️ ${_lang === "pl" ? "Kontry" : "Counters"}</button>` : "";
+        const isRaidBoss = p.source && p.source.toLowerCase().includes("raid");
+        const counterBtn = isRaidBoss ? `<button class="btn btn-outline btn-xs" style="margin-top:6px;width:100%;font-size:9px" onclick="showRaidCounters('${p.name.replace(/'/g, "\\'")}')">⚔️ ${"Counters"}</button>` : "";
           
         return `<div class="event-poke-card">
-          <img src="${p.image}" class="event-poke-img" onerror="this.src='https://img.pokemondb.net/sprites/sword-shield/icon/unown.png';">
+          ${gameAsset("pokemon", p.name)}
           <div class="event-poke-details">
             <div class="event-poke-name-row">
               <span>${p.name}</span>
@@ -765,10 +761,10 @@ function renderEvents() {
         <div>
           <div class="event-name">${ev.name}</div>
           <div class="event-meta">
-            ${ev.start ? ev.start.replace("T", " ").substring(0, 16) : ""} → ${ev.end ? ev.end.replace("T", " ").substring(0, 16) : ""} · ${ev.type || "Wydarzenie"}
+            ${ev.start ? ev.start.replace("T", " ").substring(0, 16) : ""} → ${ev.end ? ev.end.replace("T", " ").substring(0, 16) : ""} · ${ev.type || "Event"}
             ${countdownHtml}
           </div>
-          ${ev.link ? `<a href="${ev.link}" target="_blank" style="font-size:11px">🔗 Szczegóły</a>` : ""}
+          ${ev.link ? `<a href="${ev.link}" target="_blank" style="font-size:11px">🔗 Details</a>` : ""}
         </div>
         <span class="event-status ${statusCls}">${statusLabel}</span>
       </div>
@@ -777,12 +773,12 @@ function renderEvents() {
       <div class="event-actions">
         <button class="btn btn-primary btn-sm" onclick="generateEventStrategy('${ev.id}')">🤖 Strategia AI</button>
         <div id="ev-loading-${ev.id}" style="display:none;align-items:center;gap:6px">
-          <div class="spinner"></div><span style="font-size:11px;color:var(--muted)">Generuję…</span>
+          <div class="spinner"></div><span style="font-size:11px;color:var(--muted)">Generating…</span>
         </div>
       </div>
       <div id="ev-strategy-${ev.id}" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)" class="ai-resp"></div>
     </div>`;
-  }).join("") || `<p style="color:var(--muted);font-size:13px">Brak pasujących wydarzeń</p>`;
+  }).join("") || `<p style="color:var(--muted);font-size:13px">No matching events</p>`;
 }
 
 async function generateEventStrategy(evId) {
@@ -795,11 +791,11 @@ async function generateEventStrategy(evId) {
       body: JSON.stringify({ event: ev }),
     });
     const box = $(`ev-strategy-${evId}`);
-    box.innerHTML = (d.cached ? '<span class="badge badge-lucky" style="margin-bottom:8px">z cache</span><br>' : "")
+    box.innerHTML = (d.cached ? '<span class="badge badge-lucky" style="margin-bottom:8px">cached</span><br>' : "")
       + mdToHtml(d.response);
     box.style.display = "block";
   } catch (e) {
-    alert("Błąd AI: " + e.message);
+    alert("AI error: " + e.message);
   }
   $(`ev-loading-${evId}`).style.display = "none";
 }
@@ -814,12 +810,12 @@ $("btn-refresh-tiers").addEventListener("click", async () => {
   $("btn-refresh-tiers").textContent = "⏳";
   await api("/api/tier-list/refresh", { method: "POST", body: "{}" });
   await loadTiers();
-  $("btn-refresh-tiers").textContent = "🔄 Refresh teraz";
+  $("btn-refresh-tiers").textContent = "🔄 Refresh now";
 });
 
 function renderTiers() {
   const cats = {
-    raid:       "⚔️ Raidy",
+    raid:       "⚔️ Raids",
     pvp_great:  "🏆 Great League",
     pvp_ultra:  "🏆 Ultra League",
     pvp_master: "🏆 Master League",
@@ -843,7 +839,7 @@ function renderTiers() {
 
     return `<div class="card">
       <div class="card-title">${label}</div>
-      <div class="tier-grid">${rows || '<p style="color:var(--muted);font-size:12px">Brak danych</p>'}</div>
+      <div class="tier-grid">${rows || '<p style="color:var(--muted);font-size:12px">No data</p>'}</div>
     </div>`;
   }).join("");
 }
@@ -875,13 +871,13 @@ function setModalContent(html, cached) {
 }
 
 async function showRaidCounters(bossName) {
-  const title = _lang === "pl" ? `Najlepsze kontry na: ${bossName}` : `Best counters for: ${bossName}`;
+  const title = `Best counters for: ${bossName}`;
   openModal(title);
   try {
     const res = await fetch(`/api/raid-counters?boss=${encodeURIComponent(bossName)}`);
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.error || "Błąd pobierania danych");
+      throw new Error(err.error || "Unable to load data");
     }
     const data = await res.json();
     
@@ -889,7 +885,7 @@ async function showRaidCounters(bossName) {
     if (data.boss_types) {
       const typesHtml = data.boss_types.map(t => `<span class="badge" style="background:var(--bg3);border:1px solid var(--border);text-transform:uppercase;font-size:10px">${t}</span>`).join(" ");
       html += `<div style="margin-bottom:15px;font-size:12px;color:var(--muted)">
-        ${_lang === "pl" ? "Typy bossa:" : "Boss types:"} ${typesHtml}
+        ${"Boss types:"} ${typesHtml}
       </div>`;
     }
     
@@ -898,13 +894,13 @@ async function showRaidCounters(bossName) {
         <table style="width:100%;font-size:12px">
           <thead>
             <tr>
-              <th>Pokemon</th>
+              <th>Pokémon</th>
               <th>CP</th>
               <th>Lvl</th>
               <th>IV</th>
-              <th>${_lang === "pl" ? "Szybki atak" : "Fast Move"}</th>
-              <th>${_lang === "pl" ? "Ładowany atak" : "Charged Move"}</th>
-              <th style="text-align:right">${_lang === "pl" ? "Wynik" : "Score"}</th>
+              <th>${"Fast Move"}</th>
+              <th>${"Charged Move"}</th>
+              <th style="text-align:right">${"Score"}</th>
             </tr>
           </thead>
           <tbody>`;
@@ -935,18 +931,18 @@ async function showRaidCounters(bossName) {
       
       html += `</tbody></table></div>`;
     } else {
-      html += `<p class="alert alert-info">${_lang === "pl" ? "Nie masz żadnych Pokémonów w plecaku, które mogłyby skontrować tego bossa." : "You do not have any Pokémon in your box to counter this boss."}</p>`;
+      html += `<p class="alert alert-info">${"You do not have any Pokémon in your box to counter this boss."}</p>`;
     }
     setModalContent(html, false);
   } catch (err) {
-    setModalContent(`<p class="alert alert-err">${_lang === "pl" ? "Błąd: " : "Error: "} ${err.message}</p>`, false);
+    setModalContent(`<p class="alert alert-err">${"Error: "} ${err.message}</p>`, false);
   }
 }
 
 async function analyzeOnePokemon(idx) {
   const p = S.pokemons[idx];
   if (!p) return;
-  openModal(`${p.name} — Analiza AI`);
+  openModal(`${p.name} — AI analysis`);
   try {
     const d = await api("/api/analyze-pokemon", {
       method: "POST",
@@ -954,7 +950,7 @@ async function analyzeOnePokemon(idx) {
     });
     setModalContent(mdToHtml(d.response), d.cached);
   } catch (e) {
-    setModalContent(`<p class="alert alert-err">Błąd: ${e.message}</p>`, false);
+    setModalContent(`<p class="alert alert-err">Error: ${e.message}</p>`, false);
   }
 }
 
@@ -1016,7 +1012,7 @@ function renderRaid() {
 
     return `<tr>
       <td style="color:var(--muted);font-weight:700;font-family:var(--fm)">${i+1}</td>
-      <td class="name-cell">
+      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}
         ${p.nick ? `<span data-tooltip="${p.name}">${p.nick}</span>` : p.name}
         ${p.move1_name ? `
         <div class="moves-row" style="margin-top: 3px;">
@@ -1035,7 +1031,7 @@ function renderRaid() {
       <td>${tags}</td>
       <td><button class="btn-ai" onclick="analyzeOnePokemon(${S.pokemons.indexOf(S.pokemons.find(x=>x.pid===p.pid&&x.cp===p.cp))})">🤖 AI</button></td>
     </tr>`;
-  }).join("") || `<tr><td colspan="11" style="padding:24px;text-align:center;color:var(--muted)">Brak danych — wgraj plik JSON</td></tr>`;
+  }).join("") || `<tr><td colspan="11" style="padding:24px;text-align:center;color:var(--muted)">No data — upload a JSON export</td></tr>`;
 }
 
 // ── PvP ───────────────────────────────────────────────────────────────────────
@@ -1081,10 +1077,8 @@ function renderBestByRole(data) {
   }
   container.style.display = "grid";
   
-  const isPl = _lang === "pl";
-  
   const makeList = (pokes) => {
-    if (!pokes || pokes.length === 0) return `<div style="font-size:11px;color:var(--muted)">${isPl ? "Brak kandydatów" : "No candidates"}</div>`;
+    if (!pokes || pokes.length === 0) return `<div style="font-size:11px;color:var(--muted)">${"No candidates"}</div>`;
     return pokes.map(p => `
       <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg3); padding:6px 10px; border-radius:6px; border:1px solid var(--border2);">
         <b style="font-size:11px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:110px;" title="${p.name}">${p.name}</b>
@@ -1101,8 +1095,8 @@ function renderBestByRole(data) {
     <div style="background:var(--bg3); padding:10px; border-radius:8px; border:1px solid var(--border2); display:flex; flex-direction:column; gap:6px;">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <span style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:inline-flex; align-items:center; gap:4px;">
-          🚀 ${isPl ? "Liderzy (Leads)" : "Leads"}
-          <span style="cursor:help; font-size:10px; color:var(--muted)" data-tooltip="${isPl ? 'Rozpoczynają walkę. Wywierają presję lub wygrywają neutralne pojedynki.' : 'Start the battle. Exert shield pressure or win neutral matchups.'}">ℹ️</span>
+          🚀 ${"Leads"}
+          <span style="cursor:help; font-size:10px; color:var(--muted)" data-tooltip="${'Start the battle. Exert shield pressure or win neutral matchups.'}">ℹ️</span>
         </span>
       </div>
       <div style="display:flex; flex-direction:column; gap:4px;">
@@ -1114,8 +1108,8 @@ function renderBestByRole(data) {
     <div style="background:var(--bg3); padding:10px; border-radius:8px; border:1px solid var(--border2); display:flex; flex-direction:column; gap:6px;">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <span style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:inline-flex; align-items:center; gap:4px;">
-          🛡️ ${isPl ? "Bezpieczne zmiany" : "Safe Switches"}
-          <span style="cursor:help; font-size:10px; color:var(--muted)" data-tooltip="${isPl ? 'Wprowadzane po przegranym leadzie. Mają dużą wytrzymałość (bulk) i bezpieczne pojedynki.' : 'Safe switch-in after losing lead. High bulk and safe matchups.'}">ℹ️</span>
+          🛡️ ${"Safe Switches"}
+          <span style="cursor:help; font-size:10px; color:var(--muted)" data-tooltip="${'Safe switch-in after losing lead. High bulk and safe matchups.'}">ℹ️</span>
         </span>
       </div>
       <div style="display:flex; flex-direction:column; gap:4px;">
@@ -1127,8 +1121,8 @@ function renderBestByRole(data) {
     <div style="background:var(--bg3); padding:10px; border-radius:8px; border:1px solid var(--border2); display:flex; flex-direction:column; gap:6px;">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <span style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; display:inline-flex; align-items:center; gap:4px;">
-          💣 ${isPl ? "Finiszerzy (Closers)" : "Closers"}
-          <span style="cursor:help; font-size:10px; color:var(--muted)" data-tooltip="${isPl ? 'Kończą walkę. Zadają wysokie obrażenia, gdy przeciwnik nie ma już tarcz.' : 'Close the battle. Deal heavy damage when opponent has no shields left.'}">ℹ️</span>
+          💣 ${"Closers"}
+          <span style="cursor:help; font-size:10px; color:var(--muted)" data-tooltip="${'Close the battle. Deal heavy damage when opponent has no shields left.'}">ℹ️</span>
         </span>
       </div>
       <div style="display:flex; flex-direction:column; gap:4px;">
@@ -1148,14 +1142,11 @@ function renderLocalTeams(teams) {
   const leagueColor = { GL: "var(--cyan)", UL: "var(--purple)", ML: "var(--yellow)" }[_pvpLeague];
   
   container.innerHTML = teams.map((team, idx) => {
-    const isPl = _lang === "pl";
-    const leadLbl = isPl ? "Lider (Lead)" : "Lead";
-    const switchLbl = isPl ? "Bezpieczna Zmiana" : "Safe Switch";
-    const closerLbl = isPl ? "Closer" : "Closer";
-    const teamLbl = isPl ? `Skład #${idx + 1}` : `Team #${idx + 1}`;
-    const descText = isPl 
-      ? `Zbalansowany skład z liderem <b>${team.lead.name}</b>, bezpieczną zmianą <b>${team.switch.name}</b> i zamykającym <b>${team.closer.name}</b>.`
-      : `Balanced team with <b>${team.lead.name}</b> as lead, <b>${team.switch.name}</b> as safe switch, and <b>${team.closer.name}</b> as closer.`;
+    const leadLbl = "Lead";
+    const switchLbl = "Safe Switch";
+    const closerLbl = "Closer";
+    const teamLbl = `Team #${idx + 1}`;
+    const descText = `Balanced team with <b>${team.lead.name}</b> as lead, <b>${team.switch.name}</b> as safe switch, and <b>${team.closer.name}</b> as closer.`;
 
     return `
       <div style="background: var(--bg3); padding: 12px; border-radius: 8px; border: 1px solid var(--border2); display: flex; flex-direction: column; gap: 8px;">
@@ -1231,7 +1222,7 @@ function renderPvP() {
     const rankBadge = pvpRankBadge(p.pvp_rank, p.pvp_rank_total, p.pvp_rank_pct);
     return `<tr>
       <td style="color:var(--muted);font-weight:700;font-family:var(--fm)">${i+1}</td>
-      <td class="name-cell">${p.name}</td>
+      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}${p.name}</td>
       <td class="cp-cell">${p.cp}</td>
       <td style="font-weight:700;color:${leagueColor};font-family:var(--fm)">${p.pvp_cp || "—"}</td>
       <td class="mono">${p.pvp_lvl || p.lvl}</td>
@@ -1245,13 +1236,13 @@ function renderPvP() {
       <td>${tags}</td>
       <td><button class="btn-ai" onclick="analyzeOnePokemon(${S.pokemons.indexOf(S.pokemons.find(x=>x.pid===p.pid&&x.cp===p.cp))})">🤖 AI</button></td>
     </tr>`;
-  }).join("") || `<tr><td colspan="11" style="padding:24px;text-align:center;color:var(--muted)">Brak danych</td></tr>`;
+  }).join("") || `<tr><td colspan="11" style="padding:24px;text-align:center;color:var(--muted)">No data</td></tr>`;
 }
 
 $("btn-analyze-pvp").addEventListener("click", async () => {
   const btn = $("btn-analyze-pvp");
   btn.disabled = true;
-  btn.textContent = "⏳ Analizuję składy PvP...";
+  btn.textContent = "⏳ Analyzing PvP teams…";
   
   try {
     const d = await api("/api/analyze-pvp-teams", {
@@ -1261,15 +1252,15 @@ $("btn-analyze-pvp").addEventListener("click", async () => {
     
     const leagueNames = { GL: "Great League (CP ≤1500)", UL: "Ultra League (CP ≤2500)", ML: "Master League" };
     const leagueName = leagueNames[_pvpLeague] || _pvpLeague;
-    $("pvp-ai-title").innerHTML = `Analiza składów PvP dla ${leagueName} ` 
-      + (d.cached ? '<span class="badge badge-lucky">z cache</span>' : "");
+    $("pvp-ai-title").innerHTML = `PvP team analysis for ${leagueName} ` 
+      + (d.cached ? '<span class="badge badge-lucky">cached</span>' : "");
     $("pvp-ai-body").innerHTML = mdToHtml(d.response);
     $("pvp-ai-result").style.display = "block";
   } catch (e) {
-    alert("Błąd AI: " + e.message);
+    alert("AI error: " + e.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = "🤖 Analiza AI — składy PvP";
+    btn.textContent = "🤖 AI Analysis — PvP Teams";
   }
 });
 
@@ -1293,8 +1284,6 @@ function renderPvpGems() {
     return;
   }
   card.style.display = "block";
-
-  const isPl = _lang === "pl";
   
   const previewContainer = $("pvp-gems-preview");
   if (previewContainer) {
@@ -1316,7 +1305,7 @@ function renderPvpGems() {
       g.lucky ? `<span class="badge badge-lucky">🍀</span>` : ""
     ].join("");
     return `<tr>
-      <td class="name-cell">${g.name} ${tags}</td>
+      <td class="name-cell">${gameAsset("pokemon", g.name, g.shiny)}${g.name} ${tags}</td>
       <td class="cp-cell">${g.cp}</td>
       <td class="mono">${g.lvl}</td>
       <td class="${ivClass(g.iv_pct)}">${g.iv_pct}%</td>
@@ -1329,20 +1318,19 @@ function renderPvpGems() {
       </td>
       <td><button class="btn-ai" onclick="analyzeOnePokemon(${pIdx})">🤖 AI</button></td>
     </tr>`;
-  }).join("") || `<tr><td colspan="9" style="padding:16px;text-align:center;color:var(--muted)">${isPl ? "Brak perełek PvP w plecaku" : "No PvP gems in bag"}</td></tr>`;
+  }).join("") || `<tr><td colspan="9" style="padding:16px;text-align:center;color:var(--muted)">${"No PvP gems in bag"}</td></tr>`;
 }
 
 async function showPurifyComparison(index) {
   const p = S.pokemons[index];
-  const title = _lang === "pl" ? `⚖️ ${p.name} — Symulator Oczyszczania` : `⚖️ ${p.name} — Purify Simulator`;
+  const title = `⚖️ ${p.name} — Purify Simulator`;
   openModal(title);
   try {
     const data = await api(`/api/purify-comparison?index=${index}`);
-    const isPl = _lang === "pl";
     
     const html = `
       <p style="font-size:13px; color:var(--muted); margin-bottom:14px;">
-        ${isPl ? "Porównanie parametrów przed i po oczyszczeniu." : "Comparison of parameters before and after purification."}
+        ${"Comparison of parameters before and after purification."}
       </p>
       
       <div class="compare-container">
@@ -1357,7 +1345,7 @@ async function showPurifyComparison(index) {
             <b style="color:var(--text);">${data.shadow.cp}</b>
           </div>
           <div class="compare-stat-row">
-            <span>${isPl ? "Poziom (Lvl)" : "Level (Lvl)"}</span>
+            <span>${"Level (Lvl)"}</span>
             <b>${data.shadow.lvl}</b>
           </div>
           <div class="compare-stat-row">
@@ -1374,19 +1362,19 @@ async function showPurifyComparison(index) {
         <div class="compare-card purified-compare">
           <div class="compare-header" style="color:var(--cyan);">
             <span>✨ Purified</span>
-            <span class="badge badge-gl" style="font-size:9px; background:rgba(56,189,248,.12); color:#38bdf8; border:1px solid rgba(56,189,248,.3);">${isPl ? "-10% kosztu" : "-10% cost"}</span>
+            <span class="badge badge-gl" style="font-size:9px; background:rgba(56,189,248,.12); color:#38bdf8; border:1px solid rgba(56,189,248,.3);">${"-10% cost"}</span>
           </div>
           <div class="compare-stat-row">
             <span>CP</span>
             <b style="color:var(--accent); font-weight:800;">${data.purified.cp}</b>
           </div>
           <div class="compare-stat-row">
-            <span>${isPl ? "Poziom (Lvl)" : "Level (Lvl)"}</span>
+            <span>${"Level (Lvl)"}</span>
             <b>${data.purified.lvl} <span style="font-size:10px; color:var(--green); font-weight:normal;">(↑ L25)</span></b>
           </div>
           <div class="compare-stat-row">
             <span>IV %</span>
-            <b class="${ivClass(data.purified.iv_pct)}">${data.purified.iv_pct}% <span style="font-size:10px; color:var(--green); font-weight:normal;">(+2 każdy)</span></b>
+            <b class="${ivClass(data.purified.iv_pct)}">${data.purified.iv_pct}% <span style="font-size:10px; color:var(--green); font-weight:normal;">(+2 each)</span></b>
           </div>
           <div class="compare-stat-row">
             <span>A / D / S</span>
@@ -1397,7 +1385,7 @@ async function showPurifyComparison(index) {
 
       <!-- Cost Section -->
       <div style="background:var(--bg3); padding:10px 14px; border-radius:8px; border:1px solid var(--border2); margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; font-size:13px;">
-        <span>💰 ${isPl ? "Koszt oczyszczenia:" : "Purification cost:"}</span>
+        <span>💰 ${"Purification cost:"}</span>
         <b style="color:var(--yellow); font-family:var(--fm)">✨ ${data.purify_dust.toLocaleString()} Dust &nbsp;💊 ${data.purify_candy} Candy</b>
       </div>
 
@@ -1408,20 +1396,20 @@ async function showPurifyComparison(index) {
 
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <button class="btn btn-secondary" onclick="$('ai-modal').classList.remove('open')" style="padding:6px 12px; font-size:12px; cursor:pointer;">
-          ${isPl ? "Zamknij" : "Close"}
+          ${"Close"}
         </button>
         <button class="btn-ai" onclick="analyzeOnePokemon(${index})" style="padding:6px 14px; font-size:12px;">
-          🤖 ${isPl ? "Zapytaj Trenera AI" : "Ask AI Coach"}
+          🤖 ${"Ask AI Coach"}
         </button>
       </div>
     `;
     setModalContent(html, false);
   } catch (e) {
-    setModalContent(`<p class="alert alert-err">Błąd: ${e.message}</p>`, false);
+    setModalContent(`<p class="alert alert-err">Error: ${e.message}</p>`, false);
   }
 }
 
-// ── Rozwój ────────────────────────────────────────────────────────────────────
+// ── Develop ────────────────────────────────────────────────────────────────────
 let _developData = null;
 
 async function loadDevelop() {
@@ -1444,13 +1432,13 @@ function renderDevelop() {
     
     let limitBadge = "";
     if (p.final_cp > 2500) {
-      limitBadge = ` <span class="badge badge-err" style="font-size:9px;" data-tooltip="Przekracza limit Ultra League (>2500)">>2500</span>`;
+      limitBadge = ` <span class="badge badge-err" style="font-size:9px;" data-tooltip="Exceeds the limit for Ultra League (>2500)">>2500</span>`;
     } else if (p.final_cp > 1500) {
-      limitBadge = ` <span class="badge badge-warn" style="font-size:9px;" data-tooltip="Przekracza limit Great League (>1500)">>1500</span>`;
+      limitBadge = ` <span class="badge badge-warn" style="font-size:9px;" data-tooltip="Exceeds the limit for Great League (>1500)">>1500</span>`;
     }
 
     return `<tr>
-      <td class="name-cell">${p.name}</td>
+      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}${p.name}</td>
       <td class="cp-cell">${p.cp}</td>
       <td class="mono">${p.lvl}</td>
       <td class="${ivClass(p.iv_pct)}">${p.iv_pct}%</td>
@@ -1459,7 +1447,7 @@ function renderDevelop() {
       <td>${tags}</td>
       <td><button class="btn-ai" onclick="analyzeOnePokemon(${_devPokeIdx(p)})">🤖 AI</button></td>
     </tr>`;
-  }).join("") || `<tr><td colspan="8" style="padding:16px;text-align:center;color:var(--muted)">Brak kandydatów — potrzeba IV≥80% + meta końcowa forma</td></tr>`;
+  }).join("") || `<tr><td colspan="8" style="padding:16px;text-align:center;color:var(--muted)">No candidates: requires IV ≥80% and a meta final evolution</td></tr>`;
 
   $("dev-powerup-tbody").innerHTML = d.power_up.map(p => {
     const pIdx = _devPokeIdx(p);
@@ -1471,7 +1459,7 @@ function renderDevelop() {
       }
     }
     return `<tr>
-      <td class="name-cell">${p.name}</td>
+      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}${p.name}</td>
       <td class="cp-cell">${p.cp}</td>
       <td class="mono">${p.lvl}</td>
       <td class="${ivClass(p.iv_pct)}">${p.iv_pct}%</td>
@@ -1484,15 +1472,15 @@ function renderDevelop() {
       <td class="calc-cell" id="pow-calc-${pIdx}" style="min-width:120px;"><span style="color:var(--muted);font-size:10px">—</span></td>
       <td><button class="btn-ai" onclick="analyzeOnePokemon(${pIdx})">🤖 AI</button></td>
     </tr>`;
-  }).join("") || `<tr><td colspan="8" style="padding:16px;text-align:center;color:var(--muted)">Brak kandydatów — meta pokemony poniżej L40 z IV≥80%</td></tr>`;
+  }).join("") || `<tr><td colspan="8" style="padding:16px;text-align:center;color:var(--muted)">No candidates: meta Pokémon below level 40 with IV ≥80%</td></tr>`;
 
   $("dev-purify-tbody").innerHTML = d.purify.map(p => {
     const pA = Math.min(15, p.iv_a+2), pD = Math.min(15, p.iv_d+2), pS = Math.min(15, p.iv_s+2);
     const tc = (p.best_tier && p.best_tier.startsWith("S")) ? "badge-s" : (p.best_tier && p.best_tier.startsWith("A")) ? "badge-a" : "";
     const pIdx = _devPokeIdx(p);
-    const btnLabel = _lang === "pl" ? "⚖️ Porównaj" : "⚖️ Compare";
+    const btnLabel = "⚖️ Compare";
     return `<tr>
-      <td class="name-cell">${p.name}</td>
+      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}${p.name}</td>
       <td class="cp-cell">${p.cp}</td>
       <td class="${ivClass(p.iv_pct)}">${p.iv_pct}%</td>
       <td class="${ivClass(p.purified_iv)}" style="font-weight:700">${p.purified_iv}%</td>
@@ -1503,7 +1491,7 @@ function renderDevelop() {
         <button class="btn-ai" onclick="analyzeOnePokemon(${pIdx})">🤖 AI</button>
       </td>
     </tr>`;
-  }).join("") || `<tr><td colspan="7" style="padding:16px;text-align:center;color:var(--muted)">Brak shadow pokemonów z IV≥78 przed oczyszczeniem</td></tr>`;
+  }).join("") || `<tr><td colspan="7" style="padding:16px;text-align:center;color:var(--muted)">No Shadow Pokémon with IV ≥78% before purification</td></tr>`;
 
   $("dev-tm-tbody").innerHTML = d.elite_tm.map(p => {
     const pidx = _devPokeIdx(p);
@@ -1521,16 +1509,14 @@ function renderDevelop() {
     const currMoves = [p.move1_name, p.move2_name, p.move3_name].filter(Boolean).join(" + ");
 
     return `<tr>
-      <td class="name-cell">${p.name}</td>
+      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}${p.name}</td>
       <td class="cp-cell">${p.cp}</td>
       <td style="font-size:10px; color:var(--muted); line-height:1.25;">${currMoves}</td>
       <td style="font-size:10px; color:var(--text); line-height:1.25;">${pvpOpt}</td>
       <td style="font-size:10px; color:var(--text); line-height:1.25;">${pveOpt}</td>
       <td style="${tmStyle}">${tmLabel}</td>
     </tr>`;
-  }).join("") || `<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--muted)">Brak kandydatów — meta pokemony na L≥35</td></tr>`;
-
-  const isPl = _lang === "pl";
+  }).join("") || `<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--muted)">No candidates: meta Pokémon at level ≥35</td></tr>`;
   const populatePreview = (id, list) => {
     const el = $(id);
     if (!el) return;
@@ -1542,7 +1528,7 @@ function renderDevelop() {
     }
     el.style.display = "flex";
     if (!list || list.length === 0) {
-      el.innerHTML = `<span style="font-size:10px; color:var(--muted); font-style:italic;">${isPl ? 'Brak kandydatów' : 'No candidates'}</span>`;
+      el.innerHTML = `<span style="font-size:10px; color:var(--muted); font-style:italic;">${'No candidates'}</span>`;
       return;
     }
     el.innerHTML = list.slice(0, 3).map(p => `
@@ -1572,440 +1558,10 @@ $("btn-save-cfg").addEventListener("click", async () => {
   setTimeout(() => { saved.style.display = "none"; }, 2500);
 });
 
-// ── Translations ─────────────────────────────────────────────────────────────
-let _lang = localStorage.getItem("pogo_lang") || "pl";
-
-const translations = {
-  pl: {
-    headerSub: "Wgraj PGSStats.json żeby zacząć",
-    changeFile: "↺ Zmień plik",
-    totalPoke: "Pokemon",
-    shinyPoke: "✨ Shiny",
-    hundoPoke: "💯 Hundo",
-    shadowPoke: "Shadow",
-    luckyPoke: "🍀 Lucky",
-    dustPoke: "⭐ Stardust",
-    btnAnalyzeItems: "🤖 Analiza AI — co i na kogo",
-    btnAnalyzePvp: "🤖 Analiza AI — składy PvP",
-    btnSaveCfg: "Zapisz ustawienia",
-    cfgSaved: "Zapisano!",
-    settingsTitle: "⚙️ Ustawienia",
-    settingsAiCfgTitle: "Konfiguracja AI",
-    settingsProviderH3: "Provider",
-    settingsApiKeysH3: "Klucze API",
-    settingsCacheTitle: "📦 Cache AI (SQLite)",
-    settingsCacheDesc: "Odpowiedzi AI zapisywane wg hasha statystyk — ta sama kombinacja IV/CP nie kosztuje tokenu drugi raz.",
-    settingsCsTotal: "Łącznie:",
-    settingsCsToday: "Dziś:",
-    settingsCsSaved: "Szac. zaoszczędzone:",
-    lblRegexPogo: "🔍 Regex PoGO",
-    lblRoptSafe: "bez shiny/shadow/lucky",
-    lblRoptIv: "bez 3★+",
-    lblRoptLegendary: "bez legendary",
-    lblRoptCpLbl: "max CP:",
-    lblRoptCpMinLbl: "chroń CP≥",
-    lblRoptPvp: "chroń PvP",
-    lblRoptLvl: "chroń lvl≥35",
-    btnCopyRegex: "📋 Kopiuj regex",
-    lblTagsLbl: "Tagi:",
-    btnExportCsv: "📥 Export CSV",
-    btnRawCsv: "📦 Raw JSON→CSV",
-    btnInventoryCsv: "💰 Ekwipunek CSV",
-    roptCpValPlaceholder: "np. 500",
-    lblAutoSyncTitle: "🚀 Automatyczna synchronizacja (API POST)",
-    lblAutoSyncDesc: "Możesz wysłać plik automatycznie za pomocą skryptu lub aplikacji webhook (np. Tasker, curl, PowerShell), wykonując żądanie HTTP POST z zawartością pliku JSON na adres:<br><code style='background:rgba(255,255,255,0.06);padding:3px 6px;border-radius:4px;font-family:var(--fmono);display:block;margin-top:4px;word-break:break-all;color:var(--text);border:1px solid var(--border)'>http://127.0.0.1:5000/api/upload</code><br>Przykładowy curl:<br><code style='background:rgba(255,255,255,0.06);padding:3px 6px;border-radius:4px;font-family:var(--fmono);display:block;margin-top:4px;word-break:break-all;color:var(--text);border:1px solid var(--border)'>curl -X POST -H \"Content-Type: application/json\" -d @pgsstats.json http://127.0.0.1:5000/api/upload</code>"
-  },
-  en: {
-    headerSub: "Upload PGSStats.json to begin",
-    changeFile: "↺ Change file",
-    totalPoke: "Pokémon",
-    shinyPoke: "✨ Shiny",
-    hundoPoke: "💯 Hundo",
-    shadowPoke: "Shadow",
-    luckyPoke: "🍀 Lucky",
-    dustPoke: "⭐ Stardust",
-    btnAnalyzeItems: "🤖 AI Analysis — what to use on whom",
-    btnAnalyzePvp: "🤖 AI Analysis — PvP Teams",
-    btnSaveCfg: "Save settings",
-    cfgSaved: "Saved!",
-    settingsTitle: "⚙️ Settings",
-    settingsAiCfgTitle: "AI Configuration",
-    settingsProviderH3: "Provider",
-    settingsApiKeysH3: "API Keys",
-    settingsCacheTitle: "📦 AI Cache (SQLite)",
-    settingsCacheDesc: "AI responses cached by stats hash — the same IV/CP combination never costs a second API call.",
-    settingsCsTotal: "Total:",
-    settingsCsToday: "Today:",
-    settingsCsSaved: "Est. savings:",
-    lblRegexPogo: "🔍 Regex PoGO",
-    lblRoptSafe: "no shiny/shadow/lucky",
-    lblRoptIv: "no 3★+",
-    lblRoptLegendary: "no legendary",
-    lblRoptCpLbl: "max CP:",
-    lblRoptCpMinLbl: "protect CP≥",
-    lblRoptPvp: "protect PvP",
-    lblRoptLvl: "protect lvl≥35",
-    btnCopyRegex: "📋 Copy regex",
-    lblTagsLbl: "Tags:",
-    btnExportCsv: "📥 Export CSV",
-    btnRawCsv: "📦 Raw JSON→CSV",
-    btnInventoryCsv: "💰 Inventory CSV",
-    roptCpValPlaceholder: "e.g. 500",
-    lblAutoSyncTitle: "🚀 Automatic Synchronization (API POST)",
-    lblAutoSyncDesc: "You can send the file automatically using a script or webhook application (e.g. Tasker, curl, PowerShell) by sending an HTTP POST request with the JSON file contents to:<br><code style='background:rgba(255,255,255,0.06);padding:3px 6px;border-radius:4px;font-family:var(--fmono);display:block;margin-top:4px;word-break:break-all;color:var(--text);border:1px solid var(--border)'>http://127.0.0.1:5000/api/upload</code><br>Example curl:<br><code style='background:rgba(255,255,255,0.06);padding:3px 6px;border-radius:4px;font-family:var(--fmono);display:block;margin-top:4px;word-break:break-all;color:var(--text);border:1px solid var(--border)'>curl -X POST -H \"Content-Type: application/json\" -d @pgsstats.json http://127.0.0.1:5000/api/upload</code>"
-  }
-};
-
-const thMap = {
-  pl: {
-    "Pokemon (pre-evo)": "Pokemon (pre-evo)", "→ Ewolucja": "→ Ewolucja", "Docelowy Pokemon": "Docelowy Pokemon",
-    "Docelowy Tier": "Docelowy Tier", "Lvl Przed": "Lvl Przed", "Lvl Po": "Lvl Po", "Koszt": "Koszt",
-    "Ruch Legacy": "Ruch Legacy", "Typ ruchu": "Typ ruchu", "Pokemon": "Pokemon", "Akt. CP": "Akt. CP",
-    "CP w lidze": "CP w lidze", "Lvl": "Lvl", "IV%": "IV%", "A/D/S": "A/D/S", "Max CP": "Max CP",
-    "Tiers": "Tiers", "Tagi": "Tagi", "AI": "AI", "Rank IV": "Rank IV", "Est. DPS×TDO": "Est. DPS×TDO",
-    "IV teraz": "IV teraz", "IV po ocz.": "IV po ocz.", "A/D/S → po oczyszcz.": "A/D/S → po oczyszcz."
-  },
-  en: {
-    "Pokemon (pre-evo)": "Pokémon (pre-evo)", "→ Ewolucja": "→ Evolution", "Docelowy Pokemon": "Target Pokémon",
-    "Docelowy Tier": "Target Tier", "Lvl Przed": "Lvl Before", "Lvl Po": "Lvl After", "Koszt": "Cost",
-    "Ruch Legacy": "Legacy Move", "Typ ruchu": "Move Type", "Pokemon": "Pokémon", "Akt. CP": "Current CP",
-    "CP w lidze": "CP in League", "Lvl": "Lvl", "IV%": "IV%", "A/D/S": "A/D/S", "Max CP": "Max CP",
-    "Tiers": "Tiers", "Tagi": "Tags", "AI": "AI", "Rank IV": "Rank IV", "Est. DPS×TDO": "Est. DPS×TDO",
-    "IV teraz": "Current IV", "IV po ocz.": "IV after Pur.", "A/D/S → po oczyszcz.": "A/D/S → after Pur."
-  }
-};
-
-const optionMap = {
-  pl: {
-    "Wszystkie": "Wszystkie", "✨ Shiny": "✨ Shiny", "👻 Shadow": "👻 Shadow", "🍀 Lucky": "🍀 Lucky",
-    "Tier S (meta)": "Tier S (meta)", "Tier A (meta)": "Tier A (meta)", "🗑️ Kandydaci do transferu": "🗑️ Kandydaci do transferu",
-    "📅 2016–2018 (lucky)": "📅 2016–2018 (lucky)", "📅 2019–2022 (lucky)": "📅 2019–2022 (lucky)",
-    "🏆 PvP Gemy GL (rank ≤250)": "🏆 PvP Gemy GL (rank ≤250)", "CP ↓": "CP ↓", "IV% ↓": "IV% ↓",
-    "Level ↓": "Level ↓", "Nazwa A→Z": "Nazwa A→Z", "Wszystkie Pokemony": "Wszystkie Pokemony",
-    "Wartościowe (S/A/B)": "Wartościowe (S/A/B)", "🟢 Aktywne": "🟢 Aktywne", "🔵 Nadchodzące": "🔵 Nadchodzące",
-    "⬜ Zakończone": "⬜ Zakończone"
-  },
-  en: {
-    "Wszystkie": "All", "✨ Shiny": "✨ Shiny", "👻 Shadow": "👻 Shadow", "🍀 Lucky": "🍀 Lucky",
-    "Tier S (meta)": "Tier S (meta)", "Tier A (meta)": "Tier A (meta)", "🗑️ Kandydaci do transferu": "🗑️ Transfer Candidates (Trash)",
-    "📅 2016–2018 (lucky)": "📅 2016–2018 (lucky)", "📅 2019–2022 (lucky)": "📅 2019–2022 (lucky)",
-    "🏆 PvP Gemy GL (rank ≤250)": "🏆 PvP Gems GL (rank ≤250)", "CP ↓": "CP ↓", "IV% ↓": "IV% ↓",
-    "Level ↓": "Level ↓", "Nazwa A→Z": "Name A→Z", "Wszystkie Pokemony": "All Pokémon",
-    "Wartościowe (S/A/B)": "Valuable (S/A/B)", "🟢 Aktywne": "🟢 Active", "🔵 Nadchodzące": "🔵 Upcoming",
-    "⬜ Zakończone": "⬜ Ended"
-  }
-};
-
-const chipMap = {
-  pl: { "Pokemon": "Pokemon ", "Shiny": " Shiny ", "Hundo": " Hundo ", "Shadow": " Shadow ", "Lucky": " Lucky ", "Stardust": " Stardust " },
-  en: { "Pokemon": "Pokémon ", "Shiny": " Shiny ", "Hundo": " Hundo ", "Shadow": " Shadow ", "Lucky": " Lucky ", "Stardust": " Stardust " }
-};
-
-const pvpLabelMap = {
-  pl: {
-    "Ranga Sezonu": "Ranga Sezonu", "Wskaźnik Wygranych": "Wskaźnik Wygranych",
-    "Najdłuższa seria": "Najdłuższa seria", "Zarobiony Stardust": "Zarobiony Stardust"
-  },
-  en: {
-    "Ranga Sezonu": "Season Rank", "Wskaźnik Wygranych": "Win Rate",
-    "Najdłuższa seria": "Longest Streak", "Zarobiony Stardust": "Stardust Earned"
-  }
-};
-
-const devCards = {
-  pl: {
-    evolveTitle: "🥚 Do ewoluowania",
-    evolveDesc: "Pokemony z IV ≥ 80%, których końcowa forma jest meta (tier S lub A). Ewolucja nie zmienia IV — warto ewoluować zanim będziesz power-upował.",
-    powerupTitle: "⚡ Do ulepszenia (Power Up)",
-    powerupDesc: "Meta pokemon (tier S/A) z IV ≥ 80% poniżej poziomu 40. Inwestycja w stardust opłaca się tylko dla meta okazów.",
-    purifyTitle: "✨ Do oczyszczenia (Purify Shadow)",
-    purifyDesc: "Shadow pokemony, których IV po oczyszczeniu (+2 do każdego, max 15) osiągnie ≥ 80%. Shadow bonus (+20% ataku) vs. lepsze IV — zapytaj AI co bardziej się opłaca.",
-    tmTitle: "⚔️ Kandydaci na Elite TM",
-    tmDesc: "Meta pokemon (tier S/A) na poziomie ≥ 35 — warte sprawdzenia czy mają optymalne ataki. Elite Fast/Charged TM pozwala nauczyć legacy lub ekskluzywnych ruchów."
-  },
-  en: {
-    evolveTitle: "🥚 To Evolve",
-    evolveDesc: "Pokémon with IV ≥ 80% whose final form is meta (tier S or A). Evolution does not change IVs — it is best to evolve before powering up.",
-    powerupTitle: "⚡ To Power Up",
-    powerupDesc: "Meta Pokémon (tier S/A) with IV ≥ 80% below level 40. Investing in stardust is only worth it for meta specimens.",
-    purifyTitle: "✨ To Purify (Shadow)",
-    purifyDesc: "Shadow Pokémon whose IV after purification (+2 to each stat, max 15) will reach ≥ 80%. Shadow bonus (+20% attack) vs. better IVs — ask AI what is more worth it.",
-    tmTitle: "⚔️ Elite TM Candidates",
-    tmDesc: "Meta Pokémon (tier S/A) at level ≥ 35 — worth checking if they have optimal moves. Elite Fast/Charged TM allows learning legacy or exclusive moves."
-  }
-};
-
-function applyLanguage() {
-  const t = translations[_lang];
-  if (_lang === "pl") {
-    $("lang-pl").style.opacity = "1";
-    $("lang-pl").style.filter = "none";
-    $("lang-en").style.opacity = "0.35";
-    $("lang-en").style.filter = "grayscale(90%)";
-  } else {
-    $("lang-pl").style.opacity = "0.35";
-    $("lang-pl").style.filter = "grayscale(90%)";
-    $("lang-en").style.opacity = "1";
-    $("lang-en").style.filter = "none";
-  }
-
-  const ids = {
-    "header-sub": t.headerSub,
-    "btn-analyze-items": t.btnAnalyzeItems,
-    "btn-analyze-pvp": t.btnAnalyzePvp,
-    "btn-save-cfg": t.btnSaveCfg,
-    "cfg-saved": t.cfgSaved,
-    "settings-panel-title": t.settingsTitle,
-    "settings-ai-config-title": t.settingsAiCfgTitle,
-    "settings-provider-h3": t.settingsProviderH3,
-    "settings-apikeys-h3": t.settingsApiKeysH3,
-    "settings-cache-title": t.settingsCacheTitle,
-    "settings-cache-desc": t.settingsCacheDesc,
-    "lbl-regex-pogo": t.lblRegexPogo,
-    "btn-copy-regex": t.btnCopyRegex,
-    "lbl-tags-lbl": t.lblTagsLbl,
-    "btn-raw-csv": t.btnRawCsv,
-    "btn-inventory-csv": t.btnInventoryCsv
-  };
-  for (const [id, text] of Object.entries(ids)) {
-    const el = $(id);
-    if (el && text) el.textContent = text;
-  }
-
-  // Cache stats labels contain a <b> child — update only the text node, not the number
-  const csTotalLbl = $("cs-total-lbl");
-  if (csTotalLbl) { const b = csTotalLbl.querySelector("b"); csTotalLbl.childNodes[0].nodeValue = t.settingsCsTotal + " "; if (b) csTotalLbl.appendChild(b); }
-  const csTodayLbl = $("cs-today-lbl");
-  if (csTodayLbl) { const b = csTodayLbl.querySelector("b"); csTodayLbl.childNodes[0].nodeValue = t.settingsCsToday + " "; if (b) csTodayLbl.appendChild(b); }
-  const csSavedLbl = $("cs-saved-lbl");
-  if (csSavedLbl) { const b = csSavedLbl.querySelector("b"); csSavedLbl.childNodes[0].nodeValue = t.settingsCsSaved + " "; if (b) csSavedLbl.appendChild(b); }
-
-  const cpVal = $("ropt-cp-val");
-  if (cpVal) cpVal.placeholder = t.roptCpValPlaceholder;
-
-  const rawCsv = $("btn-raw-csv");
-  if (rawCsv) rawCsv.title = _lang === "pl"
-    ? "Pełny eksport 1:1 z PGSStats.json — wszystkie 80 pól + nazwa gatunku"
-    : "Full 1:1 export from PGSStats.json — all 80 fields + species name";
-    
-  const invCsv = $("btn-inventory-csv");
-  if (invCsv) invCsv.title = _lang === "pl"
-    ? "Stardust, PokéCoiny, Rare Candy + pełna lista ekwipunku"
-    : "Stardust, PokéCoins, Rare Candy + complete inventory listing";
-  
-  const uploadSub = document.querySelector(".upload-sub");
-  if (uploadSub) uploadSub.innerHTML = _lang === "pl" 
-    ? "Wgraj plik <strong>PGSStats.json</strong> (PGSharp) lub eksport <strong>.csv</strong> (PokéGenie)<br>aby przeanalizować swoje konto"
-    : "Upload <strong>PGSStats.json</strong> (PGSharp) or <strong>.csv</strong> export (PokéGenie)<br>to analyze your account";
-
-  const uploadHint = $("upload-hint-text");
-  if (uploadHint) uploadHint.innerHTML = _lang === "pl"
-    ? `📱 <a href="https://www.pgsharp.com/" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">PGSharp Settings</a> &nbsp;→&nbsp; Export account data na <strong>ON</strong> (na samym dole) &nbsp;→&nbsp; wybierz folder dla pliku <strong>pgsstats.json</strong>`
-    : `📱 <a href="https://www.pgsharp.com/" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">PGSharp Settings</a> &nbsp;→&nbsp; Export account data to <strong>ON</strong> (at the bottom) &nbsp;→&nbsp; select folder for <strong>pgsstats.json</strong>`;
-
-  const uploadTag = document.querySelector(".upload-tag");
-  if (uploadTag) uploadTag.textContent = _lang === "pl"
-    ? "📌 Plik czytany lokalnie — dane nie opuszczają maszyny"
-    : "📌 File processed locally — data does not leave your machine";
-
-  const syncTitle = $("lbl-auto-sync-title");
-  if (syncTitle) syncTitle.innerHTML = t.lblAutoSyncTitle;
-  const syncDesc = $("lbl-auto-sync-desc");
-  if (syncDesc) syncDesc.innerHTML = t.lblAutoSyncDesc.replace(/127\.0\.0\.1/g, _localIp);
-
-
-  const uploadSmallBtn = document.querySelector("#upload-small .btn");
-  if (uploadSmallBtn) uploadSmallBtn.textContent = t.changeFile;
-  
-  const sidebarHint = document.querySelector(".sidebar-hint");
-  if (sidebarHint) sidebarHint.textContent = _lang === "pl" ? "Wgraj plik JSON lub CSV żeby zacząć" : "Upload JSON or CSV file to begin";
-
-  const tabNames = {
-    pokemon: _lang === "pl" ? "🎮 Pokemony" : "🎮 Pokémon",
-    raid: _lang === "pl" ? "⚔️ Raidy" : "⚔️ Raids",
-    pvp: "🏆 PvP",
-    items: _lang === "pl" ? "🎒 Ekwipunek" : "🎒 Inventory",
-    events: _lang === "pl" ? "📅 Eventy" : "📅 Events",
-    tiers: _lang === "pl" ? "🥇 Tier Lista" : "🥇 Tier List",
-    develop: _lang === "pl" ? "🔧 Rozwój" : "🔧 Develop",
-    settings: _lang === "pl" ? "⚙️ Ustawienia" : "⚙️ Settings"
-  };
-  $$(".tab").forEach(tab => {
-    const tabKey = tab.dataset.tab;
-    if (tabNames[tabKey]) {
-      if (tabKey === "pokemon") {
-        tab.innerHTML = `${tabNames[tabKey]} <span class="tab-badge" id="tb-poke">${S.pokemons.length || ""}</span>`;
-      } else {
-        tab.textContent = tabNames[tabKey];
-      }
-    }
-  });
-
-  const panelTitles = {
-    "panel-pokemon": _lang === "pl" ? "🎮 Pokemony" : "🎮 Pokémon",
-    "panel-raid": _lang === "pl" ? "⚔️ Raidy" : "⚔️ Raids",
-    "panel-pvp": "🏆 PvP",
-    "panel-items": _lang === "pl" ? "🎒 Ekwipunek" : "🎒 Inventory",
-    "panel-events": _lang === "pl" ? "📅 Eventy" : "📅 Events",
-    "panel-tiers": _lang === "pl" ? "🥇 Tier Lista" : "🥇 Tier List",
-    "panel-develop": _lang === "pl" ? "🔧 Rozwój" : "🔧 Develop",
-    "panel-settings": _lang === "pl" ? "⚙️ Ustawienia" : "⚙️ Settings"
-  };
-  for (const [id, title] of Object.entries(panelTitles)) {
-    const el = $(id);
-    if (el) {
-      const pTitle = el.querySelector(".panel-title");
-      if (pTitle) pTitle.textContent = title;
-    }
-  }
-
-  $$("th").forEach(th => {
-    const text = th.textContent.trim();
-    const key = Object.keys(thMap.pl).find(k => thMap.pl[k] === text);
-    if (key && thMap[_lang][key]) {
-      th.textContent = thMap[_lang][key];
-    }
-  });
-
-  $$("option").forEach(opt => {
-    const text = opt.textContent.trim();
-    const key = Object.keys(optionMap.pl).find(k => optionMap.pl[k] === text);
-    if (key && optionMap[_lang][key]) {
-      opt.textContent = optionMap[_lang][key];
-    }
-  });
-
-  $$(".stat-chip").forEach(chip => {
-    const textNode = Array.from(chip.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
-    if (textNode) {
-      const text = textNode.textContent.trim();
-      for (const [k, v] of Object.entries(chipMap.pl)) {
-        if (text.includes(k)) {
-          textNode.textContent = chipMap[_lang][k];
-          break;
-        }
-      }
-    }
-  });
-
-  $$("#pvp-stats-card div").forEach(div => {
-    const text = div.textContent.trim();
-    if (pvpLabelMap.pl[text]) {
-      div.textContent = pvpLabelMap[_lang][text];
-    }
-  });
-  
-  const pvpLocalTitle = document.querySelector("#pvp-local-teams-card .card-title");
-  if (pvpLocalTitle) pvpLocalTitle.textContent = _lang === "pl" ? "Sugerowane składy PvP (kalkulacja lokalna)" : "Suggested PvP Teams (local calculation)";
-
-  const pvpStatsTitle = document.querySelector("#pvp-stats-card .card-title");
-  if (pvpStatsTitle) pvpStatsTitle.textContent = _lang === "pl" ? "Twoje statystyki pojedynków PvP" : "Your PvP Battle Statistics";
-
-  const pvpAlert = document.querySelector("#panel-pvp .alert-info");
-  if (pvpAlert) pvpAlert.textContent = _lang === "pl" 
-    ? "Ranking uwzględnia CP przy limicie ligi, bulk (def×sta), tier listę meta. Posortowane od najlepszego."
-    : "Ranking takes into account CP at the league limit, bulk (def×sta), and meta tier list. Sorted from best to worst.";
-    
-  const raidAlert = document.querySelector("#panel-raid .alert-info");
-  if (raidAlert) raidAlert.textContent = _lang === "pl"
-    ? "Najlepsi atakujący do raidów PvE z Twojego plecaka (kalkulacja DPS×TDO)."
-    : "Best PvE raid attackers from your box (DPS×TDO calculation).";
-
-  // Box Analytics localized elements
-  const boxAnalyticsEl = $("lbl-box-analytics");
-  if (boxAnalyticsEl) boxAnalyticsEl.textContent = _lang === "pl" ? "📊 Statystyki Boxa" : "📊 Box Analytics";
-  
-  const ivDistEl = $("lbl-iv-dist");
-  if (ivDistEl) ivDistEl.textContent = _lang === "pl" ? "Rozkład IV" : "IV Distribution";
-  
-  const typeDistEl = $("lbl-type-dist");
-  if (typeDistEl) typeDistEl.textContent = _lang === "pl" ? "Rozkład Typów" : "Type Distribution";
-  
-  const nandoTrackerEl = $("lbl-nando-tracker");
-  if (nandoTrackerEl) nandoTrackerEl.textContent = _lang === "pl" ? "Rzadkie okazy (0% IV - Nando):" : "Rare specimens (0% IV - Nando):";
-
-  // Regex bar text localization
-  const lblProtect = $("lbl-regex-protect");
-  if (lblProtect) lblProtect.textContent = _lang === "pl" ? "Chroń:" : "Protect:";
-
-  const lblExclude = $("lbl-regex-exclude");
-  if (lblExclude) lblExclude.textContent = _lang === "pl" ? "Dodaj filtry wykluczające (&!):" : "Add negative filters (&!):";
-
-  const copyRegexBtn = $("btn-copy-regex");
-  if (copyRegexBtn) copyRegexBtn.textContent = _lang === "pl" ? "📋 Kopiuj regex" : "📋 Copy regex";
-
-  // Develop card headings
-  const devEvolveTitle = $("lbl-dev-evolve-title");
-  if (devEvolveTitle) devEvolveTitle.textContent = devCards[_lang].evolveTitle;
-  const devEvolveDesc = $("lbl-dev-evolve-desc");
-  if (devEvolveDesc) devEvolveDesc.innerHTML = _lang === "pl"
-    ? "Pokemony z IV ≥ 80%, których <strong>końcowa forma jest meta (tier S lub A)</strong>. Ewolucja nie zmienia IV — warto ewoluować zanim będziesz power-upował."
-    : "Pokémon with IV ≥ 80% whose <strong>final evolution is meta (tier S or A)</strong>. Evolution does not change IVs – evolve before power-up.";
-
-  const devPowerupTitle = $("lbl-dev-powerup-title");
-  if (devPowerupTitle) devPowerupTitle.textContent = devCards[_lang].powerupTitle;
-  const devPowerupDesc = $("lbl-dev-powerup-desc");
-  if (devPowerupDesc) devPowerupDesc.innerHTML = _lang === "pl"
-    ? "Meta pokemon (tier S/A) z IV ≥ 80% poniżej <strong>poziomu 40</strong>. Inwestycja w stardust opłaca się tylko dla meta okazów. Wybierz docelowy poziom, by sprawdzić koszt i CP."
-    : "Meta Pokémon (tier S/A) with IV ≥ 80% below <strong>level 40</strong>. Investing in stardust is only worth it for meta specimens. Choose a target level to estimate cost and CP.";
-
-  const devPurifyTitle = $("lbl-dev-purify-title");
-  if (devPurifyTitle) devPurifyTitle.textContent = devCards[_lang].purifyTitle;
-  const devPurifyDesc = $("lbl-dev-purify-desc");
-  if (devPurifyDesc) devPurifyDesc.innerHTML = _lang === "pl"
-    ? "Shadow pokemony, których IV <strong>po oczyszczeniu (+2 do każdego, max 15)</strong> osiągnie ≥ 80%. Shadow bonus (+20% ataku) vs. lepsze IV — zapytaj AI co bardziej się opłaca."
-    : "Shadow Pokémon whose IV <strong>after purification (+2 to each, max 15)</strong> will reach ≥ 80%. Shadow bonus (+20% attack) vs. better IVs – ask AI what is best.";
-
-  const devTmTitle = $("lbl-dev-tm-title");
-  if (devTmTitle) devTmTitle.textContent = devCards[_lang].tmTitle;
-  const devTmDesc = $("lbl-dev-tm-desc");
-  if (devTmDesc) devTmDesc.innerHTML = _lang === "pl"
-    ? "Meta pokemon (tier S/A) na <strong>poziomie ≥ 35</strong> — warte sprawdzenia czy mają optymalne ataki. Elite Fast/Charged TM pozwala nauczyć legacy lub ekskluzywnych ruchów."
-    : "Meta Pokémon (tier S/A) at <strong>level ≥ 35</strong> – worth checking if they have optimal moves. Elite Fast/Charged TMs teach legacy or exclusive moves.";
-
-  $("poke-search").placeholder = _lang === "pl" ? "Szukaj nazwy…" : "Search name…";
-  $("events-search").placeholder = _lang === "pl" ? "Szukaj eventu lub pokemona..." : "Search event or Pokémon...";
-
-  if (S.pokemons && S.pokemons.length > 0) {
-    renderPokemons();
-    renderRaid();
-    renderPvP();
-    renderLocalTeams(_pvpLocalTeams[_pvpLeague]);
-    renderBestByRole(_pvpBestByRole[_pvpLeague]);
-    renderDevelop();
-    renderEvents();
-    if (chartIvInstance || chartTypesInstance) {
-      updateAnalytics(true);
-    }
-  }
-}
-
-$("lang-pl").addEventListener("click", () => {
-  if (_lang !== "pl") {
-    _lang = "pl";
-    localStorage.setItem("pogo_lang", "pl");
-    applyLanguage();
-  }
-});
-
-$("lang-en").addEventListener("click", () => {
-  if (_lang !== "en") {
-    _lang = "en";
-    localStorage.setItem("pogo_lang", "en");
-    applyLanguage();
-  }
-});
-
-applyLanguage();
-
 // ── Auto-restore on page load ─────────────────────────────────────────────────
 (async function checkRestoredState() {
   try {
     const status = await api("/api/status");
-    if (status.local_ip) {
-      _localIp = status.local_ip;
-      applyLanguage();
-    }
     if (status.loaded) {
       await onUploadSuccess(status.stats, status.player, status.pvp_stats);
     }
@@ -2062,7 +1618,7 @@ function makeTableSortable(table) {
   const headers = table.querySelectorAll("thead th");
   headers.forEach((th, index) => {
     const label = th.textContent.trim();
-    if (label === "AI" || label === "Tagi" || label === "Meta" || label === "Rok" || label === "#" || label === "") return;
+    if (label === "AI" || label === "Tags" || label === "Meta" || label === "Year" || label === "#" || label === "") return;
     
     th.style.cursor = "pointer";
     th.classList.add("sortable-header");
@@ -2166,6 +1722,10 @@ function updateAnalytics() {
   if (!$("analytics-content") || $("analytics-content").style.display === "none") return;
   if (!S.pokemons || !S.pokemons.length) return;
 
+  if (typeof Chart === 'undefined') return;
+  const palette = getComputedStyle(document.documentElement);
+  const chartText = palette.getPropertyValue('--muted').trim();
+  const chartBorder = palette.getPropertyValue('--border2').trim();
   let trash = 0, good = 0, great = 0, excellent = 0, hundo = 0;
   S.pokemons.forEach(p => {
     if (p.hundo || p.iv_pct === 100) hundo++;
@@ -2175,9 +1735,7 @@ function updateAnalytics() {
     else trash++;
   });
 
-  const ivLabels = _lang === "pl" 
-    ? ["Kosz (<50%)", "Średni (50-79%)", "Dobry (80-89%)", "Świetny (90-99%)", "Hundo (100%)"]
-    : ["Trash (<50%)", "Average (50-79%)", "Good (80-89%)", "Excellent (90-99%)", "Hundo (100%)"];
+  const ivLabels = ["Trash (<50%)", "Average (50-79%)", "Good (80-89%)", "Excellent (90-99%)", "Hundo (100%)"];
 
   if (chartIvInstance) chartIvInstance.destroy();
   const ctxIv = $("chart-iv").getContext("2d");
@@ -2186,7 +1744,7 @@ function updateAnalytics() {
     data: {
       labels: ivLabels,
       datasets: [{
-        label: _lang === "pl" ? "Liczba" : "Count",
+        label: "Count",
         data: [trash, good, great, excellent, hundo],
         backgroundColor: [
           "rgba(239, 68, 68, 0.6)",
@@ -2208,8 +1766,8 @@ function updateAnalytics() {
         legend: { display: false }
       },
       scales: {
-        x: { grid: { color: "rgba(255,255,255,0.05)" }, ticks: { color: "#9ca3af", font: { size: 10 } } },
-        y: { grid: { color: "rgba(255,255,255,0.05)" }, ticks: { color: "#9ca3af", font: { size: 10 } } }
+        x: { grid: { color: chartBorder }, ticks: { color: chartText, font: { size: 10 } } },
+        y: { grid: { color: chartBorder }, ticks: { color: chartText, font: { size: 10 } } }
       }
     }
   });
@@ -2250,7 +1808,7 @@ function updateAnalytics() {
       plugins: {
         legend: {
           position: "right",
-          labels: { color: "#d1d5db", font: { size: 9 } }
+          labels: { color: chartText, font: { size: 9 } }
         }
       }
     }
@@ -2261,7 +1819,7 @@ function updateAnalytics() {
   const container = $("nando-names-container");
   container.innerHTML = nandos.map(p => 
     `<span class="badge badge-shadow" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#f87171;" data-tooltip="${p.name} CP${p.cp}">Nando ${p.name} (CP ${p.cp})</span>`
-  ).join("") || `<span style="color:var(--muted)">Brak okazów 0% IV</span>`;
+  ).join("") || `<span style="color:var(--muted)">No 0% IV specimens</span>`;
 }
 
 async function recalcPowerup(select, idx) {
@@ -2295,11 +1853,11 @@ async function recalcPowerup(select, idx) {
     container.innerHTML = `
       <div style="font-size:10px; line-height:1.3; color:var(--muted);">
         <strong style="color:var(--accent);">CP ${res.target_cp}</strong><br>
-        ✨${res.stardust.toLocaleString("pl-PL")} · 🍬${res.candy}${xlText}
+        ✨${res.stardust.toLocaleString("en-US")} · 🍬${res.candy}${xlText}
       </div>
     `;
   } catch (e) {
-    container.innerHTML = `<span style="color:var(--red); font-size:10px;">Błąd</span>`;
+    container.innerHTML = `<span style="color:var(--red); font-size:10px;">Error</span>`;
   }
 }
 
@@ -2340,3 +1898,5 @@ async function recalcPowerup(select, idx) {
     }
   });
 })();
+
+window.addEventListener("appearancechange", () => updateAnalytics());

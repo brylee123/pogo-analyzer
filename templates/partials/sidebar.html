@@ -1,15 +1,12 @@
 <aside id="sidebar">
   <div class="sidebar-header">
     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px;">
-      <div class="logo">⚡ PokéGO <span>Analyzer</span></div>
-      <div class="lang-selector" style="display: flex; gap: 8px; align-items: center; margin-top: -4px;">
-        <span id="lang-pl" title="Polski" style="cursor: pointer; font-size: 18px; transition: all 0.2s ease;">🇵🇱</span>
-        <span id="lang-en" title="English" style="cursor: pointer; font-size: 18px; transition: all 0.2s ease;">🇺🇸</span>
-      </div>
+      <div class="logo"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h5m8 0h5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>PokéGO <span>Analyzer</span></div>
+      
     </div>
-    <p id="header-sub">Wgraj PGSStats.json lub CSV żeby zacząć</p>
+    <p id="header-sub">Upload PGSStats.json or CSV to begin</p>
     <div id="upload-small">
-      <div class="btn btn-outline btn-sm">↺ Zmień plik</div>
+      <div class="btn btn-outline btn-sm">↺ Change file</div>
       <input type="file" accept=".json,.csv" id="upload-input-small">
     </div>
   </div>
@@ -24,7 +21,7 @@
   </div>
 
   <div id="stats-bar">
-    <div class="stat-chip">Pokemon <b id="s-total">0</b></div>
+    <div class="stat-chip">Pokémon <b id="s-total">0</b></div>
     <div class="stat-chip">✨ Shiny <b id="s-shiny">0</b></div>
     <div class="stat-chip">💯 Hundo <b id="s-hundo">0</b></div>
     <div class="stat-chip">❌ Nando <b id="s-nando">0</b></div>
@@ -33,17 +30,19 @@
     <div class="stat-chip">⭐ Stardust <b id="s-dust">—</b></div>
   </div>
 
-  <nav id="tabs">
-    <button class="tab active" data-tab="pokemon">🎮 Pokemony <span class="tab-badge" id="tb-poke"></span></button>
-    <button class="tab" data-tab="raid">⚔️ Raidy</button>
-    <button class="tab" data-tab="pvp">🏆 PvP</button>
-    <button class="tab" data-tab="items">🎒 Ekwipunek</button>
-    <button class="tab" data-tab="events">📅 Eventy</button>
-    <button class="tab" data-tab="tiers">🥇 Tier Lista</button>
-    <button class="tab" data-tab="develop">🔧 Rozwój</button>
-    <button class="tab" data-tab="settings">⚙️ Ustawienia</button>
+  <nav id="tabs" aria-label="Main navigation">
+    <button class="tab active" data-tab="pokemon"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h5m8 0h5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>Pokémon<span class="tab-badge" id="tb-poke"></span></button>
+    <button class="tab" data-tab="raid"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.92 5 5 3H3v2l1.92 1.92L8 10l2-2L6.92 5zM15 12l-3 3-2-2-5 5-2-2-1 1 5 5 1-1-2-2 5-5 2 2 3-3-1-1zm6-9h-2l-8 8 2 2 8-8V3z"/></svg>Raids</button>
+    <button class="tab" data-tab="pvp"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 4h-3V2H8v2H5v6c0 2.21 1.79 4 4 4h.18A3 3 0 0 0 11 15.83V19H7v2h10v-2h-4v-3.17A3 3 0 0 0 14.82 14H15c2.21 0 4-1.79 4-4V4zM7 10V6h1v6a2 2 0 0 1-1-2zm10 0a2 2 0 0 1-1 2V6h1v4z"/></svg>PvP</button>
+    <button class="tab" data-tab="items"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 8v12c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V8c0-2.42 1.72-4.44 4-4.9V2h2v1h4V2h2v1.1c2.28.46 4 2.48 4 4.9zM6 12v2h10v2h2v-4H6z"/></svg>Inventory</button>
+    <button class="tab" data-tab="events"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zm-7-9h5v5h-5z"/></svg>Events</button>
+    <button class="tab" data-tab="tiers"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 22V7h6v15H2zm7 0V2h6v20H9zm7 0V12h6v10h-6z"/></svg>Tier list</button>
+    <button class="tab" data-tab="develop"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 18v2H8v-2h8zm-5-4v-4H8l4-5 4 5h-3v4h-2z"/></svg>Develop</button>
+    <button class="tab" data-tab="settings"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m19.14 12.94.04-.94-.04-.94 2.03-1.58-1.92-3.32-2.39.96a7 7 0 0 0-1.63-.95L14.87 3h-3.84l-.36 2.17c-.59.24-1.13.56-1.63.95l-2.39-.96-1.92 3.32 2.03 1.58-.04.94.04.94-2.03 1.58 1.92 3.32 2.39-.96c.5.39 1.04.71 1.63.95l.36 2.17h3.84l.36-2.17a7 7 0 0 0 1.63-.95l2.39.96 1.92-3.32-2.03-1.58zM13 15a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>Settings</button>
   </nav>
 
+  <details class="sidebar-appearance"><summary><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2a10 10 0 1 0 0 20h1.77a2.5 2.5 0 0 0 1.77-4.27.5.5 0 0 1 .35-.85H17a5 5 0 0 0 5-5C22 6.43 17.52 2 12 2zM6.5 13A1.5 1.5 0 1 1 6.5 10a1.5 1.5 0 0 1 0 3zm2-5A1.5 1.5 0 1 1 8.5 5a1.5 1.5 0 0 1 0 3zm7 0A1.5 1.5 0 1 1 15.5 5a1.5 1.5 0 0 1 0 3zm3 5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>Appearance</summary>{% include 'partials/appearance_controls.html' %}<p class="supporting-text" data-appearance-status role="status"></p></details>
   <div style="padding:10px 16px;border-top:1px solid var(--border);font-size:12px"><div>Signed in as <strong id="auth-username">—</strong></div><button id="auth-logout" type="button" class="btn btn-outline btn-sm">Sign out</button></div>
-  <div class="sidebar-hint">Wgraj plik JSON lub CSV żeby zacząć</div>
+  <div class="sidebar-hint">Upload JSON or CSV to begin</div>
+<p class="asset-credit">Game artwork: <a href="https://pokemongo.fandom.com/wiki/Pok%C3%A9mon_GO_Wiki" target="_blank" rel="noopener noreferrer">Pokémon GO Wiki</a>. Images load remotely.</p>
 </aside>

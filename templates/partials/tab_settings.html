@@ -1,7 +1,8 @@
 <div class="panel" id="panel-settings">
-  <div class="panel-title" id="settings-panel-title">⚙️ Ustawienia</div>
+  <div class="panel-title" id="settings-panel-title"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m19.14 12.94.04-.94-.04-.94 2.03-1.58-1.92-3.32-2.39.96a7 7 0 0 0-1.63-.95L14.87 3h-3.84l-.36 2.17c-.59.24-1.13.56-1.63.95l-2.39-.96-1.92 3.32 2.03 1.58-.04.94.04.94-2.03 1.58 1.92 3.32 2.39-.96c.5.39 1.04.71 1.63.95l.36 2.17h3.84l.36-2.17a7 7 0 0 0 1.63-.95l2.39.96 1.92-3.32-2.03-1.58zM13 15a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg><span>Settings</span></div>
+  <div class="card"><div class="card-title">Appearance</div><p class="supporting-text">Follow your team or choose your own accent. Changes sync with your profile.</p>{% include 'partials/appearance_controls.html' %}</div>
   <div class="card">
-    <div class="card-title" id="settings-ai-config-title">Konfiguracja AI</div>
+    <div class="card-title" id="settings-ai-config-title">AI configuration</div>
     <div class="settings-section">
       <h3 id="settings-provider-h3">Provider</h3>
       <div class="form-row">
@@ -15,26 +16,26 @@
       </div>
     </div>
     <div class="settings-section">
-      <h3 id="settings-apikeys-h3">Klucze API</h3>
+      <h3 id="settings-apikeys-h3">API keys</h3>
       <div class="form-row"><label>Gemini API Key</label><input type="password" id="cfg-gemini" placeholder="AIza…"></div>
       <div class="form-row"><label>OpenAI API Key</label><input type="password" id="cfg-openai" placeholder="sk-…"></div>
       <div class="form-row"><label>Anthropic API Key</label><input type="password" id="cfg-anthropic" placeholder="sk-ant-…"></div>
       <div class="form-row"><label>Azure Endpoint</label><input type="text" id="cfg-azure-ep" placeholder="https://…openai.azure.com"></div>
       <div class="form-row"><label>Azure API Key</label><input type="password" id="cfg-azure-key" placeholder="…"></div>
     </div>
-    <button class="btn btn-primary" id="btn-save-cfg">💾 Zapisz konfigurację</button>
-    <span id="cfg-saved" style="margin-left:10px;font-size:12px;color:var(--green);display:none">✓ Zapisano</span>
+    <button class="btn btn-primary" id="btn-save-cfg">💾 Save configuration</button>
+    <span id="cfg-saved" style="margin-left:10px;font-size:12px;color:var(--green);display:none">✓ Saved</span>
   </div>
 
   <div class="card">
-    <div class="card-title" id="settings-cache-title">📦 Cache AI (SQLite)</div>
+    <div class="card-title" id="settings-cache-title">📦 AI Cache (SQLite)</div>
     <p id="settings-cache-desc" style="font-size:12px;color:var(--muted);margin-bottom:10px">
-      Odpowiedzi AI zapisywane wg hasha statystyk — ta sama kombinacja IV/CP nie kosztuje tokenu drugi raz.
+      AI responses cached by stats hash — the same IV/CP combination never costs a second API call.
     </p>
     <div class="cache-bar" id="cache-stats">
-      <span class="cache-stat" id="cs-total-lbl">Łącznie: <b id="cs-total">—</b></span>
-      <span class="cache-stat" id="cs-today-lbl">Dziś: <b id="cs-today">—</b></span>
-      <span class="cache-stat" id="cs-saved-lbl">Szac. zaoszczędzone: <b id="cs-saved">—</b> USD</span>
+      <span class="cache-stat" id="cs-total-lbl">Total: <b id="cs-total">—</b></span>
+      <span class="cache-stat" id="cs-today-lbl">Today: <b id="cs-today">—</b></span>
+      <span class="cache-stat" id="cs-saved-lbl">Estimated savings: <b id="cs-saved">—</b> USD</span>
     </div>
   </div>
 </div>

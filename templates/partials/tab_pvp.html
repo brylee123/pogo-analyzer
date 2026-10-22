@@ -1,24 +1,24 @@
 <div class="panel" id="panel-pvp">
-  <div class="panel-title">🏆 PvP</div>
+  <div class="panel-title"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 4h-3V2H8v2H5v6c0 2.21 1.79 4 4 4h.18A3 3 0 0 0 11 15.83V19H7v2h10v-2h-4v-3.17A3 3 0 0 0 14.82 14H15c2.21 0 4-1.79 4-4V4zM7 10V6h1v6a2 2 0 0 1-1-2zm10 0a2 2 0 0 1-1 2V6h1v4z"/></svg><span>PvP</span></div>
   <!-- PvP Battle Stats Dashboard -->
   <div id="pvp-stats-card" style="display: none; margin-bottom: 20px;" class="card">
-    <div class="card-title">Twoje statystyki pojedynków PvP</div>
+    <div class="card-title">Your PvP Battle Statistics</div>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
       <div style="background: var(--bg3); padding: 10px; border-radius: 8px; border: 1px solid var(--border2); text-align: center;">
-        <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Ranga Sezonu</div>
+        <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Season Rank</div>
         <div id="pvp-stat-rank" style="font-family: var(--fm); font-size: 18px; font-weight: 800; color: var(--yellow);">—</div>
       </div>
       <div style="background: var(--bg3); padding: 10px; border-radius: 8px; border: 1px solid var(--border2); text-align: center;">
-        <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Wskaźnik Wygranych</div>
+        <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Win Rate</div>
         <div id="pvp-stat-winrate" style="font-family: var(--fm); font-size: 18px; font-weight: 800; color: var(--green);">—</div>
         <div id="pvp-stat-ratio" style="font-size: 10px; color: var(--muted); margin-top: 2px;">—</div>
       </div>
       <div style="background: var(--bg3); padding: 10px; border-radius: 8px; border: 1px solid var(--border2); text-align: center;">
-        <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Najdłuższa seria</div>
+        <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Longest Streak</div>
         <div id="pvp-stat-streak" style="font-family: var(--fm); font-size: 18px; font-weight: 800; color: var(--orange);">—</div>
       </div>
       <div style="background: var(--bg3); padding: 10px; border-radius: 8px; border: 1px solid var(--border2); text-align: center;">
-        <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Zarobiony Stardust</div>
+        <div style="font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Stardust Earned</div>
         <div id="pvp-stat-dust" style="font-family: var(--fm); font-size: 18px; font-weight: 800; color: var(--accent);">—</div>
       </div>
     </div>
@@ -34,27 +34,25 @@
     <button class="tab-sub" data-league="UL">🟣 Ultra League ≤2500</button>
     <button class="tab-sub" data-league="ML">🟡 Master League</button>
   </div>
-  <div class="alert alert-info">Ranking uwzględnia CP przy limicie ligi, bulk (def×sta), tier listę meta. Posortowane od najlepszego.</div>
+  <div class="alert alert-info">Ranking takes into account CP at the league limit, bulk (def×sta), and meta tier list. Sorted from best to worst.</div>
   <!-- Local PvP Team Suggestions -->
   <div id="pvp-local-teams-card" style="display: none; margin-bottom: 20px;" class="card">
-    <div class="card-title" id="pvp-local-title">Sugerowane składy PvP (kalkulacja lokalna)</div>
+    <div class="card-title" id="pvp-local-title">Suggested PvP Teams (local calculation)</div>
     <div id="pvp-best-by-role" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; margin-top: 8px;"></div>
     <div id="pvp-local-teams-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
   </div>
   <!-- Hidden PvP Gems -->
   <div class="card" id="pvp-gems-card" style="display: none; margin-bottom: 20px;">
     <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleDevCard('pvp-gems-content')">
-      <span id="lbl-pvp-gems-title">💎 Ukryte Perełki PvP (Rank 1-100)</span>
+      <span id="lbl-pvp-gems-title">💎 Hidden PvP gems (rank 1–100)</span>
       <span id="pvp-gems-toggle-icon">▼</span>
     </div>
     <div id="pvp-gems-preview" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; font-weight:normal;"></div>
     <div id="pvp-gems-content" style="display:none; padding-top:12px;">
-      <p id="lbl-pvp-gems-desc" style="font-size:12px;color:var(--muted);margin-bottom:12px">
-        Pokemony w Twoim plecaku, których <strong>przyszłe ewolucje</strong> mają wybitny ranking PvP w ligach Great, Ultra lub Little League.
-      </p>
+      <p id="lbl-pvp-gems-desc" style="font-size:12px;color:var(--muted);margin-bottom:12px">Pokémon whose <strong>future evolutions</strong> have excellent PvP IV ranks in Great, Ultra, or Little League.</p>
       <div class="tbl-wrap"><table>
         <thead><tr>
-          <th>Baza</th><th>CP</th><th>Lvl</th><th>IV%</th><th>A/D/S</th><th>→ Target Ewolucja</th><th>Liga</th><th>Ranga PvP</th><th>AI</th>
+          <th>Base</th><th>CP</th><th>Lvl</th><th>IV%</th><th>A/D/S</th><th>→ Target evolution</th><th>League</th><th>PvP rank</th><th>AI</th>
         </tr></thead>
         <tbody id="pvp-gems-tbody"></tbody>
       </table></div>
@@ -64,16 +62,16 @@
   <div class="tbl-wrap">
     <table id="pvp-table">
       <thead><tr>
-        <th>#</th><th>Pokemon</th><th>Akt. CP</th><th>CP w lidze</th><th>Lvl</th><th>IV%</th>
-        <th>A/D/S</th><th>Rank IV</th><th>Tier</th><th>Tagi</th><th>AI</th>
+        <th>#</th><th>Pokémon</th><th>Current CP</th><th>CP in League</th><th>Lvl</th><th>IV%</th>
+        <th>A/D/S</th><th>Rank IV</th><th>Tier</th><th>Tags</th><th>AI</th>
       </tr></thead>
       <tbody id="pvp-tbody"></tbody>
     </table>
   </div>
 
-  <button class="btn btn-primary" id="btn-analyze-pvp" style="margin-top: 16px;">🤖 Analiza AI — składy PvP</button>
+  <button class="btn btn-primary" id="btn-analyze-pvp" style="margin-top: 16px;">🤖 AI Analysis — PvP Teams</button>
   <div id="pvp-ai-result" style="margin-top: 16px; display: none;" class="card">
-    <div class="card-title" id="pvp-ai-title">Analiza składów PvP</div>
+    <div class="card-title" id="pvp-ai-title">PvP team analysis</div>
     <div class="ai-resp" id="pvp-ai-body"></div>
   </div>
 </div>

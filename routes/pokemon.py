@@ -61,14 +61,14 @@ def upload():
             })
         except Exception as exc:
             log.exception("Raw JSON post parse error")
-            return jsonify({"error": f"Błąd parsowania JSON: {str(exc)}"}), 400
+            return jsonify({"error": f"Unable to parse JSON: {str(exc)}"}), 400
 
     # 2. Existing multipart/form-data upload
     if "file" not in request.files:
-        return jsonify({"error": "Brak pliku w żądaniu"}), 400
+        return jsonify({"error": "No file in request"}), 400
     f = request.files["file"]
     if not f.filename:
-        return jsonify({"error": "Pusty plik"}), 400
+        return jsonify({"error": "Empty file"}), 400
     try:
         filename = f.filename.lower()
         if filename.endswith(".csv"):
@@ -177,12 +177,12 @@ def export_raw_csv():
     db = get_db()
     row = db.execute("SELECT raw_json FROM user_latest_upload WHERE user_id=?", (current_user_id(),)).fetchone()
     if not row:
-        return jsonify({"error": "Brak danych — wgraj najpierw PGSStats.json"}), 404
+        return jsonify({"error": "No data — upload PGSStats.json first"}), 404
 
     raw      = json.loads(row["raw_json"])
     pokemons = raw.get("pokemons", [])
     if not pokemons:
-        return jsonify({"error": "Brak pokemonów w danych"}), 404
+        return jsonify({"error": "No Pokémon in export"}), 404
 
     # DEX: pid → name
     try:
@@ -262,7 +262,7 @@ def export_inventory_csv():
     db  = get_db()
     row = db.execute("SELECT raw_json FROM user_latest_upload WHERE user_id=?", (current_user_id(),)).fetchone()
     if not row:
-        return jsonify({"error": "Brak danych — wgraj najpierw PGSStats.json"}), 404
+        return jsonify({"error": "No data — upload PGSStats.json first"}), 404
 
     raw     = json.loads(row["raw_json"])
     items   = raw.get("items", [])
@@ -291,7 +291,7 @@ def export_inventory_csv():
         for it in sorted(items, key=lambda x: x.get("count", 0), reverse=True):
             writer.writerow([it.get(k, "") for k in all_keys])
     else:
-        writer.writerow(["brak itemów"])
+        writer.writerow(["No items"])
 
     csv_bytes = ("﻿" + out.getvalue()).encode("utf-8")
     return Response(
@@ -354,7 +354,7 @@ def api_status():
 def api_raid_counters():
     boss_name = request.args.get("boss", "").strip()
     if not boss_name:
-        return jsonify({"error": "Brak nazwy bossa"}), 400
+        return jsonify({"error": "Missing boss name"}), 400
         
     from data.pokemon_db import POKEMON_DB
     from data.moves import MOVES
@@ -391,7 +391,7 @@ def api_raid_counters():
             boss_entry = POKEMON_DB[matched_key]
             
     if not boss_entry:
-        return jsonify({"error": f"Nie znaleziono danych o bossie: {boss_name}"}), 404
+        return jsonify({"error": f"Boss data not found: {boss_name}"}), 404
         
     boss_types = boss_entry["types"]
     

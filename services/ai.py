@@ -10,130 +10,48 @@ from database import get_cache, make_hash, set_cache
 log = logging.getLogger(__name__)
 
 _SYSTEM_EXPERT = (
-    "Jesteś starszym ekspertem Pokemon GO z pełną wiedzą o meta raidowym, PvP (GL/UL/ML), "
-    "systemach ewolucji, rarity i ekonomii gry. Odpowiadaj po polsku. "
-    "Używaj konkretnych liczb i nazw. Bądź zwięzły: max 6 zdań na sekcję."
+    "You are a Pokémon GO expert in raids, PvP, evolution, rarity and resource planning. "
+    "Respond in English. Use concrete names and numbers, with at most six sentences per section."
 )
-
 _SYSTEM_TACTICIAN = (
-    "Jesteś taktycznym doradcą Pokemon GO. Tworzysz spersonalizowane, praktyczne "
-    "strategie eventowe. Odpowiadaj po polsku. Używaj bullet-pointów i konkretnych "
-    "liczb/nazw. Bądź bezpośredni — co dokładnie robić i kiedy."
+    "You are a Pokémon GO tactical advisor. Respond in English with practical, personalized "
+    "event and battle plans. Use concise bullet points and explain what to do and when."
 )
 
-
-# ── Prompt builders ───────────────────────────────────────────────────────────
 
 def build_pokemon_prompt(p: dict, tier_data: dict, top_items: list[str]) -> str:
-    return f"""Przeanalizuj tego Pokemona z mojego konta:
-
-**{p['name']}** (Pokédex #{p['pid']})
-- CP: {p['cp']} | Level: {p['lvl']} | IV: {p['iv_a']}/{p['iv_d']}/{p['iv_s']} = {p['iv_pct']}%
-- Shiny: {'✅' if p['shiny'] else '❌'} | Shadow: {'✅' if p['shadow'] else '❌'} | Lucky: {'✅' if p.get('lucky') else '❌'}
-- Złapany: {p.get('year', '?')}
-- Tier lista: {json.dumps(tier_data) if tier_data else 'brak danych w bazie'}
-
-Mój ekwipunek (top): {', '.join(top_items) or 'brak danych'}
-
-Odpowiedź w sekcjach:
-
-**💎 Wartość** — czy to cenny okaz (meta / rare / hundo / lucky / shiny)?
-**⚔️ Bojowy potencjał** — ocena pod raidy, PvP GL, UL i ML
-**📋 Rekomendacja** — konkretnie: power up / evolve / transfer / purify / zachować?
-**🎒 Przedmioty** — jakie z moich przedmiotów tu zastosować i dlaczego?"""
+    return f"""Analyze this Pokémon from my account. Respond in English.
+Pokémon: {json.dumps(p, ensure_ascii=False)}
+Meta tiers: {json.dumps(tier_data, ensure_ascii=False)}
+Inventory: {', '.join(top_items) or 'No inventory data'}
+Use sections: Value; Raid and PvP roles; Evolve, power up, purify or keep;
+Recommended moves and TMs; Resource priorities. State any uncertainty."""
 
 
 def build_items_prompt(items: list[dict], top_pokes: list[dict]) -> str:
-    items_str = "\n".join(f"  - {it['name']}: {it['count']}×" for it in items)
-    pokes_str = "\n".join(
-        f"  - {p['name']} CP{p['cp']} IV{p['iv_pct']}% {'Shadow' if p['shadow'] else ''}"
-        for p in top_pokes
-    )
-    return f"""Przeanalizuj mój ekwipunek i dopasuj go do pokemonów.
-
-**Ekwipunek:**
-{items_str or '  (brak)'}
-
-**Moje najlepsze Pokemony (IV≥80%):**
-{pokes_str or '  (brak)'}
-
-**1. Elite TM** — na kogo dokładnie użyć Elite Fast i Elite Charged TM?
-**2. Sinnoh Stone / Unova Stone** — konkretne rekomendacje z listy wyżej
-**3. Co wyrzucić** — jakie przedmioty zbierają kurz (wymień nazwy + liczby)?
-**4. Strategia zbierania** — czego za mało, a czego za dużo?"""
+    return f"""Analyze my Pokémon GO inventory and recommend how to use it. Respond in English.
+Inventory: {json.dumps(items, ensure_ascii=False)}
+Best Pokémon: {json.dumps(top_pokes, ensure_ascii=False)}
+Use sections: Elite TMs; Evolution items; Items to discard; Resource collection priorities.
+Recommend specific Pokémon and quantities based only on the supplied data."""
 
 
 def build_event_prompt(event: dict, relevant_pokes: list[dict], items: list[dict]) -> str:
-    bonuses  = "\n".join(f"  - {b}" for b in event.get("bonuses", [])) or "  brak danych"
-    spawns_list = []
-    if "featured_pokemons" in event:
-        spawns_list = [p["name"] for p in event["featured_pokemons"]]
-    else:
-        spawns_list = [
-            (s.get("name") or s) if isinstance(s, dict) else str(s)
-            for s in event.get("spawns", [])
-        ]
-    spawns = ", ".join(spawns_list[:15]) or "brak danych"
-    pokes_str = "\n".join(
-        f"  - {p['name']} CP{p['cp']} IV{p['iv_pct']}% L{p['lvl']} {'Shadow' if p['shadow'] else ''}"
-        for p in relevant_pokes
-    ) or "  Brak pasujących pokemonów"
-    items_str = "\n".join(f"  - {it['name']}: {it['count']}×" for it in items[:18])
-
-    return f"""Stwórz strategię na event Pokemon GO dla mojego konta.
-
-**Event:** {event['name']}
-**Status:** {event['status']} | Start: {event['start']} | Koniec: {event['end']}
-{f"**Za:** {event['days_until']} dni" if event.get('days_until') is not None else ""}
-**Typ:** {event['type']}
-
-**Bonusy eventu:**
-{bonuses}
-
-**Pojawiające się Pokemony:** {spawns}
-
-**Moje Pokemony pasujące do eventu:**
-{pokes_str}
-
-**Mój ekwipunek:**
-{items_str or '  brak danych'}
-
-Strategia:
-
-**1. TL;DR** — co najważniejszego daje ten event (1-2 zdania)?
-**2. TOP 3 priorytety** — co robić w pierwszej kolejności?
-**3. Moje Pokemony** — co zatrzymać/ewoluować/power-up'ować pod ten event?
-**4. Ekwipunek** — jakie itemy zużyć podczas eventu (kiedy i ile)?
-**5. Pułapki** — co NIE warto robić / na co uważać?"""
+    return f"""Plan this Pokémon GO event for my account. Respond in English.
+Event: {json.dumps(event, ensure_ascii=False)}
+Relevant Pokémon: {json.dumps(relevant_pokes, ensure_ascii=False)}
+Inventory: {json.dumps(items, ensure_ascii=False)}
+Use sections: Summary; Top three priorities; Pokémon to keep, evolve or power up;
+Items to use and when; Pitfalls. Distinguish supplied facts from estimates."""
 
 
 def build_pvp_teams_prompt(league: str, candidates: list[dict]) -> str:
-    league_names = {"GL": "Great League (CP <= 1500)", "UL": "Ultra League (CP <= 2500)", "ML": "Master League (brak limitu CP)"}
-    league_name = league_names.get(league, league)
-    
-    pokes_str = "\n".join(
-        f"  - {p['name']} CP{p['cp']} (Max CP pod ligę: {p['pvp_cp']}, Lvl: {p['pvp_lvl']}, IV: {p['iv_pct']}%, Rank IV w lidze: #{p['pvp_rank']})"
-        for p in candidates
-    ) or "  Brak pasujących pokemonów w bazie"
-    
-    return f"""Przeanalizuj moje Pokemony i zaproponuj najlepsze składy (teamy 3-osobowe) do walk PvP w Pokemon GO dla ligi: {league_name}.
-    
-**Moje najlepsze Pokemony zakwalifikowane do tej ligi:**
-{pokes_str}
-
-W oparciu o aktualną metę Pokemon GO (zgodną z serwisami takimi jak PvPoke.com), stwórz szczegółowy raport taktyczny po polsku:
-
-**1. Rekomendowane składy (zaproponuj 2-3 konkretne teamy z moich Pokemonów):**
-   - Dla każdego teamu wskaż rolę: **Lead** (pierwszy walczący), **Safe Switch** (bezpieczna zmiana), **Closer** (zamykający).
-   - Krótko opisz synergię typu i jak grać danym składem (np. przynęta na tarcze, obrona przed kontrami).
-
-**2. Czego mi brakuje (brakujące ogniwa):**
-   - Jakie kluczowe Pokemony z obecnej top mety tej ligi (np. Registeel, Bastiodon, Cresselia, Lickitung) idealnie dopełniłyby moje Pokemony, gdybym je zdobył?
-   - Z którymi z moich obecnych Pokemonów stworzyłyby świetny duet/trio?
-
-**3. Porady techniczne:**
-   - Które z moich Pokemonów mają świetny Rank IV pod tę ligę i bezwzględnie warto zainwestować w nie Stardust i Candy?
-   - Sugestie dotyczące ataków (Fast / Charged Move), na które warto zmienić (używając TM)."""
+    return f"""Recommend two or three Pokémon GO PvP teams for {league}. Respond in English.
+Available candidates: {json.dumps(candidates, ensure_ascii=False)}
+For each team identify Lead, Safe Switch and Closer, type synergy, shield strategy,
+and weaknesses. Then explain missing meta Pokémon, IV investment priorities, and
+recommended Fast and Charged moves, including when Elite TMs are required.
+Use only available candidates for the recommended teams."""
 
 
 # ── AI providers ──────────────────────────────────────────────────────────────
@@ -173,7 +91,7 @@ def _gemini_models() -> list[str]:
 
 def _gemini(prompt: str, system: str) -> str:
     if not config.GEMINI_API_KEY:
-        raise ValueError("Ustaw GEMINI_API_KEY w pliku .env")
+        raise ValueError("Set GEMINI_API_KEY in .env")
     full_prompt = f"{system}\n\n{prompt}" if system else prompt
     payload = {
         "contents": [{"parts": [{"text": full_prompt}]}],
@@ -216,24 +134,24 @@ def _gemini(prompt: str, system: str) -> str:
                 errors.append(f"{code} {model}")
                 break
             except (KeyError, IndexError):
-                raise ValueError(f"Nieoczekiwana odpowiedź Gemini: {r.text[:300]}")
+                raise ValueError(f"Unexpected Gemini response: {r.text[:300]}")
     raise ValueError(
-        f"Gemini niedostępny: {'; '.join(errors)}. "
-        "Sprawdź klucz API. Darmowy tier: 15 req/min. "
-        "Wcześniej wygenerowane odpowiedzi są w cache."
+        f"Gemini unavailable: {'; '.join(errors)}. "
+        "Check your API key and provider rate limits. "
+        "Previously generated responses remain cached."
     )
 
 
 def _openai(prompt: str, system: str) -> str:
     if not config.OPENAI_API_KEY:
-        raise ValueError("Ustaw OPENAI_API_KEY w pliku .env")
+        raise ValueError("Set OPENAI_API_KEY in .env")
     r = requests.post(
         "https://api.openai.com/v1/chat/completions",
         headers={"Authorization": f"Bearer {config.OPENAI_API_KEY}", "Content-Type": "application/json"},
         json={
             "model": "gpt-4o-mini",
             "messages": [
-                {"role": "system", "content": system or "Jesteś ekspertem Pokemon GO."},
+                {"role": "system", "content": system or "You are a Pokémon GO expert. Respond in English."},
                 {"role": "user",   "content": prompt},
             ],
             "max_tokens": 2000,
@@ -247,7 +165,7 @@ def _openai(prompt: str, system: str) -> str:
 
 def _azure(prompt: str, system: str) -> str:
     if not config.AZURE_API_KEY or not config.AZURE_ENDPOINT:
-        raise ValueError("Ustaw AZURE_OPENAI_KEY + AZURE_OPENAI_ENDPOINT w pliku .env")
+        raise ValueError("Set AZURE_OPENAI_KEY and AZURE_OPENAI_ENDPOINT in .env")
     url = (
         f"{config.AZURE_ENDPOINT.rstrip('/')}/openai/deployments/"
         f"{config.AZURE_DEPLOYMENT}/chat/completions?api-version={config.AZURE_API_VERSION}"
@@ -257,7 +175,7 @@ def _azure(prompt: str, system: str) -> str:
         headers={"api-key": config.AZURE_API_KEY, "Content-Type": "application/json"},
         json={
             "messages": [
-                {"role": "system", "content": system or "Jesteś ekspertem Pokemon GO."},
+                {"role": "system", "content": system or "You are a Pokémon GO expert. Respond in English."},
                 {"role": "user",   "content": prompt},
             ],
             "max_tokens": 2000,
@@ -271,7 +189,7 @@ def _azure(prompt: str, system: str) -> str:
 
 def _anthropic(prompt: str, system: str) -> str:
     if not config.ANTHROPIC_API_KEY:
-        raise ValueError("Ustaw ANTHROPIC_API_KEY w pliku .env")
+        raise ValueError("Set ANTHROPIC_API_KEY in .env")
     r = requests.post(
         "https://api.anthropic.com/v1/messages",
         headers={
@@ -282,7 +200,7 @@ def _anthropic(prompt: str, system: str) -> str:
         json={
             "model": "claude-3-5-sonnet-latest",
             "max_tokens": 2000,
-            "system": system or "Jesteś ekspertem Pokemon GO. Odpowiadaj po polsku.",
+            "system": system or "You are a Pokémon GO expert. Respond in English.",
             "messages": [{"role": "user", "content": prompt}],
         },
         timeout=30,

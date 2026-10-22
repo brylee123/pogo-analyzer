@@ -8,11 +8,52 @@
   <img src="https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge" alt="License" />
 </p>
 
-> 🇵🇱 **[Wersja polska (Polish Version)](README.pl.md)**
 
 A professional, local web application for analyzing your Pokémon GO account, managing PvP/Raid candidates, and planning event tactics with a personalized AI coach. Powered by the `PGSStats.json` export from **PGSharp** or `.csv` export from **PokéGenie**.
 
 ---
+
+
+## Appearance and language
+
+The application is English-only, including forms, errors, analysis labels, and AI prompts.
+The Polish language switch has been removed; old browser language settings are ignored.
+AI cache keys are versioned so older Polish responses are not served as new English analyses.
+
+The entire interface uses a Material-inspired theme with rounded surfaces, accessible color
+roles, Roboto typography, and inline Material icons. The dashboard, sign-in, setup, and
+trainer-verification screens share the same theme.
+
+Open **Appearance** in the sidebar, even before uploading a file, or **Settings → Appearance**:
+
+- **Color mode:** System (default), Light, or Dark. System follows OS changes live.
+- **Team accent:** Automatic (default), Mystic blue, Valor red, or Instinct yellow.
+- Automatic reads the signed-in profile's latest PGSharp export, falling back to its latest
+  historical export. Missing team data (including PokéGenie-only profiles) defaults to Mystic blue.
+- Manual accents override the trainer's team until you select Automatic again.
+- Preferences are saved per local profile in SQLite and persist across devices and restarts.
+  Choosing an accent does not change the trainer's in-game team.
+
+## Remote game artwork
+
+Pokémon, item, and in-game artwork is embedded directly from the
+[Pokémon GO Wiki on Fandom](https://pokemongo.fandom.com/wiki/Pok%C3%A9mon_GO_Wiki)
+using its `Special:FilePath` image redirects. Artwork links lead back to the corresponding wiki page.
+The application does not download, proxy, bundle, or store image files on the server, and does
+not create an asset cache or service worker. Normal browser HTTP caching is controlled by the
+browser and remote host. Roboto loads remotely from Google Fonts; UI icons are inline SVG and remain available offline.
+
+Artwork requires internet access. Missing filenames, unavailable variants, blocked hotlinks,
+or Fandom outages fall back to a neutral symbol while names and controls remain usable.
+Pokémon artwork belongs to its respective rights holders; the wiki is the artwork source,
+not an affiliation or endorsement. See each source page for attribution and licensing details.
+
+## Verification
+
+Run `python -m unittest discover -s tests -v` after installing `requirements.txt`.
+The suite covers legacy database migration, profile preference isolation, validation,
+automatic team selection, and shared English templates. `node --test tests/test_ui.cjs`
+checks system-theme changes, manual overrides, save failures, and remote asset references.
 
 ## 🌟 Key Features
 
@@ -54,7 +95,7 @@ The search generator bar above the Pokémon table generates queries compatible w
 
 ## 💾 SQLite Caching & Local State
 
-- **Zero Data Leakage:** All processing is done locally. Your credentials and file uploads are saved inside a secure local SQLite database (`baza_pogo.db`).
+- **Local profile storage:** Exports, profiles, and preferences are stored in `baza_pogo.db` on your server. Optional AI analysis sends the supplied analysis data to your configured provider. Remote fonts, charts, and wiki artwork make browser requests to their respective hosts.
 - **Response Cache:** AI responses are cached using a cryptographic hash of the input query (IVs, CP, shininess, level). Identical requests bypass the API and return instantly, saving request tokens.
 - **Session Restoration:** Upon page reload, the server automatically reads the last uploaded raw JSON from the database and restores your dashboard.
 

@@ -2,7 +2,10 @@ import logging
 
 from flask import Blueprint, jsonify, request
 
-from database import get_cache, make_hash, set_cache
+from database import get_cache, make_hash as _make_hash, set_cache
+
+def make_hash(*parts):
+    return _make_hash("english-v1", *parts)
 from scoring import _tier_for
 from services.ai import (
     _SYSTEM_EXPERT, _SYSTEM_TACTICIAN,
@@ -21,7 +24,7 @@ def analyze_pokemon():
     body = request.json or {}
     p    = body.get("pokemon")
     if not p:
-        return jsonify({"error": "Brak danych pokemona"}), 400
+        return jsonify({"error": "No Pokémon data"}), 400
 
     h = make_hash(p["pid"], p["iv_a"], p["iv_d"], p["iv_s"],
                   p.get("shadow"), p.get("shiny"), "v3")
@@ -39,14 +42,14 @@ def analyze_pokemon():
         return jsonify({"response": resp, "cached": False})
     except Exception as exc:
         log.error("AI error: %s", exc)
-        return jsonify({"error": f"Błąd AI: {exc}"}), 500
+        return jsonify({"error": f"AI error: {exc}"}), 500
 
 
 @bp.route("/api/analyze-items", methods=["POST"])
 def analyze_items():
     items = _state["items"]
     if not items:
-        return jsonify({"error": "Brak danych ekwipunku"}), 400
+        return jsonify({"error": "No inventory data"}), 400
 
     top_pokes = [p for p in _state["pokemons"] if p["iv_pct"] >= 80][:15]
     h = make_hash(
@@ -63,7 +66,7 @@ def analyze_items():
         set_cache(h, "items_analysis", resp)
         return jsonify({"response": resp, "cached": False})
     except Exception as exc:
-        return jsonify({"error": f"Błąd AI: {exc}"}), 500
+        return jsonify({"error": f"AI error: {exc}"}), 500
 
 
 @bp.route("/api/event-strategy", methods=["POST"])
@@ -71,7 +74,7 @@ def api_event_strategy():
     body  = request.json or {}
     event = body.get("event")
     if not event:
-        return jsonify({"error": "Brak danych eventu"}), 400
+        return jsonify({"error": "No event data"}), 400
 
     acct_hash = make_hash(
         [(p["pid"], p["cp"], p["iv_pct"]) for p in _state["pokemons"][:25]],
@@ -123,7 +126,7 @@ def api_event_strategy():
         set_cache(h, event["name"], resp)
         return jsonify({"response": resp, "cached": False})
     except Exception as exc:
-        return jsonify({"error": f"Błąd AI: {exc}"}), 500
+        return jsonify({"error": f"AI error: {exc}"}), 500
 
 
 @bp.route("/api/analyze-pvp-teams", methods=["POST"])
@@ -180,4 +183,5 @@ def api_analyze_pvp_teams():
         return jsonify({"response": resp, "cached": False})
     except Exception as exc:
         log.error("AI error in pvp teams analysis: %s", exc)
-        return jsonify({"error": f"Błąd AI: {exc}"}), 500
+        return jsonify({"error": f"AI error: {exc}"}), 500
+

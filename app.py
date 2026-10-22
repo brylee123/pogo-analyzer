@@ -1,6 +1,6 @@
 """PokéGO Analyzer — Flask entry point.
 
-Uruchomienie:
+Run:
     pip install -r requirements.txt
     cp .env.example .env && vim .env
     python app.py
@@ -24,6 +24,7 @@ from auth import bp as auth_bp, init_auth, auth_gate, current_user_id
 from verification import bp as verification_bp, init_verification
 from setup import bp as setup_bp
 from state import set_request_state, clear_request_state
+from appearance import bp as appearance_bp, init_appearance, profile_appearance
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,10 +38,16 @@ app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(32)
 app.config.update(SESSION_COOKIE_HTTPONLY=True,SESSION_COOKIE_SAMESITE='Lax',SESSION_COOKIE_SECURE=os.environ.get('COOKIE_SECURE')=='1',MAX_CONTENT_LENGTH=80*1024*1024)
 init_db()
 init_auth()
+init_appearance()
 init_verification()
 app.register_blueprint(auth_bp)
 app.register_blueprint(verification_bp)
 app.register_blueprint(setup_bp)
+app.register_blueprint(appearance_bp)
+
+@app.context_processor
+def appearance_context():
+    return {"appearance": profile_appearance(current_user_id())}
 
 app.register_blueprint(pokemon_bp)
 app.register_blueprint(analysis_bp)

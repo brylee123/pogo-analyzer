@@ -188,7 +188,7 @@ def build_local_teams(candidates: list[dict], league: str) -> tuple[list[dict], 
                     "lead": lead,
                     "switch": sw,
                     "closer": closer,
-                    "description": f"Zbalansowany skład z liderem {lead['name']}, bezpieczną zmianą {sw['name']} i finisherem {closer['name']}."
+                    "description": f"Balanced team with lead {lead['name']}, safe switch {sw['name']} and closer {closer['name']}."
                 })
                 used_ids.add(lead_key)
                 used_ids.add(sw_key)
@@ -221,7 +221,7 @@ def build_local_teams(candidates: list[dict], league: str) -> tuple[list[dict], 
                             "lead": lead,
                             "switch": sw,
                             "closer": closer,
-                            "description": f"Skład {lead['name']} + {sw['name']} + {closer['name']} (dobrany według ról)."
+                            "description": f"Team {lead['name']} + {sw['name']} + {closer['name']} (selected by role)."
                         })
                         break
 
@@ -346,9 +346,9 @@ def api_develop_candidates():
                     if m:
                         pvp_opt.append(m["name"])
                         if m.get("is_fast") and mid in elite_fast and m1_name != m["name"]:
-                            pvp_warn.append(f"Szybki: {m['name']} (Elite)")
+                            pvp_warn.append(f"Fast: {m['name']} (Elite)")
                         elif not m.get("is_fast") and mid in elite_charged and m2_name != m["name"] and m3_name != m["name"]:
-                            pvp_warn.append(f"Ładowany: {m['name']} (Elite)")
+                            pvp_warn.append(f"Charged: {m['name']} (Elite)")
                             
                 best_pve = get_best_pve_moveset(species_name)
                 if best_pve and len(best_pve) > 0:
@@ -359,10 +359,10 @@ def api_develop_candidates():
                     
                     pve_opt.append(bf_name)
                     if bf_elite and m1_name != bf_name:
-                        pve_warn.append(f"Szybki: {bf_name} (Elite)")
+                        pve_warn.append(f"Fast: {bf_name} (Elite)")
                     pve_opt.append(bc_name)
                     if bc_elite and m2_name != bc_name and m3_name != bc_name:
-                        pve_warn.append(f"Ładowany: {bc_name} (Elite)")
+                        pve_warn.append(f"Charged: {bc_name} (Elite)")
                             
             elite_tm.append({
                 **p,
@@ -397,7 +397,7 @@ def api_moveset_check():
     shadow = bool(body.get("shadow"))
     
     if not pid:
-        return jsonify({"error": "Brak pid"}), 400
+        return jsonify({"error": "Missing Pokémon ID"}), 400
         
     from data.pokedex import DEX
     from data.pokemon_db import POKEMON_DB
@@ -412,7 +412,7 @@ def api_moveset_check():
             entry = POKEMON_DB[matched_key]
             
     if not entry:
-        return jsonify({"error": "Nie znaleziono pokemona w bazie"}), 404
+        return jsonify({"error": "Pokémon not found in database"}), 404
         
     # Get current move names
     m1 = MOVES.get(move1_id)
@@ -451,12 +451,12 @@ def api_moveset_check():
         m = MOVES.get(mid)
         if m:
             if m.get("is_fast") and mid in elite_fast and m1_name != m["name"]:
-                pvp_warnings.append(f"Szybki atak '{m['name']}' wymaga Elite Fast TM")
+                pvp_warnings.append(f"Fast move '{m['name']}' requires Elite Fast TM")
             elif not m.get("is_fast") and mid in elite_charged and m2_name != m["name"] and m3_name != m["name"]:
-                pvp_warnings.append(f"Ładowany atak '{m['name']}' wymaga Elite Charged TM")
+                pvp_warnings.append(f"Charged move '{m['name']}' requires Elite Charged TM")
                 
     if shadow and (move2_id == 5013 or move3_id == 5013 or m2_name == "Frustration" or m3_name == "Frustration"):
-        pvp_warnings.append("Frustration blokuje Charged Move i może być usunięta tylko podczas specjalnych eventów Team GO Rocket")
+        pvp_warnings.append("Frustration blocks the Charged Move slot and can only be removed during eligible Team GO Rocket events")
         
     # 2. PvE (Raid) optimal checking
     from scoring import get_best_pve_moveset
@@ -475,12 +475,12 @@ def api_moveset_check():
             pve_fast_optimal = bf_move["name"]
             pve_fast_correct = m1_name == pve_fast_optimal
             if best_f_id in elite_fast and not pve_fast_correct:
-                pve_warnings.append(f"Szybki atak '{pve_fast_optimal}' wymaga Elite Fast TM")
+                pve_warnings.append(f"Fast move '{pve_fast_optimal}' requires Elite Fast TM")
         if bc_move:
             pve_charged_optimal = bc_move["name"]
             pve_charged_correct = m2_name == pve_charged_optimal or m3_name == pve_charged_optimal
             if best_c_id in elite_charged and not pve_charged_correct:
-                pve_warnings.append(f"Ładowany atak '{pve_charged_optimal}' wymaga Elite Charged TM")
+                pve_warnings.append(f"Charged move '{pve_charged_optimal}' requires Elite Charged TM")
                 
     return jsonify({
         "pvp_fast_optimal": pvp_fast_optimal,
@@ -511,7 +511,7 @@ def api_powerup_calculation():
     purified = bool(body.get("purified"))
     
     if not pid:
-        return jsonify({"error": "Brak pid"}), 400
+        return jsonify({"error": "Missing Pokémon ID"}), 400
         
     from data.powerup_costs import POWERUP_COSTS
     from scoring import calculate_cp_for_level
@@ -568,7 +568,7 @@ def api_evolve_prediction():
     lvl = float(body.get("lvl", 1.0))
     
     if not pid:
-        return jsonify({"error": "Brak pid"}), 400
+        return jsonify({"error": "Missing Pokémon ID"}), 400
         
     from data.pokedex import DEX
     from scoring import calculate_cp_for_level
@@ -684,11 +684,11 @@ def api_pvp_hidden_gems():
 def api_purify_comparison():
     idx = request.args.get("index", type=int)
     if idx is None or idx < 0 or idx >= len(_state["pokemons"]):
-        return jsonify({"error": "Nieprawidłowy indeks Pokémona"}), 400
+        return jsonify({"error": "Invalid Pokémon index"}), 400
         
     p = _state["pokemons"][idx]
     if not p.get("shadow"):
-        return jsonify({"error": "Ten Pokémon nie jest w formie Shadow"}), 400
+        return jsonify({"error": "This Pokémon is not a Shadow Pokémon"}), 400
         
     # Calculate Purified stats
     pa = min(15, p["iv_a"] + 2)
@@ -742,29 +742,26 @@ def api_purify_comparison():
     verdict = ""
     if is_s or is_a:
         verdict = (
-            f"<strong>Zalecenie: Zachowaj jako SHADOW!</strong><br>"
-            f"{name} to wybitny napastnik rajdowy. Bonus <strong>+20% do obrażeń Shadow</strong> "
-            f"jest znacznie silniejszy niż wzrost IV o 2 punkty. Jako Shadow zada o około 15-18% większe obrażenia "
-            f"w tym samym czasie niż wersja oczyszczona!"
+            f"<strong>Recommendation: Keep as Shadow.</strong><br>"
+            f"{name} is a strong raid attacker. Its <strong>Shadow attack bonus</strong> "
+            f"can outweigh the IV increase from purification. Compare its role and resource costs before purifying."
         )
     elif name in {"Charizard", "Blastoise", "Venusaur", "Gengar", "Tyranitar", "Salamence", "Gardevoir", "Gallade", "Pinsir", "Scizor", "Houndoom", "Manectric", "Abomasnow", "Aerodactyl", "Aggron", "Sceptile", "Swampert", "Blaziken"}:
         verdict = (
-            f"<strong>Zalecenie: Rozważ oczyszczenie dla MEGA EWOLUCJI!</strong><br>"
-            f"Ten Pokémon posiada formę Mega Ewolucji. Formy Mega nie mogą być używane w wersji Shadow. "
-            f"Jeśli nie masz jeszcze perfekcyjnego (Hundo) okazu do Mega Ewolucji, oczyszczenie go do <strong>{p_pct}% IV</strong> "
-            f"da Ci doskonałą bazę pod Mega Ewolucję."
+            f"<strong>Recommendation: Consider purification for Mega Evolution.</strong><br>"
+            f"This species has a Mega Evolution. Shadow Pokémon cannot Mega Evolve. "
+            f"Purification would produce <strong>{p_pct}% IV</strong>; compare it with your other Mega candidates."
         )
     elif name == "Sableye":
         verdict = (
-            f"<strong>Zalecenie: Oczyść pod PvP!</strong><br>"
-            f"Sableye w Great League wymaga unikalnego, silnego ładowanego ataku <strong>Return (Powrót)</strong>, "
-            f"który można zdobyć wyłącznie poprzez oczyszczenie."
+            f"<strong>Recommendation: Consider purification for PvP.</strong><br>"
+            f"Purified Sableye can learn <strong>Return</strong>. Compare its Great League IV rank before investing."
         )
     else:
         verdict = (
-            f"<strong>Zalecenie: Możesz oczyścić.</strong><br>"
-            f"Oczyszczenie podniesie statystyki IV do <strong>{p_pct}%</strong> oraz da 10% rabatu na koszty Power-up. "
-            f"Gatunek ten nie jest kluczowym napastnikiem rajdowym, więc bonus Shadow nie jest krytyczny."
+            f"<strong>Recommendation: Compare before purifying.</strong><br>"
+            f"Purification raises IVs to <strong>{p_pct}%</strong> and reduces power-up costs. "
+            f"Consider the lost Shadow bonus and your intended role for this Pokémon."
         )
 
     return jsonify({
@@ -790,4 +787,5 @@ def api_purify_comparison():
         },
         "verdict": verdict
     })
+
 
