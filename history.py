@@ -11,6 +11,13 @@ from database import get_db
 
 LOCK = RLock()
 WATCH_DIR = Path(os.getenv("PGS_EXPORT_DIR", "exports")).resolve()
+def current_watch_dir():
+    with get_db() as db:
+        try:
+            row=db.execute("SELECT value FROM app_settings WHERE key='watch_directory'").fetchone()
+            if row:return Path(row["value"])
+        except sqlite3.OperationalError:pass
+    return WATCH_DIR
 MAX_BYTES = int(os.getenv("PGS_MAX_UPLOAD_MB", "80")) * 1024 * 1024
 
 def init_history():
@@ -163,12 +170,11 @@ def read_dashboard(account=None):
     return {"account":account,"snapshots":len(snaps),"baseline":snaps[0]["captured_at"],"latest":snaps[-1]["captured_at"],"sessions":records,"totals":totals,"insights":insights}
 
 def scan_folder_forever():
-    WATCH_DIR.mkdir(parents=True,exist_ok=True)
     stable={}
     imported=set()
     while True:
         try:
-            for path in list(WATCH_DIR.glob("*.json"))+list(WATCH_DIR.glob("*.txt")):
+            for path in list(current_watch_dir().glob("*.json"))+list(current_watch_dir().glob("*.txt")):
                 try:
                     stat=path.stat()
                     signature=(stat.st_size,stat.st_mtime_ns)
