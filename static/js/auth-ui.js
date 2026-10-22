@@ -1,0 +1,1 @@
+(async()=>{const r=await fetch('/auth/me');if(r.status===401){location.replace('/login');return;}if(r.ok){const d=await r.json();document.getElementById('auth-username').textContent=d.username;}document.getElementById('auth-logout')?.addEventListener('click',async()=>{await fetch('/auth/logout',{method:'POST'});location.replace('/login');});})();
