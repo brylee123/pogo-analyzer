@@ -5,6 +5,7 @@ from flask import Blueprint, request, jsonify
 from database import get_db
 from history import ingest, read_dashboard, MAX_BYTES
 from auth import current_user_id
+from history_reports import history_report, session_detail
 bp=Blueprint("history",__name__)
 @bp.get("/api/history/dashboard")
 def dashboard():
@@ -15,11 +16,40 @@ def accounts():
         return jsonify([dict(row) for row in db.execute("SELECT account,COUNT(*) AS snapshots FROM history_snapshots WHERE user_id=? GROUP BY account ORDER BY account",(current_user_id(),))])
 @bp.get("/api/history/sessions/<int:sid>")
 def session(sid):
+    data = session_detail(current_user_id(), sid)
+    return (jsonify(data),200) if data else (jsonify({'error':'Session not found'}),404)
+
+@bp.get('/api/history/report')
+def report():
+    try:
+        return jsonify(history_report(current_user_id(), request.args.get('account'),
+            request.args.get('period','session'), request.args.get('start'), request.args.get('end')))
+    except ValueError as exc:
+        return jsonify({'error':str(exc)}),400
+
+@bp.post('/api/history/restore-legacy')
+def restore_legacy():
+    from history import claim_legacy_history
+    uid=current_user_id()
     with get_db() as db:
-        row=db.execute("SELECT * FROM history_sessions WHERE id=? AND user_id=?",(sid,current_user_id())).fetchone()
-        if not row:return jsonify({"error":"Session not found"}),404
-        return jsonify({"id":row["id"],"account":row["account"],"start":row["started_at"],"end":row["ended_at"],
-          "changes":json.loads(row["changes_json"]),"totals":json.loads(row["totals_json"])})
+        trainers=[row['trainer'] for row in db.execute('SELECT trainer FROM trainer_ownership WHERE user_id=?',(uid,))]
+        for trainer in trainers:
+            claim_legacy_history(db,trainer,uid)
+    return jsonify({'ok':True})
+
+@bp.post('/api/history/import-current')
+def import_current():
+    with get_db() as db:
+        row=db.execute('SELECT raw_json FROM user_latest_upload WHERE user_id=?',(current_user_id(),)).fetchone()
+    if row is None:
+        return jsonify({'error':'No current export to import'}),400
+    try:
+        raw=json.loads(row['raw_json'])
+        if raw.get('source')=='pokegenie':
+            raise ValueError('Session history requires a full timestamped PGSharp export, not a CSV import')
+        return jsonify(ingest(raw,source='current-export'))
+    except (ValueError,PermissionError,TypeError,KeyError) as exc:
+        return jsonify({'error':str(exc)}),400
 @bp.get("/api/history/periods")
 def periods():
     granularity=request.args.get("period","day")

@@ -114,3 +114,49 @@ tbody tr:hover{background:var(--bg3)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition:none!important;scroll-behavior:auto!important}}
 @media(max-width:768px){#sidebar{flex-direction:column;align-items:stretch;overflow:visible;position:relative}.sidebar-header{border-right:0}.logo{font-size:20px}#tabs{flex:none;width:100%;overflow-x:auto;min-width:0}.tab{font-size:14px;padding:12px 18px}#page{max-width:100%;min-width:0}.sidebar-appearance{margin-top:0}#sidebar-player{flex-shrink:0}}
 @media(max-width:768px){#tabs .tab{width:auto}}
+[hidden]{display:none!important}
+.mdi-icon{width:24px;height:24px;fill:currentColor;display:inline-block;vertical-align:middle;flex-shrink:0}
+.mdi-shell{width:24px;height:24px;display:inline-flex;position:relative;vertical-align:middle;flex-shrink:0}
+.mdi-shell>.local-ui-icon{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.mdi-shell.has-custom-icon>.mdi-icon{visibility:hidden}
+.sort-indicator .mdi-shell{width:14px;height:14px}
+.game-art>.mdi-icon{width:24px;height:24px;color:var(--muted)}
+.game-art .custom-fallback{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.pokemon-identity{display:inline-flex;vertical-align:middle;flex-direction:column;gap:2px;max-width:240px}
+.pokemon-identity strong{color:var(--text);font-size:14px}
+.pokemon-nickname{font-size:12px;color:var(--muted);font-weight:400}
+.dex-cell{white-space:nowrap;color:var(--muted)}
+.name-cell{min-width:260px}
+.form-badge{background:var(--accent-container);color:var(--on-accent-container);margin:2px;border:0}
+.history-metrics,.form-categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:18px 0}
+.metric-tile{border:1px solid var(--border2);border-radius:16px;background:var(--bg2);padding:16px;text-align:left;color:var(--text);display:flex;flex-direction:column;gap:6px}
+.metric-tile span{font-size:12px;color:var(--muted)}
+.metric-tile strong{font-size:24px;font-weight:500;color:var(--accent)}
+.metric-tile.selected{background:var(--accent-container);border-color:var(--accent)}
+.metric-tile.selected span,.metric-tile.selected strong{color:var(--on-accent-container)}
+.history-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;align-items:end}
+.history-filters label,.file-label,.toolbar label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)}
+.history-import .toolbar{margin:14px 0}
+.history-import input[type=file]{margin:8px 0;max-width:100%}
+#history-import-result{white-space:pre-wrap;overflow-wrap:anywhere}
+.pagination{justify-content:flex-end;margin:14px 0;font-size:12px;color:var(--muted)}
+.detail-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.detail-heading h2{font-size:18px;font-weight:500}
+#history-detail{margin-top:24px;scroll-margin-top:20px}
+#history-detail details{margin-top:18px}
+#history-detail h3{font-size:14px;margin:12px 0}
+#history-detail pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px}
+#history-detail .toolbar{margin:18px 0}
+#items-grid,#event-points-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.item-card{align-items:flex-start}
+.item-copy{min-width:0;flex:1;display:flex;flex-direction:column;gap:4px;overflow-wrap:anywhere}
+.item-copy strong{font-size:14px;font-weight:500}
+.item-copy code{font-size:10px;white-space:normal;overflow-wrap:anywhere}
+.item-copy .supporting-text{margin-top:0}
+.item-count{flex-shrink:0;font-size:13px;align-self:center}
+.form-diagnostics{margin-top:20px}
+.form-diagnostics pre{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.sortable-header::after{content:none!important}
+.sort-indicator{display:inline-flex;margin-left:4px;vertical-align:middle}
+.sort-indicator .mdi-icon{width:14px;height:14px}
+@media(max-width:768px){.history-filters{grid-template-columns:1fr 1fr}.history-filters select,.history-filters input{max-width:100%;min-width:0}.history-import .toolbar{flex-direction:column;align-items:stretch}.form-categories{grid-template-columns:repeat(2,minmax(0,1fr))}.history-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.metric-tile{padding:12px}.metric-tile strong{font-size:20px}.name-cell{min-width:230px}}

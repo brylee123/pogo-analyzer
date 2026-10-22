@@ -20,6 +20,17 @@ log = logging.getLogger(__name__)
 bp  = Blueprint("pokemon", __name__)
 
 
+def record_upload_history(raw):
+    """Keep normal full-export uploads in history as well as latest-state storage."""
+    if raw.get('source') == 'pokegenie':
+        return {'status':'unavailable','message':'CSV imports update your collection. Full timestamped PGSharp exports are required for session history.'}
+    from history import ingest
+    try:
+        return ingest(raw, source='dashboard-upload')
+    except (ValueError, TypeError, KeyError) as exc:
+        return {'status':'unavailable','message':'Collection loaded, but history was not recorded: '+str(exc)}
+
+
 @bp.route("/api/upload", methods=["POST"])
 def upload():
     # 1. Support raw JSON or text POST upload (e.g. from an automated script or data server webhook)
@@ -45,8 +56,10 @@ def upload():
             n = len(parsed["pokemons"])
             log.info("Uploaded via raw JSON POST: %d pokemons, %d item types", n, len(parsed["items"]))
             save_upload(raw_to_save)
+            history_result = record_upload_history(raw_to_save)
             return jsonify({
                 "ok": True,
+                "history": history_result,
                 "stats": {
                     "total":      n,
                     "shinies":    sum(1 for p in parsed["pokemons"] if p["shiny"]),
@@ -91,8 +104,10 @@ def upload():
         n = len(parsed["pokemons"])
         log.info("Uploaded: %d pokemons, %d item types", n, len(parsed["items"]))
         save_upload(raw_to_save)
+        history_result = record_upload_history(raw_to_save)
         return jsonify({
             "ok": True,
+            "history": history_result,
             "stats": {
                 "total":      n,
                 "shinies":    sum(1 for p in parsed["pokemons"] if p["shiny"]),
@@ -169,6 +184,30 @@ def api_pokemons():
 @bp.route("/api/items")
 def api_items():
     return jsonify(_state["items"])
+
+
+@bp.get('/api/pokemons/form-diagnostics')
+def form_diagnostics():
+    """Inspect only this profile's two highest-CP hundos of a selected species."""
+    try:
+        pid=int(request.args.get('pid','6'))
+        if pid<1:raise ValueError()
+    except ValueError:
+        return jsonify({'error':'Enter a valid Pokédex number'}),400
+    with get_db() as db:
+        row=db.execute('SELECT raw_json FROM user_latest_upload WHERE user_id=?',(current_user_id(),)).fetchone()
+    raw=json.loads(row['raw_json']) if row else {}
+    if raw.get('source')=='pokegenie':
+        return jsonify({'error':'Full JSON export required for raw form diagnostics'}),400
+    candidates=[p for p in raw.get('pokemons',[]) if p.get('pokemonId')==pid
+                and all(p.get(key)==15 for key in ('individualAttack','individualDefense','individualStamina'))]
+    candidates.sort(key=lambda p:p.get('cp',0),reverse=True)
+    records=[]
+    for pokemon in candidates[:2]:
+        fields={key:value for key,value in pokemon.items() if any(token in key.lower() for token in ('max','mega','evol','form','costum','purif','align','display'))}
+        records.append({'pokemonId':pid,'cp':pokemon.get('cp'),'nickname':pokemon.get('nickname'),
+                        'iv':[15,15,15],'fields':fields})
+    return jsonify({'records':records,'note':'Raw exported fields only; no account details. Max status is not inferred from CP or IV.'})
 
 
 @bp.route("/api/export/raw-csv")

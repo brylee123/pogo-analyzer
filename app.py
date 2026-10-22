@@ -25,6 +25,8 @@ from verification import bp as verification_bp, init_verification
 from setup import bp as setup_bp
 from state import set_request_state, clear_request_state
 from appearance import bp as appearance_bp, init_appearance, profile_appearance
+from local_assets import bp as assets_bp, init_assets
+from ui_icons import MDI_PATHS, mdi_icon
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,15 +41,17 @@ app.config.update(SESSION_COOKIE_HTTPONLY=True,SESSION_COOKIE_SAMESITE='Lax',SES
 init_db()
 init_auth()
 init_appearance()
+init_assets()
 init_verification()
 app.register_blueprint(auth_bp)
 app.register_blueprint(verification_bp)
 app.register_blueprint(setup_bp)
 app.register_blueprint(appearance_bp)
+app.register_blueprint(assets_bp)
 
 @app.context_processor
 def appearance_context():
-    return {"appearance": profile_appearance(current_user_id())}
+    return {"appearance": profile_appearance(current_user_id()), 'mdi':mdi_icon, 'mdi_paths':MDI_PATHS}
 
 app.register_blueprint(pokemon_bp)
 app.register_blueprint(analysis_bp)

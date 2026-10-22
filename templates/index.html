@@ -39,6 +39,9 @@
   <div id="main-ui" style="display:none">
 
     {% include 'partials/tab_pokemons.html' %}
+    {% include 'partials/tab_history.html' %}
+    {% include 'partials/tab_forms.html' %}
+    {% include 'partials/tab_search.html' %}
     {% include 'partials/tab_raid.html' %}
     {% include 'partials/tab_pvp.html' %}
     {% include 'partials/tab_items.html' %}
@@ -56,7 +59,7 @@
     <div id="ai-box-header">
       <span id="ai-box-title">AI analysis</span>
       <span id="ai-box-cached" class="badge" style="background:rgba(57,232,122,.12);color:var(--green);border:1px solid rgba(57,232,122,.3);display:none">cached</span>
-      <button id="ai-box-close">✕</button>
+      <button id="ai-box-close" aria-label="Close AI analysis">{{ mdi('close') }}</button>
     </div>
     <div id="ai-box-body">
       <div id="ai-loading" style="text-align:center;padding:36px;display:none">
@@ -71,5 +74,6 @@
 <script src="{{ url_for('static', filename='js/assets.js') }}"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 <script src="{{ url_for('static', filename='js/auth-ui.js') }}"></script>
+<script src="{{ url_for('static', filename='js/history-ui.js') }}"></script>
 </body>
 </html>

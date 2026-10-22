@@ -78,6 +78,14 @@ def export_time(raw):
     if isinstance(value, (int, float)):
         return datetime.fromtimestamp(value / (1000 if value > 100000000000 else 1), timezone.utc).isoformat()
     if isinstance(value, str):
+        # Preserve ISO offsets and fractional seconds before trying legacy zone names.
+        try:
+            parsed = datetime.fromisoformat(value.strip().replace('Z', '+00:00'))
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+            return parsed.astimezone(timezone.utc).isoformat()
+        except ValueError:
+            pass
         import re
         match = re.match(r"^(\d{4}-\d\d-\d\d)[ T](\d\d:\d\d:\d\d)(?:\s*(EDT|EST|UTC|GMT))?", value.strip())
         if match:
@@ -144,10 +152,10 @@ def rebuild(db,account,uid):
     for current in rows:
         if previous is not None:
             changes,totals,material=difference(json.loads(previous["raw_json"]),json.loads(current["raw_json"]))
-            if material:
-                db.execute("""INSERT INTO history_sessions(user_id,account,from_id,to_id,started_at,ended_at,changes_json,totals_json)
-                    VALUES(?,?,?,?,?,?,?,?)""",(uid,account,previous["id"],current["id"],previous["captured_at"],current["captured_at"],
-                    json.dumps(changes,separators=(",",":")),json.dumps(totals,separators=(",",":"))))
+            # Every adjacent export pair is a session, including zero-change intervals.
+            db.execute("""INSERT INTO history_sessions(user_id,account,from_id,to_id,started_at,ended_at,changes_json,totals_json)
+                VALUES(?,?,?,?,?,?,?,?)""",(uid,account,previous["id"],current["id"],previous["captured_at"],current["captured_at"],
+                json.dumps(changes,separators=(",",":")),json.dumps(totals,separators=(",",":"))))
         previous=current
 
 def ingest(raw,source="manual",uid=None):

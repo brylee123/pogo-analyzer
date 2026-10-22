@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2026-10-22
 
 ### Changed
+- Added History & sessions with session changes, UTC day/week/month/year reports,
+  date ranges, historical imports, and automatic full-JSON upload tracking.
+- Show species and Pokédex numbers independently of nicknames; added special-form
+  views and moved the PoGO search builder to its own sidebar entry.
+- Added optional user-supplied local artwork, per-profile image-source preferences,
+  a non-overwriting folder generator, and Pictogrammers MDI icon fallbacks.
+- Separated Event/GO Pass counters from usable inventory items and retained their
+  export identifiers instead of giving every counter the same label.
 - Removed Polish UI support and duplicate Polish documentation. Labels, tooltips,
   errors, search terms, analysis advice, and AI prompts now use English.
 - Applied a shared Material-inspired theme and inline Material icons to the dashboard,

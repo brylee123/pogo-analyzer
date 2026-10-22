@@ -57,33 +57,116 @@ Open **Appearance** in the sidebar, even before uploading a file, or **Settings 
 - Preferences are saved per local profile in SQLite and persist across devices and restarts.
   Choosing an accent does not change the trainer's in-game team.
 
-## Remote game artwork
+## History, Pokémon identity, and special forms
+
+Open **History & sessions** in the sidebar for individual export comparisons, daily,
+weekly (ISO weeks), monthly, yearly, and custom date-range reports. Select a session
+to see Pokémon added, removed, or changed, plus inventory, currency, and trainer-stat
+changes. A session means the interval between two exports, not a recorded play/login
+session. Reports use UTC and assign the whole interval to its ending date; intervals
+are not split across periods. Date-only range endpoints include the selected day.
+
+Normal full PGSharp JSON uploads now also enter history. Import multiple older exports
+in the History screen to backfill dates; duplicates are skipped. One export establishes
+a baseline; at least two are needed for a comparison. Existing snapshots are retained.
+If older single-user history is unassigned, the screen offers to attach history only
+for trainers already verified as yours. PokéGenie CSV is useful for the box but does
+not contain the full timestamped account state required for history. Missing Pokémon
+means absent from the next export, not proof of a transfer.
+
+The Pokémon list always displays species, Pokédex number, CP, IV, and level. Nicknames
+appear separately instead of replacing the species name. Search accepts species,
+nickname, or Pokédex number. The **PoGO search builder** has its own sidebar menu.
+
+**Special forms & status** groups Mega evolution, Dynamax, Gigantamax, purified,
+costumed, and Shadow Pokémon. Classification uses explicit exported fields, not CP,
+IV, or species eligibility. Mega includes active Mega forms and a reported Mega level;
+Gigantamax is also included in Dynamax. Unsupported or omitted export fields cannot
+be inferred reliably. The expandable export-details view shows form/status fields
+for the two highest-CP hundos of a selected species (#6 for Charizard), without account
+details, to help diagnose export versions that encode forms differently.
+
+## Game artwork and optional local assets
 
 Pokémon, item, and in-game artwork is embedded directly from the
 [Pokémon GO Wiki on Fandom](https://pokemongo.fandom.com/wiki/Pok%C3%A9mon_GO_Wiki)
-using its `Special:FilePath` image redirects. Artwork links lead back to the corresponding wiki page.
-The application does not download, proxy, bundle, or store image files on the server, and does
-not create an asset cache or service worker. Normal browser HTTP caching is controlled by the
-browser and remote host. Roboto loads remotely from Google Fonts; UI icons are inline SVG and remain available offline.
+using its `Special:FilePath` image redirects. Some generated filenames do not match the
+wiki, and redirects, hotlink restrictions, or unavailable variants may prevent images
+loading. These links are best-effort, not a verified image catalogue.
+
+The application never automatically downloads, proxies, or saves game images. You can
+optionally provide your own files on the computer running the server. Open **Settings →
+Images & local assets** and choose local first (default, with wiki fallback), local only,
+or wiki only. Local-only mode prevents remote game-art requests. Preferences are per
+profile; the supplied asset library is shared by signed-in users on that server.
+
+From the application folder, create an empty asset structure:
+
+```powershell
+python prepare_assets.py
+```
+
+If using the Windows virtual environment, use `.venv\Scripts\python.exe prepare_assets.py`.
+The script creates folders and instructions only, downloads nothing, and never
+overwrites existing files. Add files such as:
+
+```text
+local_assets/pokemon/normal/0025.png
+local_assets/pokemon/shiny/0025.png
+local_assets/pokemon/forms/0006-charizard-mega-x.png
+local_assets/items/1.png
+local_assets/types/fire.png
+local_assets/teams/mystic.png
+local_assets/icons/image-off-outline.svg
+```
+
+PNG, WebP, JPG/JPEG, GIF, and SVG are supported. Pokémon filenames use Pokédex numbers;
+item filenames use export item IDs. Form filenames use the exported form name as a
+lowercase hyphenated slug. For custom mappings, copy `manifest.example.json` to
+`manifest.json` and edit its keys and relative paths; the generated README documents
+normal, shiny, form, item, team, type, and icon mappings. Set `PGS_ASSET_DIR` in `.env`
+and run `python prepare_assets.py --root "D:\MyPokemonAssets"` to use a custom folder.
+Click **Refresh asset list** after adding files. Paths are resolved on the server,
+so other LAN devices can use the same supplied pictures. The default folder is ignored
+by Git. Only place artwork you are entitled to use in it.
+
+Normal browser HTTP caching is controlled by the browser and remote host. Roboto loads
+remotely from Google Fonts. UI icons use inline SVG paths from
+[Pictogrammers Material Design Icons](https://pictogrammers.com/library/mdi/), with
+attribution in `LICENSE-MDI.txt`; no icon font is required.
 
 Artwork requires internet access. Missing filenames, unavailable variants, blocked hotlinks,
-or Fandom outages fall back to a neutral symbol while names and controls remain usable.
+or Fandom outages fall back to an image-unavailable icon while names and controls remain usable.
 Pokémon artwork belongs to its respective rights holders; the wiki is the artwork source,
 not an affiliation or endorsement. See each source page for attribution and licensing details.
+
+### Why the inventory showed many “Event Points” rows
+
+The old label collapsed every `EventPassPoint*` export identifier into the same name.
+These are Event/GO Pass progress counters, separate from usable bag items. They now
+have their own inventory section with the original identifier, item ID, quantity, and
+an explanation. The export alone does not identify the associated event, expiry, or
+whether a counter remains active, so the application does not invent those details.
 
 ## Verification
 
 Run `python -m unittest discover -s tests -v` after installing `requirements.txt`.
 The suite covers legacy database migration, profile preference isolation, validation,
 automatic team selection, and shared English templates. `node --test tests/test_ui.cjs`
-checks system-theme changes, manual overrides, save failures, and remote asset references.
+checks system-theme changes, manual overrides, save failures, and local/remote asset
+selection. Python tests also cover period/range reporting, profile isolation, automatic
+history recording, zero-change intervals, species/form parsing, event-counter labels,
+and local asset path restrictions and folder creation.
 
 ## 🌟 Key Features
 
 | Tab | Feature Description |
 | :--- | :--- |
 | 🧑‍💼 **Player Profile** | Beautiful sidebar profile card displaying your username, trainer level, team affiliation (Mystic ❄️, Valor 🔥, Instinct ⚡), PokéCoins, and total Stardust. |
-| 🎮 **Pokémon Box** | Full inventory dashboard with advanced searching, sorting, filters, and a **Transfer Regex Generator** for bulk box management. |
+| 🎮 **Pokémon Box** | Visible species, Pokédex number, nickname, CP, IV, and level with searching, sorting, and filters. |
+| **History & sessions** | Session detail, day/week/month/year summaries, custom ranges, and historical JSON imports. |
+| **Special forms & status** | Mega, Dynamax, Gigantamax, purified, costumed, and Shadow filters based on exported status. |
+| **PoGO search builder** | Dedicated transfer/search string generator for bulk box management. |
 | ⚔️ **Raid Attackers** | PVE attacker ranks utilizing a custom DPS×TDO proxy combined with meta tier list multipliers to identify your top attackers. |
 | 🏆 **PvP Analyzer** | Evaluates Great, Ultra, and Master League candidates with **IV Rank** (stat-product, matching PvPoke methodology) and displays detailed badge indicators. |
 | 🤖 **PvP Team Builder** | AI-powered 3-pokemon team builder (Lead, Safe Switch, Closer) tailored to your box, analyzing type synergies and meta counters. |

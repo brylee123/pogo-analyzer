@@ -1,0 +1,8 @@
+<section class="panel" id="panel-forms">
+  <div class="panel-title">{{ mdi('dna') }}<span>Special forms & status</span></div>
+  <p class="supporting-text">Only status explicitly reported in the export is classified. Mega includes active Mega forms and Pokémon with a reported Mega level; a species' ability to Mega Evolve alone is not counted. Gigantamax is included in the Dynamax category.</p>
+  <div id="form-categories" class="form-categories"></div>
+  <div class="toolbar"><label>Category<select id="forms-filter"><option value="mega">Mega evolution</option><option value="dynamax">Dynamax</option><option value="gigantamax">Gigantamax</option><option value="purified">Purified</option><option value="costumed">Costumed</option><option value="shadow">Shadow</option></select></label><label>Search<input id="forms-search" placeholder="Species, nickname, or Pokédex number"></label><span id="forms-count" class="supporting-text"></span></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Pokédex</th><th>Pokémon / nickname</th><th>CP</th><th>IV</th><th>Level</th><th>Exported status</th></tr></thead><tbody id="forms-tbody"></tbody></table></div>
+  <details class="card form-diagnostics"><summary>Missing a special form? Inspect export details</summary><p class="supporting-text">This shows the exported form/status fields for the two highest-CP hundos of the selected species. Use #6 for Charizard. It does not include account details or infer Max capability from CP.</p><div class="toolbar"><label>Pokédex number<input id="form-diagnostics-pid" type="number" min="1" value="6"></label><button class="btn btn-outline" id="form-diagnostics-load">Show export fields</button></div><pre id="form-diagnostics-output" role="status"></pre></details>
+</section>

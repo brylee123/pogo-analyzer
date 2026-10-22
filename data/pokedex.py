@@ -297,7 +297,8 @@ def _resolve_item_name(iid: int, json_name: str) -> str:
     if json_name in _ITEM_NAME_MAP:
         return _ITEM_NAME_MAP[json_name]
     if json_name.startswith("EventPassPoint"):
-        return "Event Points"
+        suffix = json_name[len("EventPassPoint"):].strip('_ -')
+        return f"Event/GO Pass points · {suffix or 'counter'} (item #{iid})"
     if json_name:
         # CamelCase → spaced words
         spaced = re.sub(r"(?<=[a-z])(?=[A-Z0-9])", " ", json_name)
@@ -310,3 +311,4 @@ _FORM_SUFFIXES = (
     "Galarian", "Hisuian", "Alolan", "Paldean",
     "Female", "Male", "Normal",
 )
+

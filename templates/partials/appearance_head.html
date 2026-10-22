@@ -4,3 +4,6 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/material.css') }}">
 <script>window.POGO_APPEARANCE = {{ appearance | tojson }};</script>
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+
+<script>window.POGO_MDI = {{ mdi_paths | tojson }};</script>
+<script src="{{ url_for('static', filename='js/mdi.js') }}"></script>

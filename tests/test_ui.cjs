@@ -53,18 +53,34 @@ test('failed preference save restores previous appearance and shows error',async
   assert.equal(control.disabled,false);
   assert.equal(t.status.textContent,'Save failed');
 });
-test('game art references Fandom, escapes attributes, and never fetches or stores images',()=>{
-  let onerror;
-  const window={};
-  vm.runInNewContext(source('assets.js'),{window,document:{addEventListener(name,fn){onerror=fn;}}});
-  const html=window.gameAsset('item','Poké Ball');
+async function assets(catalog={mode:'local-first',files:{},overrides:{},count:0,issues:[]}) {
+  const events={};
+  const ctx={POGO_MDI:JSON.parse(fs.readFileSync(path.join(root,'static/mdi-icons.json'),'utf8')),
+    Event:class {constructor(type){this.type=type;}},
+    document:{addEventListener(name,fn){events[name]=fn;},querySelectorAll(){return [];},querySelector(){return null;}},
+    fetch:async()=>({ok:true,json:async()=>catalog})};
+  ctx.window=ctx;
+  vm.createContext(ctx);vm.runInContext(source('mdi.js'),ctx);vm.runInContext(source('assets.js'),ctx);
+  await ctx.assetReady;
+  return {ctx,events};
+}
+test('remote references escape attributes and fall back to an MDI icon without image downloads',async()=>{
+  const {ctx,events}=await assets();
+  const html=ctx.gameAsset('item','Poké Ball');
   assert.match(html,/https:\/\/pokemongo.fandom.com\/wiki\/Special:FilePath\/Pok%C3%A9_Ball.png/);
-  assert.match(window.gameAsset('pokemon','Pikachu',true),/Pikachu_shiny.png/);
-  assert.doesNotMatch(window.gameAsset('pokemon','" onload="bad'),/alt="" onload/);
-  assert.doesNotMatch(source('assets.js'),/fetch\(|localStorage|createObjectURL|serviceWorker/);
-  let removed=false, fallback=false;
-  onerror({target:{matches:()=>true,parentElement:{classList:{add(){fallback=true;}}},remove(){removed=true;}}});
-  assert.ok(removed&&fallback);
+  assert.match(ctx.gameAsset('pokemon','Pikachu',true,{pid:25}),/Pikachu_shiny.png/);
+  assert.doesNotMatch(ctx.gameAsset('pokemon','" onload="bad'),/alt="" onload/);
+  assert.doesNotMatch(source('assets.js'),/createObjectURL|localStorage|serviceWorker|fetch\(['"]https/);
+  let removed=false;
+  events.error({target:{matches:selector=>selector==='.remote-game-art',dataset:{},parentElement:{classList:{add(){}},title:''},remove(){removed=true;}}});
+  assert.ok(removed);assert.match(html,/mdi-icon/);
+});
+test('local catalog picks Pokédex IDs and local-only mode never references remote artwork',async()=>{
+  const {ctx}=await assets({mode:'local-only',files:{'pokemon/shiny/0025.webp':'/local-assets/pokemon/shiny/0025.webp'},overrides:{},count:1,issues:[]});
+  const html=ctx.gameAsset('pokemon','Pikachu',true,{pid:25});
+  assert.match(html,/src="\/local-assets\/pokemon\/shiny\/0025.webp/);
+  assert.doesNotMatch(html,/https:/);
+  assert.doesNotMatch(ctx.gameAsset('item','Potion',false,{id:101}),/remote-game-art/);
 });
 test('all browser scripts parse and language toggles have been removed',()=>{
   for(const name of fs.readdirSync(path.join(root,'static/js'))){

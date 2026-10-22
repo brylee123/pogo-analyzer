@@ -102,6 +102,9 @@ def load_user_state(user_id):
         return
     raw=json.loads(row["raw_json"])
     parsed=raw["data"] if raw.get("source")=="pokegenie" else parse_pgo_json(raw)
+    from data.pokedex import DEX
+    for pokemon in parsed['pokemons']:
+        pokemon.setdefault('species_name', DEX.get(pokemon['pid'], pokemon.get('name','Unknown species')))
     _state["pokemons"]=parsed["pokemons"]
     _state["items"]=parsed["items"]
     _state["player"]=parsed.get("player")

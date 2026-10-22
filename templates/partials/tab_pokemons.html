@@ -5,7 +5,7 @@
   <div class="card" style="margin-bottom:16px; border-color: rgba(var(--accent-rgb),.15);">
     <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleAnalytics()">
       <span id="lbl-box-analytics">📊 Box Analytics</span>
-      <span id="analytics-toggle-icon">▼</span>
+      <span id="analytics-toggle-icon">{{ mdi('chevron-down') }}</span>
     </div>
     <div id="analytics-content" style="display:none; padding-top:12px;">
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:16px;">
@@ -29,10 +29,10 @@
   </div>
 
   <div class="toolbar">
-    <input type="text" id="poke-search" placeholder="Search name…">
+    <input type="text" id="poke-search" placeholder="Species, nickname, or Pokédex number…">
     <select id="poke-filter">
       <option value="all">All</option>
-      <option value="hundo">💯 Hundo</option>
+      <option value="mega">Mega history / active</option><option value="dynamax">Dynamax</option><option value="gigantamax">Gigantamax</option><option value="purified">Purified</option><option value="costumed">Costumed</option><option value="hundo">💯 Hundo</option>
       <option value="shiny">✨ Shiny</option>
       <option value="shadow">👻 Shadow</option>
       <option value="lucky">🍀 Lucky</option>
@@ -44,15 +44,15 @@
       <option value="pvp_gem">🏆 PvP Gems GL (rank ≤250)</option>
     </select>
     <select id="poke-sort">
-      <option value="cp">CP ↓</option>
-      <option value="iv">IV% ↓</option>
-      <option value="lvl">Level ↓</option>
-      <option value="name">Name A→Z</option>
+      <option value="cp">CP: highest first</option>
+      <option value="iv">IV: highest first</option>
+      <option value="lvl">Level: highest first</option>
+      <option value="dex">Pokédex number</option><option value="name">Species: A to Z</option>
     </select>
     <span class="count-label" id="poke-count"></span>
   </div>
   
-  {% include 'partials/regex_bar.html' %}
+<p id="upload-history-status" class="supporting-text" role="status">Full timestamped uploads are also recorded in History & sessions.</p>
   
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
     <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
@@ -70,7 +70,7 @@
   <div class="tbl-wrap">
     <table id="poke-table">
       <thead><tr>
-        <th>Pokémon</th><th>CP</th><th>Lvl</th><th>IV%</th>
+        <th>Pokédex</th><th>Species / nickname</th><th>CP</th><th>Level</th><th>IV%</th>
         <th>A/D/S</th><th>Year</th><th>Meta</th><th>Tags</th><th>AI</th>
       </tr></thead>
       <tbody id="poke-tbody"></tbody>

@@ -15,3 +15,6 @@ PGSStats.json
 *.deb
 scratch/
 .agents/
+
+# Optional user-supplied artwork and generated manifests
+local_assets/

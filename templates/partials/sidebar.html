@@ -6,7 +6,7 @@
     </div>
     <p id="header-sub">Upload PGSStats.json or CSV to begin</p>
     <div id="upload-small">
-      <div class="btn btn-outline btn-sm">↺ Change file</div>
+      <div class="btn btn-outline btn-sm">{{ mdi('refresh') }} Change file</div>
       <input type="file" accept=".json,.csv" id="upload-input-small">
     </div>
   </div>
@@ -31,6 +31,9 @@
   </div>
 
   <nav id="tabs" aria-label="Main navigation">
+    <button class="tab" data-tab="history">{{ mdi('history') }}History & sessions</button>
+    <button class="tab" data-tab="forms">{{ mdi('dna') }}Special forms</button>
+    <button class="tab" data-tab="search">{{ mdi('filter-variant') }}PoGO search builder</button>
     <button class="tab active" data-tab="pokemon"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h5m8 0h5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/></svg>Pokémon<span class="tab-badge" id="tb-poke"></span></button>
     <button class="tab" data-tab="raid"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.92 5 5 3H3v2l1.92 1.92L8 10l2-2L6.92 5zM15 12l-3 3-2-2-5 5-2-2-1 1 5 5 1-1-2-2 5-5 2 2 3-3-1-1zm6-9h-2l-8 8 2 2 8-8V3z"/></svg>Raids</button>
     <button class="tab" data-tab="pvp"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 4h-3V2H8v2H5v6c0 2.21 1.79 4 4 4h.18A3 3 0 0 0 11 15.83V19H7v2h10v-2h-4v-3.17A3 3 0 0 0 14.82 14H15c2.21 0 4-1.79 4-4V4zM7 10V6h1v6a2 2 0 0 1-1-2zm10 0a2 2 0 0 1-1 2V6h1v4z"/></svg>PvP</button>
@@ -44,5 +47,5 @@
   <details class="sidebar-appearance"><summary><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2a10 10 0 1 0 0 20h1.77a2.5 2.5 0 0 0 1.77-4.27.5.5 0 0 1 .35-.85H17a5 5 0 0 0 5-5C22 6.43 17.52 2 12 2zM6.5 13A1.5 1.5 0 1 1 6.5 10a1.5 1.5 0 0 1 0 3zm2-5A1.5 1.5 0 1 1 8.5 5a1.5 1.5 0 0 1 0 3zm7 0A1.5 1.5 0 1 1 15.5 5a1.5 1.5 0 0 1 0 3zm3 5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>Appearance</summary>{% include 'partials/appearance_controls.html' %}<p class="supporting-text" data-appearance-status role="status"></p></details>
   <div style="padding:10px 16px;border-top:1px solid var(--border);font-size:12px"><div>Signed in as <strong id="auth-username">—</strong></div><button id="auth-logout" type="button" class="btn btn-outline btn-sm">Sign out</button></div>
   <div class="sidebar-hint">Upload JSON or CSV to begin</div>
-<p class="asset-credit">Game artwork: <a href="https://pokemongo.fandom.com/wiki/Pok%C3%A9mon_GO_Wiki" target="_blank" rel="noopener noreferrer">Pokémon GO Wiki</a>. Images load remotely.</p>
+<p class="asset-credit">Game artwork: <a href="https://pokemongo.fandom.com/wiki/Pok%C3%A9mon_GO_Wiki" target="_blank" rel="noopener noreferrer">Pokémon GO Wiki</a>. Local images are optional in Settings.</p>
 </aside>

@@ -1,0 +1,49 @@
+"""Preserve species identity, export-reported forms, and inventory identifiers."""
+import re
+from data.pokedex import DEX
+
+
+def slug(value):
+    return re.sub(r'[^a-z0-9]+', '-', str(value or '').lower()).strip('-')
+
+
+def _enabled(value):
+    return value is True or (isinstance(value, (int, float)) and value > 0) or str(value).lower() in ('true', 'yes')
+
+
+def pokemon_metadata(raw):
+    display = raw.get('pokemonDisplay') or {}
+    form = str(display.get('formName') or raw.get('formName') or '')
+    alignment = display.get('alignment', raw.get('alignment', 0))
+    costume = display.get('costumeName') or display.get('costume') or raw.get('costume')
+    costume_name = str(costume or '')
+    costumed = costume_name.lower() not in ('', '0', 'none', 'unset', 'costume_unset', 'normal')
+    mega_level = raw.get('megaLevel', raw.get('megaEvolutionLevel', 0)) or 0
+    temporary = display.get('temporaryEvolution') or raw.get('temporaryEvolution') or ''
+    mega_active = any(_enabled(raw.get(k)) or _enabled(display.get(k)) for k in ('isMega', 'isMegaEvolved'))
+    mega_active = mega_active or 'mega' in form.lower() or 'mega' in str(temporary).lower()
+    gigantamax = 'gigantamax' in form.lower() or any(_enabled(raw.get(k)) or _enabled(display.get(k)) for k in ('isGigantamax', 'gigantamax'))
+    dynamax = gigantamax or 'dynamax' in form.lower() or any(_enabled(raw.get(k)) or _enabled(display.get(k)) for k in ('isDynamax', 'dynamax', 'dynamaxLevel'))
+    purified = alignment in (2, '2', 'PURIFIED', 'Purified') or _enabled(raw.get('isPurified'))
+    return {
+        'species_name': DEX.get(raw.get('pokemonId'), f"Species #{raw.get('pokemonId', '?')}"),
+        'form': form, 'form_slug': slug(form), 'purified': purified,
+        'mega_active': bool(mega_active), 'mega_level': mega_level,
+        'mega': bool(mega_active or _enabled(mega_level)),
+        'dynamax': bool(dynamax), 'gigantamax': bool(gigantamax),
+        'costumed': costumed, 'costume': costume_name if costumed else '',
+    }
+
+
+def item_metadata(iid, raw_name):
+    """Do not guess a dated event from a numeric/letter pass identifier."""
+    is_points = str(raw_name).startswith('EventPassPoint')
+    return {
+        'raw_name': str(raw_name or ''),
+        'category': 'event_points' if is_points else 'item',
+        'description': (
+            'Event/GO Pass progress counter from the export, not a usable bag item. '
+            'Different identifiers are separate counters. The export does not identify '
+            'their event, date, expiry, or whether they are still active.' if is_points else
+            'Inventory item reported by the export.'),
+    }

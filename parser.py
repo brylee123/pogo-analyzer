@@ -4,6 +4,7 @@ import io
 
 from data.cpm import cpm_to_level
 from data.pokedex import _FORM_SUFFIXES, _resolve_item_name
+from collection_metadata import pokemon_metadata, item_metadata
 
 
 def _pokemon_name(pid: int, form_name: str) -> str:
@@ -92,6 +93,7 @@ def parse_pgo_json(raw: dict) -> dict:
             year = datetime.fromtimestamp(p["creationTimeMs"] / 1000).year
 
         pokemons.append({
+            **pokemon_metadata(p),
             "pid":    pid,
             "name":   _pokemon_name(pid, pd.get("formName", "")),
             "cp":     p.get("cp", 0),
@@ -115,7 +117,8 @@ def parse_pgo_json(raw: dict) -> dict:
     pokemons.sort(key=lambda x: -x["cp"])
 
     items = [
-        {"id": iid, "name": _resolve_item_name(iid, item_json_names.get(iid, "")), "count": cnt}
+        {"id": iid, "name": _resolve_item_name(iid, item_json_names.get(iid, "")), "count": cnt,
+         **item_metadata(iid, item_json_names.get(iid, ""))}
         for iid, cnt in sorted(item_map.items(), key=lambda kv: -kv[1])
     ]
 
@@ -270,6 +273,7 @@ def parse_pokegenie_csv(csv_content: str) -> dict:
         move3 = move_map.get(m3_name, 0)
         
         pokemons.append({
+            **pokemon_metadata({'pokemonId':pid,'pokemonDisplay':{'formName':form_mapped,'alignment':shadow_val}}),
             "pid": pid,
             "name": name,
             "cp": cp,

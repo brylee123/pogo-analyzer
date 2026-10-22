@@ -1,0 +1,30 @@
+<section class="panel" id="panel-history">
+  <div class="panel-title">{{ mdi('history') }}<span>History & sessions</span></div>
+  <p class="supporting-text">Compare full exports over time. A session is the interval between two exports, not a recorded login or play session. Periods use the interval's end date in UTC.</p>
+  <div class="card history-import">
+    <div class="card-title">Import historical exports</div>
+    <p class="supporting-text">Select multiple full PGSharp JSON exports to backfill older dates. Only your verified trainers can be imported. Duplicate exports are skipped.</p>
+    <label class="file-label">Export files<input id="history-files" type="file" multiple accept=".json,.txt"></label>
+    <div class="toolbar"><button class="btn btn-primary" id="history-import">{{ mdi('upload') }}Import files</button><button class="btn btn-outline" id="history-import-current">Add current export to history</button><button class="btn btn-outline" id="history-refresh">{{ mdi('refresh') }}Refresh</button></div>
+    <p id="history-import-result" class="supporting-text" role="status"></p>
+    <div id="history-legacy" class="alert alert-info" hidden><span id="history-legacy-message"></span> <button class="btn btn-outline" id="history-restore">Attach my preserved legacy history</button></div>
+  </div>
+  <form class="card history-filters" id="history-filter-form">
+    <label>Trainer<select id="history-account" aria-label="History trainer"></select></label>
+    <label>Group by<select id="history-period"><option value="session">Individual sessions</option><option value="day">Daily</option><option value="week">Weekly (ISO weeks)</option><option value="month">Monthly</option><option value="year">Yearly</option></select></label>
+    <label>From (UTC)<input id="history-start" type="date"></label><label>Through (UTC)<input id="history-end" type="date"></label>
+    <button class="btn btn-primary" type="submit">Apply range</button><button class="btn btn-outline" type="button" id="history-all-dates">All dates</button>
+  </form>
+  <p id="history-status" class="supporting-text" role="status"></p>
+  <div class="history-metrics" id="history-metrics"></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Session / period (UTC)</th><th>Sessions</th><th>Caught</th><th>Acquired</th><th>Removed</th><th>Shiny</th><th>Hundo</th><th>XP</th><th>Stardust net</th><th>Coins net</th><th>km</th><th>Item units gained</th><th>Item units spent</th><th>Details</th></tr></thead><tbody id="history-tbody"></tbody></table></div>
+  <div class="toolbar pagination"><button class="btn btn-outline" id="history-prev" aria-label="Previous history page">{{ mdi('arrow-left') }}Previous</button><span id="history-page"></span><button class="btn btn-outline" id="history-next">Next {{ mdi('arrow-right') }}</button></div>
+  <section class="card" id="history-detail" hidden aria-label="Session details">
+    <div class="detail-heading"><h2 id="history-detail-title">Session details</h2><button id="history-detail-close" class="btn btn-outline" aria-label="Close session details">{{ mdi('close') }}</button></div>
+    <p id="history-detail-summary" class="supporting-text"></p>
+    <div class="toolbar"><label>Changes<select id="history-change-kind"><option value="added">Acquired Pokémon</option><option value="removed">Removed Pokémon</option><option value="modified">Changed Pokémon</option></select></label><label>Search changes<input id="history-detail-search" type="text" placeholder="Species, nickname, or Pokédex number"></label></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Pokédex</th><th>Pokémon</th><th>Nickname</th><th>CP</th><th>IV</th><th>Level</th></tr></thead><tbody id="history-detail-tbody"></tbody></table></div>
+    <div class="toolbar pagination"><button class="btn btn-outline" id="history-detail-prev">Previous</button><span id="history-detail-page"></span><button class="btn btn-outline" id="history-detail-next">Next</button></div>
+    <details><summary>Inventory, currencies, and player-stat changes</summary><div id="history-detail-other"></div></details>
+  </section>
+</section>

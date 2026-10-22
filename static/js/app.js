@@ -56,6 +56,25 @@ function mdToHtml(md) {
     .replace(/^(.+)$/, "<p>$1</p>");
 }
 
+
+let hasLatestExport = false;
+function dexLabel(p) { return '#' + String(p.pid ?? p.species ?? '?').padStart(4,'0'); }
+function pokemonIdentity(p) {
+  const species=p.species_name || p.name || 'Unknown species';
+  const form=p.name && p.name!==species?p.name:'';
+  return '<div class="pokemon-identity"><strong>'+escapeHtml(species)+'</strong>'
+    +(form?'<span class="supporting-text">'+escapeHtml(form)+'</span>':'')
+    +(p.nick?'<span class="pokemon-nickname">Nickname: '+escapeHtml(p.nick)+'</span>':'')+'</div>';
+}
+function statusBadges(p) {
+  const flags={mega:p.mega_active?'Mega active':'Mega level '+p.mega_level,dynamax:'Dynamax',gigantamax:'Gigantamax',purified:'Purified',costumed:'Costumed'};
+  return Object.entries(flags).filter(([key])=>p[key]).map(([key,label])=>'<span class="badge form-badge">'+escapeHtml(label)+'</span>').join('');
+}
+function uploadHistoryNotice(result) {
+  const target=$('upload-history-status');
+  if(target && result?.history)target.textContent=result.history.message || (result.history.status==='duplicate'?'This export is already in history.':'Export recorded in History & sessions.');
+}
+
 // ── Upload ────────────────────────────────────────────────────────────────────
 function setupUpload(input) {
   input.addEventListener("change", async () => {
@@ -65,7 +84,8 @@ function setupUpload(input) {
     try {
       const data = await fetch("/api/upload", { method: "POST", body: fd }).then(r => r.json());
       if (data.error) throw new Error(data.error);
-      onUploadSuccess(data.stats, data.player, data.pvp_stats);
+      await onUploadSuccess(data.stats, data.player, data.pvp_stats);
+      uploadHistoryNotice(data);
     } catch (e) {
       showErr(e.message);
     }
@@ -86,7 +106,7 @@ zone.addEventListener("drop", e => {
     fd.append("file", file);
     fetch("/api/upload", { method: "POST", body: fd })
       .then(r => r.json())
-      .then(d => d.error ? showErr(d.error) : onUploadSuccess(d.stats, d.player, d.pvp_stats))
+      .then(async d => {if(d.error)showErr(d.error);else {await onUploadSuccess(d.stats,d.player,d.pvp_stats);uploadHistoryNotice(d);}})
       .catch(e => showErr(e.message));
   }
 });
@@ -99,6 +119,9 @@ function showErr(msg) {
 }
 
 async function onUploadSuccess(stats, player, pvp_stats) {
+  hasLatestExport=true;
+  $("panel-pokemon").hidden=false;
+  await window.assetReady;
   $("upload-zone").style.display   = "none";
   $("upload-err").style.display    = "none";
   $("main-ui").style.display       = "block";
@@ -184,6 +207,9 @@ $$(".tab").forEach(btn => {
     $$(".panel").forEach(p => p.classList.remove("active"));
     btn.classList.add("active");
     $("panel-" + btn.dataset.tab).classList.add("active");
+    $("upload-zone").style.display=btn.dataset.tab==='pokemon'&&!hasLatestExport?'flex':'none';
+    window.dispatchEvent(new CustomEvent('panelchange',{detail:btn.dataset.tab}));
+    if(btn.dataset.tab==='forms')renderForms();
   });
 });
 
@@ -191,6 +217,7 @@ $$(".tab").forEach(btn => {
 async function loadPokemons() {
   S.pokemons = await api("/api/pokemons");
   renderPokemons();
+  renderForms();
 }
 
 $("poke-search").addEventListener("input", e => { S.search = e.target.value.toLowerCase(); renderPokemons(); });
@@ -198,8 +225,13 @@ $("poke-filter").addEventListener("change", e => { S.filter = e.target.value; re
 $("poke-sort").addEventListener("change",   e => { S.sort   = e.target.value; renderPokemons(); });
 
 function filterPoke(p) {
-  if (S.search && !p.name.toLowerCase().includes(S.search)) return false;
+  if (S.search && ![p.name,p.species_name,p.nick,p.pid].join(' ').toLowerCase().includes(S.search.replace(/^#/,''))) return false;
   switch (S.filter) {
+    case "mega": return !!p.mega;
+    case "dynamax": return !!p.dynamax;
+    case "gigantamax": return !!p.gigantamax;
+    case "purified": return !!p.purified;
+    case "costumed": return !!p.costumed;
     case "hundo":   return p.hundo;
     case "shiny":   return p.shiny;
     case "shadow":  return p.shadow;
@@ -244,6 +276,7 @@ function sortPokes(arr) {
   return [...arr].sort((a, b) => {
     if (S.sort === "iv")   return b.iv_pct - a.iv_pct;
     if (S.sort === "lvl")  return b.lvl - a.lvl;
+    if (S.sort === "dex") return a.pid-b.pid;
     if (S.sort === "name") return a.name.localeCompare(b.name);
     return b.cp - a.cp;
   });
@@ -265,12 +298,13 @@ function renderPokemons() {
       p.shadow ? `<span class="badge badge-shadow" data-tooltip="Shadow (+20% ATK)">Shadow</span>` : "",
       p.hundo  ? `<span class="badge badge-hundo" data-tooltip="100% IV">💯</span>` : "",
       p.lucky  ? `<span class="badge badge-lucky" data-tooltip="Lucky (reduced power-up cost)">🍀</span>` : "",
+      statusBadges(p),
       evTags,
     ].join("");
     const yr = p.year <= 2018 ? "year-old" : p.year <= 2022 ? "year-mid" : "";
     return `<tr>
-      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}
-        ${p.nick ? `<span data-tooltip="${p.name}">${p.nick}</span>` : p.name}
+      <td class="dex-cell mono">${dexLabel(p)}</td><td class="name-cell">${gameAsset("pokemon", p.species_name || p.name, p.shiny, p)}
+        ${pokemonIdentity(p)}
         ${p.move1_name ? `
         <div class="moves-row">
           <span class="move-tag type-${p.move1_type}" data-tooltip="Fast Move">${p.move1_name}</span>
@@ -287,7 +321,7 @@ function renderPokemons() {
       <td>${tags || '<span style="color:var(--muted);font-size:10px">—</span>'}</td>
       <td><button class="btn-ai" onclick="analyzeOnePokemon(${S.pokemons.indexOf(p)})">🤖 AI</button></td>
     </tr>`;
-  }).join("") || `<tr><td colspan="9" style="padding:24px;text-align:center;color:var(--muted)">No results</td></tr>`;
+  }).join("") || `<tr><td colspan="10" style="padding:24px;text-align:center;color:var(--muted)">No results</td></tr>`;
 }
 
 function buildPogoQuery() {
@@ -492,7 +526,7 @@ $("btn-copy-regex").addEventListener("click", () => {
   // Show multiple query batches for manual copying.
   if (chunks.length > 1) {
     const msg = `Too many IDs — split into ${chunks.length} batches (each ≤300 characters):\n\n`
-      + chunks.map((c, i) => `Paczka ${i+1}:\n${c}`).join("\n\n");
+      + chunks.map((c, i) => `Batch ${i+1}:\n${c}`).join("\n\n");
     alert(msg);
     $("regex-hint").textContent = `${chunks.length} batches · ${total - skipped} species`;
     return;
@@ -535,12 +569,9 @@ async function loadItems() {
 }
 
 function renderItems() {
-  $("items-grid").innerHTML = S.items.map(it =>
-    `<div class="item-card">
-       ${gameAsset("item", it.name)}<span class="item-name">${it.name}</span>
-       <span class="item-count">×${it.count}</span>
-     </div>`
-  ).join("") || `<p style="color:var(--muted);font-size:13px">No inventory data</p>`;
+  const render=items=>items.map(it=>'<article class="item-card">'+(it.category==='event_points'?mdiIcon('information-outline'):gameAsset('item',it.name,false,it))+'<div class="item-copy"><strong>'+escapeHtml(it.name)+'</strong><span class="supporting-text">Item #'+escapeHtml(it.id)+'</span><code>'+escapeHtml(it.raw_name||'No export name supplied')+'</code><p class="supporting-text">'+escapeHtml(it.description||'Inventory item reported by the export.')+'</p></div><span class="item-count">×'+Number(it.count).toLocaleString('en-US')+'</span></article>').join('');
+  $('items-grid').innerHTML=render(S.items.filter(it=>it.category!=='event_points'))||'<p>No inventory items reported.</p>';
+  $('event-points-grid').innerHTML=render(S.items.filter(it=>it.category==='event_points'))||'<p>No event-pass counters reported.</p>';
 }
 
 $("btn-analyze-items").addEventListener("click", async () => {
@@ -1012,8 +1043,8 @@ function renderRaid() {
 
     return `<tr>
       <td style="color:var(--muted);font-weight:700;font-family:var(--fm)">${i+1}</td>
-      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}
-        ${p.nick ? `<span data-tooltip="${p.name}">${p.nick}</span>` : p.name}
+      <td class="name-cell">${gameAsset("pokemon", p.species_name || p.name, p.shiny, p)}
+        ${pokemonIdentity(p)}
         ${p.move1_name ? `
         <div class="moves-row" style="margin-top: 3px;">
           <span class="move-tag type-${p.move1_type}" style="font-size: 9px; padding: 2px 4px;">${p.move1_name}</span>
@@ -1222,7 +1253,7 @@ function renderPvP() {
     const rankBadge = pvpRankBadge(p.pvp_rank, p.pvp_rank_total, p.pvp_rank_pct);
     return `<tr>
       <td style="color:var(--muted);font-weight:700;font-family:var(--fm)">${i+1}</td>
-      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}${p.name}</td>
+      <td class="name-cell">${gameAsset("pokemon", p.species_name || p.name, p.shiny, p)}${p.name}</td>
       <td class="cp-cell">${p.cp}</td>
       <td style="font-weight:700;color:${leagueColor};font-family:var(--fm)">${p.pvp_cp || "—"}</td>
       <td class="mono">${p.pvp_lvl || p.lvl}</td>
@@ -1438,7 +1469,7 @@ function renderDevelop() {
     }
 
     return `<tr>
-      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}${p.name}</td>
+      <td class="name-cell">${gameAsset("pokemon", p.species_name || p.name, p.shiny, p)}${p.name}</td>
       <td class="cp-cell">${p.cp}</td>
       <td class="mono">${p.lvl}</td>
       <td class="${ivClass(p.iv_pct)}">${p.iv_pct}%</td>
@@ -1451,7 +1482,7 @@ function renderDevelop() {
 
   $("dev-powerup-tbody").innerHTML = d.power_up.map(p => {
     const pIdx = _devPokeIdx(p);
-    let options = '<option value="">Lvl ↓</option>';
+    let options = '<option value="">Choose level</option>';
     let minLvl = p.lvl + 0.5;
     if (minLvl <= 50) {
       for (let l = minLvl; l <= 50; l += 0.5) {
@@ -1459,7 +1490,7 @@ function renderDevelop() {
       }
     }
     return `<tr>
-      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}${p.name}</td>
+      <td class="name-cell">${gameAsset("pokemon", p.species_name || p.name, p.shiny, p)}${p.name}</td>
       <td class="cp-cell">${p.cp}</td>
       <td class="mono">${p.lvl}</td>
       <td class="${ivClass(p.iv_pct)}">${p.iv_pct}%</td>
@@ -1480,7 +1511,7 @@ function renderDevelop() {
     const pIdx = _devPokeIdx(p);
     const btnLabel = "⚖️ Compare";
     return `<tr>
-      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}${p.name}</td>
+      <td class="name-cell">${gameAsset("pokemon", p.species_name || p.name, p.shiny, p)}${p.name}</td>
       <td class="cp-cell">${p.cp}</td>
       <td class="${ivClass(p.iv_pct)}">${p.iv_pct}%</td>
       <td class="${ivClass(p.purified_iv)}" style="font-weight:700">${p.purified_iv}%</td>
@@ -1509,7 +1540,7 @@ function renderDevelop() {
     const currMoves = [p.move1_name, p.move2_name, p.move3_name].filter(Boolean).join(" + ");
 
     return `<tr>
-      <td class="name-cell">${gameAsset("pokemon", p.name, p.shiny)}${p.name}</td>
+      <td class="name-cell">${gameAsset("pokemon", p.species_name || p.name, p.shiny, p)}${p.name}</td>
       <td class="cp-cell">${p.cp}</td>
       <td style="font-size:10px; color:var(--muted); line-height:1.25;">${currMoves}</td>
       <td style="font-size:10px; color:var(--text); line-height:1.25;">${pvpOpt}</td>
@@ -1622,6 +1653,7 @@ function makeTableSortable(table) {
     
     th.style.cursor = "pointer";
     th.classList.add("sortable-header");
+    const indicator=document.createElement('span');indicator.className='sort-indicator';indicator.innerHTML=mdiIcon('sort-ascending');th.appendChild(indicator);
     
     let asc = true;
     th.addEventListener("click", () => {
@@ -1633,9 +1665,11 @@ function makeTableSortable(table) {
       headers.forEach(h => {
         if (h !== th) {
           h.classList.remove("sort-asc", "sort-desc");
+          const other=h.querySelector('.sort-indicator');if(other)other.innerHTML=mdiIcon('sort-ascending');
         }
       });
       
+      indicator.innerHTML=mdiIcon(asc?'sort-ascending':'sort-descending');
       rows.sort((a, b) => {
         const cellA = a.cells[index];
         const cellB = b.cells[index];
@@ -1646,7 +1680,7 @@ function makeTableSortable(table) {
         const parseValue = (val) => {
           if (val === "" || val === "—") return -Infinity;
           
-          let cleaned = val.replace(/%/g, '').replace(/,/g, '').replace(/\s/g, '').trim();
+          let cleaned = val.replace(/^#/, '').replace(/%/g, '').replace(/,/g, '').replace(/\s/g, '').trim();
           if (cleaned.includes('/')) {
             const parts = cleaned.split('/').map(Number);
             if (parts.every(x => !isNaN(x))) {
@@ -1696,11 +1730,11 @@ function toggleDevCard(contentId) {
   const preview = $(contentId.replace("-content", "-preview"));
   if (content.style.display === "none") {
     content.style.display = "block";
-    icon.textContent = "▲";
+    icon.innerHTML = mdiIcon("chevron-up");
     if (preview) preview.style.display = "none";
   } else {
     content.style.display = "none";
-    icon.textContent = "▼";
+    icon.innerHTML = mdiIcon("chevron-down");
     if (preview) preview.style.display = "flex";
   }
 }
@@ -1710,11 +1744,11 @@ function toggleAnalytics() {
   const icon = $("analytics-toggle-icon");
   if (content.style.display === "none") {
     content.style.display = "block";
-    icon.textContent = "▲";
+    icon.innerHTML = mdiIcon("chevron-up");
     updateAnalytics();
   } else {
     content.style.display = "none";
-    icon.textContent = "▼";
+    icon.innerHTML = mdiIcon("chevron-down");
   }
 }
 
@@ -1900,3 +1934,25 @@ async function recalcPowerup(select, idx) {
 })();
 
 window.addEventListener("appearancechange", () => updateAnalytics());
+
+const formLabels={mega:'Mega evolution',dynamax:'Dynamax',gigantamax:'Gigantamax',purified:'Purified',costumed:'Costumed',shadow:'Shadow'};
+function renderForms() {
+  const category=$('forms-filter').value,search=$('forms-search').value.trim().toLowerCase().replace(/^#/,'');
+  $('form-categories').innerHTML=Object.entries(formLabels).map(([key,label])=>'<button class="metric-tile '+(category===key?'selected':'')+'" data-form-kind="'+key+'"><span>'+label+'</span><strong>'+S.pokemons.filter(p=>p[key]).length+'</strong></button>').join('');
+  const rows=S.pokemons.filter(p=>p[category]&&[p.name,p.species_name,p.nick,p.pid].join(' ').toLowerCase().includes(search));
+  $('forms-count').textContent=rows.length+' matching Pokémon';
+  $('forms-tbody').innerHTML=rows.map(p=>'<tr><td class="mono">'+dexLabel(p)+'</td><td>'+gameAsset('pokemon',p.species_name||p.name,p.shiny,p)+pokemonIdentity(p)+'</td><td>'+p.cp+'</td><td>'+p.iv_pct+'%</td><td>'+p.lvl+'</td><td>'+statusBadges(p)+(p.shadow?'<span class="badge">Shadow</span>':'')+(p.costume?'<span class="supporting-text">'+escapeHtml(p.costume)+'</span>':'')+'</td></tr>').join('')||'<tr><td colspan="6">No matching exported status. Missing flags are not inferred from species or nickname.</td></tr>';
+}
+$('forms-filter').addEventListener('change',renderForms);
+$('forms-search').addEventListener('input',renderForms);
+$('form-categories').addEventListener('click',event=>{const button=event.target.closest('[data-form-kind]');if(button){$('forms-filter').value=button.dataset.formKind;renderForms();}});
+window.addEventListener('assetschange',()=>{renderPokemons();renderItems();renderForms();});
+$('tabs').style.display='flex';
+$('main-ui').style.display='block';
+$('panel-pokemon').hidden=!hasLatestExport;
+renderForms();
+$('form-diagnostics-load').addEventListener('click',async()=>{
+  const target=$('form-diagnostics-output');target.textContent='Loading…';
+  try{target.textContent=JSON.stringify(await api('/api/pokemons/form-diagnostics?pid='+encodeURIComponent($('form-diagnostics-pid').value)),null,2);}
+  catch(error){target.textContent=error.message;}
+});

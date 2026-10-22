@@ -1,5 +1,10 @@
 <div class="panel" id="panel-settings">
   <div class="panel-title" id="settings-panel-title"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m19.14 12.94.04-.94-.04-.94 2.03-1.58-1.92-3.32-2.39.96a7 7 0 0 0-1.63-.95L14.87 3h-3.84l-.36 2.17c-.59.24-1.13.56-1.63.95l-2.39-.96-1.92 3.32 2.03 1.58-.04.94.04.94-2.03 1.58 1.92 3.32 2.39-.96c.5.39 1.04.71 1.63.95l.36 2.17h3.84l.36-2.17a7 7 0 0 0 1.63-.95l2.39.96 1.92-3.32-2.03-1.58zM13 15a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg><span>Settings</span></div>
+<div class="card"><div class="card-title">Images & local assets</div>
+<p class="supporting-text">Wiki images may fail because an image filename does not exist or the remote host rejects the request. The app cannot guarantee third-party image availability. Local artwork works across your LAN and does not depend on the wiki.</p>
+<label>Image source<select data-asset-mode><option value="local-first">Local first, then wiki</option><option value="local-only">Local only (no remote artwork requests)</option><option value="wiki">Wiki only</option></select></label>
+<p class="supporting-text">On the server, run <code>python prepare_assets.py</code>. Fill the generated <code>local_assets</code> folders with your own images. Use Pokédex numbers for Pokémon and item IDs for items, for example <code>pokemon/normal/0025.png</code> and <code>items/1.png</code>. See the generated README for forms and custom filenames.</p>
+<button class="btn btn-outline" data-refresh-assets>{{ mdi('refresh') }}Refresh asset list</button><p class="supporting-text" data-asset-status role="status"></p></div>
   <div class="card"><div class="card-title">Appearance</div><p class="supporting-text">Follow your team or choose your own accent. Changes sync with your profile.</p>{% include 'partials/appearance_controls.html' %}</div>
   <div class="card">
     <div class="card-title" id="settings-ai-config-title">AI configuration</div>
