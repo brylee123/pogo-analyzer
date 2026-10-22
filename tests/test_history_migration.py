@@ -53,7 +53,7 @@ class MigrationTests(unittest.TestCase):
 
     def legacy(self):
         self.db.executescript(LEGACY)
-        self.db.executemany("INSERT INTO history_snapshots VALUES(?,?,?,?,?,?,?)", [
+        self.db.executemany("INSERT INTO history_snapshots VALUES(?,?,?,?,?,?)", [
             (11, "Ash", "2026-01-01", "hash1", "one.json", '{"original":1}'),
             (22, "Ash", "2026-01-02", "hash2", "two.json", '{"original":2}'),
             (33, "Misty", "2026-01-03", "hash3", "three.json", '{"original":3}'),
@@ -106,6 +106,10 @@ class MigrationTests(unittest.TestCase):
                 VALUES(7,'Ash','later','hash1','copy','{}')""")
 
     def test_existing_multi_user_database_unchanged(self):
+        self.db.executescript(LEGACY.replace(
+            "id INTEGER PRIMARY KEY, account",
+            "id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES app_users(id), account"
+        ).replace("hash TEXT NOT NULL UNIQUE", "hash TEXT NOT NULL"))
         history.init_history()
         self.db.execute("""INSERT INTO history_snapshots
             VALUES(19,8,'Misty','date','digest','source','payload')""")

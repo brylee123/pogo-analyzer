@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import sqlite3
+from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import RLock, Thread
@@ -22,7 +23,7 @@ MAX_BYTES = int(os.getenv("PGS_MAX_UPLOAD_MB", "80")) * 1024 * 1024
 
 def init_history():
     # DDL and data copies must roll back together (executescript commits implicitly).
-    with LOCK, get_db() as db:
+    with LOCK, closing(get_db()) as db, db:
         db.execute("BEGIN IMMEDIATE")
         schemas = {
             "history_snapshots": """id INTEGER PRIMARY KEY,
