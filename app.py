@@ -8,6 +8,9 @@ Run:
 import logging
 import threading
 import os
+import hashlib
+from pathlib import Path
+from functools import lru_cache
 from flask import g
 
 from flask import Flask, render_template
@@ -36,6 +39,7 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 app = Flask(__name__)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(32)
 app.config.update(SESSION_COOKIE_HTTPONLY=True,SESSION_COOKIE_SAMESITE='Lax',SESSION_COOKIE_SECURE=os.environ.get('COOKIE_SECURE')=='1',MAX_CONTENT_LENGTH=80*1024*1024)
 init_db()
@@ -46,6 +50,23 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(verification_bp)
 app.register_blueprint(setup_bp)
 app.register_blueprint(appearance_bp)
+
+
+@lru_cache(maxsize=128)
+def static_version(path, modified_ns, size):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()[:12]
+
+
+@app.url_defaults
+def version_static_files(endpoint, values):
+    if endpoint != 'static' or 'filename' not in values:
+        return
+    root = Path(app.static_folder).resolve()
+    path = (root / values['filename']).resolve()
+    if not path.is_relative_to(root) or not path.is_file():
+        return
+    stat = path.stat()
+    values.setdefault('v', static_version(str(path), stat.st_mtime_ns, stat.st_size))
 
 @app.context_processor
 def appearance_context():

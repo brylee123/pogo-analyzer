@@ -142,7 +142,7 @@ function showErr(msg) {
 }
 
 function renderPlayer(player) {
-  window.PogoAppearance?.updateTeam(player?.team);
+  window.PogoAppearance?.updateTeam?.(player?.team);
   if (player) {
     $("sidebar-player").style.display = "flex";
     $("s-player-name").textContent = player.name || "Trainer";
@@ -155,10 +155,15 @@ function renderPlayer(player) {
     const max=Number(player.level)>=80;
     const known=player.prevLevelExp!=null&&player.nextLevelExp!=null&&next>previous;
     const progress=max?100:known?Math.min(100,Math.max(0,(xp-previous)/(next-previous)*100)):0;
-    $('s-player-resources').textContent=xp.toLocaleString()+' XP · '+Number(player.stardust||0).toLocaleString()+' Stardust';
-    $('s-player-progress').setAttribute('aria-valuenow',String(Math.round(progress)));
-    $('s-player-progress').firstElementChild.style.width=progress+'%';
-    $('s-player-progress-label').textContent=max?'Maximum level':known?Math.max(0,next-xp).toLocaleString()+' XP to level '+(Number(player.level)+1):'Next level XP not reported';
+    // An already-running server can still have the previous sidebar template cached.
+    // Optional profile details must never prevent the saved collection from loading.
+    const resources=$('s-player-resources'),bar=$('s-player-progress'),label=$('s-player-progress-label');
+    if(resources)resources.textContent=xp.toLocaleString()+' XP · '+Number(player.stardust||0).toLocaleString()+' Stardust';
+    if(bar){
+      bar.setAttribute('aria-valuenow',String(Math.round(progress)));
+      if(bar.firstElementChild)bar.firstElementChild.style.width=progress+'%';
+    }
+    if(label)label.textContent=max?'Maximum level':known?Math.max(0,next-xp).toLocaleString()+' XP to level '+(Number(player.level)+1):'Next level XP not reported';
   } else {
     $("sidebar-player").style.display = "none";
   }
@@ -210,13 +215,13 @@ async function onUploadSuccess(stats, player, pvp_stats) {
     $("pvp-stats-card").style.display = "none";
   }
 
-  await Promise.all([loadPokemons(), loadItems(), loadEvents(), loadTiers(), loadCacheStats(), loadConfig()]);
-  loadRaid();
+  // Render the saved collection before starting optional remote-backed panels.
+  await loadPokemons();
   _pvpData={GL:[],UL:[],ML:[]};
-  loadPvP(_pvpLeague);
-  loadDevelop();
-  _pvpGems=[];renderPvpGems();loadPvpGems();
+  _pvpGems=[];renderPvpGems();
   updatePogoQuery();
+  await Promise.allSettled([loadItems(), loadEvents(), loadTiers(), loadCacheStats(), loadConfig(),
+    loadRaid(), loadPvP(_pvpLeague), loadDevelop(), loadPvpGems()]);
 }
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
@@ -233,13 +238,33 @@ $$(".tab").forEach(btn => {
 });
 
 // ── Pokémon ──────────────────────────────────────────────────────────────────
-async function loadPokemons() {
-  S.pokemons = await api("/api/pokemons");
-  renderPokemons();
-  renderForms();
-  updateAnalytics();
-  window.dispatchEvent(new Event('collectionchange'));
+function collectionFeedback() {
+  if(!$('collection-status')||!$('collection-retry')) {
+    const toolbar=document.createElement('div');toolbar.className='toolbar';
+    toolbar.innerHTML='<span id="collection-status" role="status" aria-live="polite"></span><button type="button" id="collection-retry" class="btn btn-outline btn-sm" hidden>Retry loading Pokémon</button>';
+    $('panel-pokemon').prepend(toolbar);
+  }
+  return {status:$('collection-status'),retry:$('collection-retry')};
 }
+async function loadPokemons() {
+  const {status,retry}=collectionFeedback();
+  status.textContent='Loading your Pokémon…';retry.hidden=true;
+  try {
+    const pokemons=await api('/api/pokemons');
+    if(!Array.isArray(pokemons))throw Error('The server returned an invalid collection response');
+    S.pokemons=pokemons;
+    renderPokemons();renderForms();updateAnalytics();
+    status.textContent=pokemons.length.toLocaleString()+' Pokémon loaded';
+    window.dispatchEvent(new Event('collectionchange'));
+  } catch(error) {
+    status.textContent='Unable to load Pokémon: '+error.message;
+    retry.hidden=false;
+    throw error;
+  }
+}
+document.addEventListener('click',event=>{
+  if(event.target.closest('#collection-retry'))restoreSavedCollection();
+});
 
 $("poke-search").addEventListener("input", e => { S.search = e.target.value.toLowerCase(); renderPokemons(); });
 $("poke-filter").addEventListener("change", e => { S.filter = e.target.value; renderPokemons(); });
@@ -1647,14 +1672,19 @@ $("btn-save-cfg").addEventListener("click", async () => {
 });
 
 // ── Auto-restore on page load ─────────────────────────────────────────────────
-(async function checkRestoredState() {
+async function restoreSavedCollection() {
   try {
     const status = await api("/api/status");
     if (status.loaded) {
       await onUploadSuccess(status.stats, status.player, status.pvp_stats);
     }
-  } catch (_) {}
-})();
+  } catch (error) {
+    const {status,retry}=collectionFeedback();
+    if(!status.textContent.startsWith('Unable to load Pokémon:'))status.textContent='Unable to restore your collection: '+error.message;
+    retry.hidden=false;
+  }
+}
+restoreSavedCollection();
 
 // ── Custom Tooltips ───────────────────────────────────────────────────────────
 (function initCustomTooltips() {
