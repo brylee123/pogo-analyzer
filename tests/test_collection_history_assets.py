@@ -28,6 +28,31 @@ def export(stamp='2026-01-31T12:00:00Z', xp=100):
 
 
 class CollectionParsingTests(unittest.TestCase):
+    def test_purified_shiny_lucky_latios_statuses_coexist(self):
+        raw=export()
+        raw['pokemons']=[{
+            'id':'example-latios','pokemonId':381,'cp':3281,
+            'cpMultiplier':0.667934000492096,
+            'additionalCpMultiplier':0.06680700927972794,
+            'individualAttack':15,'individualDefense':13,'individualStamina':15,
+            'nickname':'Example SL','isLucky':True,'favorite':True,
+            'hasMegaEvolved':False,'megaEvolvedForms':[],
+            'move2IsPurifiedExclusive':False,'breadMoves':[],
+            'pokemonDisplay':{'alignment':2,'breadModeEnum':0,'costume':0,
+                              'form':1634,'formName':'LatiosNormal','shiny':True,
+                              'megaEvolutionLevel':None}
+        }]
+        pokemon=parse_pgo_json(raw)['pokemons'][0]
+        self.assertEqual(('Latios',381,3281),
+                         (pokemon['species_name'],pokemon['pid'],pokemon['cp']))
+        self.assertTrue(all(pokemon[key] for key in ('purified','shiny','lucky')))
+        self.assertFalse(any(pokemon[key] for key in ('shadow','dynamax','gigantamax','mega','costumed')))
+        # Nickname, species, and move flags must not substitute for exported status.
+        raw['pokemons'][0]['isLucky']=False
+        raw['pokemons'][0]['pokemonDisplay'].update(alignment=0,shiny=False)
+        normal=parse_pgo_json(raw)['pokemons'][0]
+        self.assertFalse(any(normal[key] for key in ('purified','shiny','lucky')))
+
     def test_gigantamax_lapras_with_normal_form_name(self):
         raw=export()
         raw['pokemons']=[{
