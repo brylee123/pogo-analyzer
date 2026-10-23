@@ -1,5 +1,7 @@
+{% from 'partials/menu_icons.html' import menu_icon %}
 <div class="panel" id="panel-develop">
-  <div class="panel-title"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 18v2H8v-2h8zm-5-4v-4H8l4-5 4 5h-3v4h-2z"/></svg><span>Develop</span></div>
+  <div class="panel-title">{{ menu_icon('improve') }}<span>Power up &amp; evolve</span></div>
+  <p class="supporting-text">Find Pokémon to evolve, power up, purify, or improve with Elite TMs.</p>
 
   <div class="card">
     <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleDevCard('dev-evolve-content')">

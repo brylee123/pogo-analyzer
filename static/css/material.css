@@ -216,8 +216,6 @@ tbody tr:hover{background:var(--bg3)}
 .game-status-icon.status-lucky {color:#f5dfa0}
 .game-status-icon.status-dynamax {color:#fa6ca9}
 .game-status-icon.status-gigantamax {color:#e32971}
-.menu-game-icon {display:inline-flex;align-items:center;justify-content:center;width:24px;flex:0 0 24px}
-.menu-game-icon .game-status-icon {background:transparent;border-radius:0}
 .inventory-columns {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
 .inventory-list {display:flex;flex-direction:column;gap:8px}
 .inventory-list .item-card {display:flex;align-items:center;gap:10px;width:100%;min-width:0}
@@ -241,5 +239,6 @@ tbody tr:hover{background:var(--bg3)}
 
 .status-glyph {position:absolute;inset:3px;background:currentColor;mask-image:var(--status-image);mask-position:center;mask-size:contain;mask-repeat:no-repeat;pointer-events:none}
 .game-status-icon:has(.status-glyph) .remote-game-art {opacity:0!important}
-.menu-game-icon .game-status-icon {color:inherit}
 .history-charts svg text {font-size:18px}
+
+.menu-drawn-icon {fill:none;display:inline-block;flex-shrink:0;vertical-align:middle}

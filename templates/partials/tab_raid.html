@@ -1,5 +1,6 @@
+{% from 'partials/menu_icons.html' import menu_icon %}
 <div class="panel" id="panel-raid">
-  <div class="panel-title"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.92 5 5 3H3v2l1.92 1.92L8 10l2-2L6.92 5zM15 12l-3 3-2-2-5 5-2-2-1 1 5 5 1-1-2-2 5-5 2 2 3-3-1-1zm6-9h-2l-8 8 2 2 8-8V3z"/></svg><span>Raids</span></div>
+  <div class="panel-title">{{ menu_icon('raid') }}<span>Raids</span></div>
   <div class="alert alert-info">Ranked by base stats (DPS×TDO proxy), IVs, and meta tiers, from best to worst.</div>
   <div class="tbl-wrap">
     <table id="raid-table">

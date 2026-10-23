@@ -1,5 +1,6 @@
+{% from 'partials/menu_icons.html' import menu_icon %}
 <section class="panel" id="panel-pokedex">
-  <div class="panel-title">{{ mdi('pokeball') }}<span>Pokédex</span></div>
+  <div class="panel-title">{{ menu_icon('pokedex') }}<span>Pokédex</span></div>
   <p class="supporting-text">Your living dex: only Pokémon currently in your collection count. Any variant fills its Pokédex number; the other categories are separate checklists.</p>
   <div class="card dex-overview">
     <div><span class="supporting-text" id="dex-category-title">All Pokémon</span><h2 id="dex-progress-text">Loading collection…</h2><p class="supporting-text" id="dex-progress-detail"></p></div>
