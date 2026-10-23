@@ -177,3 +177,44 @@ test('history graphs use chronological timestamps and handle negative, single an
   for(const records of [[],[{period:'2026-01-01',xp:0}]]){ctx.report.records=records;ctx.renderCharts();assert.doesNotMatch(charts.innerHTML,/NaN|Infinity/);}
   ctx.report.period='week';ctx.report.records=[{period:'2026-W01',xp:1},{period:'2026-W03',xp:2}];ctx.renderCharts();assert.doesNotMatch(charts.innerHTML,/NaN|Infinity/);
 });
+
+
+function appFunction(name,async=false) {
+  const script=source('app.js'),start=script.indexOf((async?'async ':'')+'function '+name+'(');
+  assert.ok(start>=0,name);
+  return script.slice(start,script.indexOf('\n}',start)+2);
+}
+
+test('saved collection restore survives the previous sidebar and optional service failures',async()=>{
+  const nodes=Object.fromEntries(['sidebar-player','s-player-name','s-player-level','s-player-avatar','panel-pokemon','upload-zone','upload-err','main-ui','upload-small','tabs','header-sub','tb-poke','pvp-stats-card'].map(id=>[id,{style:{},textContent:''}]));
+  const calls=[];
+  const ctx={window:{assetReady:Promise.resolve(),PogoAppearance:{updateTeam(){}}},document:{querySelector:()=>null},$:id=>nodes[id]||null,gameStatusIcon:()=>'',S:{pokemons:[]},hasLatestExport:false,pvpGeneration:0,_pvpLeague:'GL',_pvpData:{},_pvpGems:[],renderPvpGems(){},updatePogoQuery(){}};
+  ctx.loadPokemons=async()=>{calls.push('collection');ctx.S.pokemons=[{pid:107}];};
+  for(const name of ['loadItems','loadEvents','loadTiers','loadCacheStats','loadConfig','loadRaid','loadPvP','loadDevelop','loadPvpGems'])ctx[name]=async()=>{calls.push(name);throw Error('External service unavailable');};
+  vm.runInNewContext(appFunction('renderPlayer')+'\n'+appFunction('onUploadSuccess',true),ctx);
+  await ctx.onUploadSuccess({total:1},{name:'Test trainer',level:80,team:1,kmWalked:42,experience:1000},{});
+  assert.equal(nodes['tb-poke'].textContent,1);
+  assert.equal(ctx.S.pokemons.length,1);
+  assert.equal(calls[0],'collection');
+  assert.equal(nodes['s-player-name'].textContent,'Test trainer');
+});
+
+test('collection load failures and invalid responses display an error and retry',async()=>{
+  for(const api of [async()=>{throw Error('Server unavailable');},async()=>({error:'Invalid payload'})]) {
+    const feedback={status:{textContent:''},retry:{hidden:true}};
+    const ctx={collectionFeedback:()=>feedback,api,S:{pokemons:[]}};
+    vm.runInNewContext(appFunction('loadPokemons',true),ctx);
+    await assert.rejects(ctx.loadPokemons());
+    assert.match(feedback.status.textContent,/Unable to load Pokémon:/);
+    assert.equal(feedback.retry.hidden,false);
+  }
+});
+
+test('automatic restore reports status failures instead of silently swallowing them',async()=>{
+  const feedback={status:{textContent:''},retry:{hidden:true}};
+  const ctx={api:async()=>{throw Error('Server unavailable');},collectionFeedback:()=>feedback};
+  vm.runInNewContext(appFunction('restoreSavedCollection',true),ctx);
+  await ctx.restoreSavedCollection();
+  assert.match(feedback.status.textContent,/Unable to restore your collection: Server unavailable/);
+  assert.equal(feedback.retry.hidden,false);
+});

@@ -155,10 +155,11 @@ def scrape_pokebase() -> dict[str, dict[str, str]]:
     return merged
 
 
-def get_tier_list() -> dict[str, dict[str, str]]:
-    if _tier_refresh_needed():
+def get_tier_list(refresh: bool = True) -> dict[str, dict[str, str]]:
+    """Read saved tiers; local collection requests must opt out of network refresh."""
+    if refresh and _tier_refresh_needed():
         scrape_pokebase()
-    tiers: dict[str, dict[str, str]] = {}
+    tiers = {name: dict(categories) for name, categories in _FALLBACK_TIERS.items()}
     with get_db() as db:
         rows = db.execute("SELECT pokemon_name, tier, category FROM tier_list").fetchall()
     for row in rows:

@@ -125,3 +125,21 @@ class PageBehaviorTests(unittest.TestCase):
         self.assertNotIn('sidebar-appearance',page)
         self.assertNotIn('data-asset-mode',page)
         self.assertIn('data-appearance-status',page)
+
+    def test_saved_collection_loads_without_external_requests(self):
+        self.upload(export())
+        with patch('requests.get',side_effect=AssertionError('Collection loading must stay local')) as network:
+            restored=self.client.get('/api/status')
+            collection=self.client.get('/api/pokemons')
+        self.assertTrue(restored.get_json()['loaded'])
+        self.assertEqual(200,collection.status_code)
+        self.assertEqual(1,len(collection.get_json()))
+        self.assertEqual('Hitmonchan',collection.get_json()[0]['name'])
+        network.assert_not_called()
+
+    def test_templates_reload_and_scripts_have_content_versions(self):
+        self.assertTrue(self.app.config['TEMPLATES_AUTO_RELOAD'])
+        self.assertTrue(self.app.jinja_env.auto_reload)
+        page=self.client.get('/').get_data(as_text=True)
+        self.assertRegex(page,r'js/app\.js\?v=[a-f0-9]{12}')
+        self.assertRegex(page,r'js/assets\.js\?v=[a-f0-9]{12}')

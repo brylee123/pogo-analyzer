@@ -126,11 +126,12 @@ def upload():
 
 @bp.route("/api/pokemons")
 def api_pokemons():
-    tiers = get_tier_list()
+    # The saved collection must load even when public enrichment sites are offline.
+    tiers = get_tier_list(refresh=False)
 
     event_spawn_index: dict[str, list[str]] = {}
     try:
-        for ev in get_events():
+        for ev in get_events(refresh=False):
             if ev["status"] not in ("active", "upcoming"):
                 continue
             label = ev["name"][:22].rstrip()

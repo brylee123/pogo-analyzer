@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2026-10-22
 
 ### Changed
+- Fixed saved collection restore crashing when a running server serves an older sidebar
+  template with the new profile script. Optional profile fields no longer block the box;
+  templates reload, scripts use content versions, collection reads stay local, and restore
+  errors show a retry action.
 - Centered and colored status badges, added explicit location-card Background tags,
   and replaced PvP/Raids/Develop menu symbols with PokeMiners game assets.
 - Added chronological XP, Stardust, and acquired-Pokémon line graphs to History & sessions.

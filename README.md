@@ -14,6 +14,14 @@ A professional, local web application for analyzing your Pokémon GO account, ma
 ---
 
 
+## Updating the running app
+
+After pulling updates, fully stop and restart the app server. Refreshing the browser does
+not reload Python code or templates already cached by an older server process. If the
+sidebar count is correct but the Pokémon list is empty after an update, restart the server
+and reload the page. Collection restore now tolerates older profile markup and displays
+loading errors with a retry button.
+
 ## Local network access
 
 The Windows launcher explicitly starts the server on `0.0.0.0:6090`, including

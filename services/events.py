@@ -72,10 +72,11 @@ def fetch_events(force: bool = False) -> list[dict]:
         return []
 
 
-def get_events() -> list[dict]:
-    fetch_events()
+def get_events(refresh: bool = True) -> list[dict]:
+    if refresh:
+        fetch_events()
     from services.tiers import get_tier_list
-    tier_list = get_tier_list()
+    tier_list = get_tier_list(refresh=refresh)
     
     # Compile scan names from DEX and tier list
     scan_names = set(DEX.values())
