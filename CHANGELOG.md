@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2026-10-22
 
 ### Changed
+- Added a drawn Poké Ball browser favicon, reordered navigation by collection tools,
+  battle tools, and utilities, and standardized menu/page labels to title case: Workshop,
+  History, Query Builder, Special Forms, and Tier List.
+- Replaced imported navigation artwork with theme-aware inline drawings for Raids, PvP,
+  and Power up & evolve; drew a Pokédex device for its menu and page heading. Renamed
+  Develop to Power up & evolve and matched the corresponding page-heading icons.
 - Fixed saved collection restore crashing when a running server serves an older sidebar
   template with the new profile script. Optional profile fields no longer block the box;
   templates reload, scripts use content versions, collection reads stay local, and restore

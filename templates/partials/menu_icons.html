@@ -1,0 +1,20 @@
+{# Hand-drawn interface icons. Inherit the menu/page text color in every theme. #}
+{% macro menu_icon(name) -%}
+<svg class="material-icon menu-drawn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  {%- if name == 'pokedex' -%}
+  <rect x="5" y="2.5" width="14" height="19" rx="2"/>
+  <circle cx="8.5" cy="6" r="1"/><path d="M12 6h4"/>
+  <rect x="8" y="9" width="8" height="5" rx=".7"/>
+  <path d="M8 18h3m-1.5-1.5v3M14 18h2"/>
+  {%- elif name == 'raid' -%}
+  <path d="m5 8-2-5 6 3a9 9 0 0 1 6 0l6-3-2 5 2 3-2 6-7 4-7-4-2-6Z"/>
+  <path d="m7 10 3 2-3 1m10-3-3 2 3 1m-8 3 3 2 3-2"/>
+  {%- elif name == 'pvp' -%}
+  <path d="M12 2.5 20 6v6c0 4-4.5 7.5-8 9.5C8.5 19.5 4 16 4 12V6Z"/>
+  <circle cx="12" cy="11.5" r="4"/>
+  <path d="M8 11.5h2.5m3 0H16"/><circle cx="12" cy="11.5" r="1.5"/>
+  {%- elif name == 'improve' -%}
+  <path d="M5 20h14M12 16V3m-5 5 5-5 5 5M6 15l-3-3m15 3 3-3"/>
+  {%- endif -%}
+</svg>
+{%- endmacro %}
