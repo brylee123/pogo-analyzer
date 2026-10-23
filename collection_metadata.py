@@ -23,7 +23,10 @@ def pokemon_metadata(raw):
     mega_active = any(_enabled(raw.get(k)) or _enabled(display.get(k)) for k in ('isMega', 'isMegaEvolved'))
     mega_active = mega_active or 'mega' in form.lower() or 'mega' in str(temporary).lower()
     gigantamax = 'gigantamax' in form.lower() or any(_enabled(raw.get(k)) or _enabled(display.get(k)) for k in ('isGigantamax', 'gigantamax'))
-    dynamax = gigantamax or 'dynamax' in form.lower() or any(_enabled(raw.get(k)) or _enabled(display.get(k)) for k in ('isDynamax', 'dynamax', 'dynamaxLevel'))
+    # PGSharp reports Dynamax as breadModeEnum=1, including traded Pokémon.
+    # Do not treat other enum values or breadMoves alone as confirmed Max status.
+    bread_dynamax = display.get('breadModeEnum') in (1, '1')
+    dynamax = bread_dynamax or gigantamax or 'dynamax' in form.lower() or any(_enabled(raw.get(k)) or _enabled(display.get(k)) for k in ('isDynamax', 'dynamax', 'dynamaxLevel'))
     purified = alignment in (2, '2', 'PURIFIED', 'Purified') or _enabled(raw.get('isPurified'))
     return {
         'species_name': DEX.get(raw.get('pokemonId'), f"Species #{raw.get('pokemonId', '?')}"),

@@ -84,7 +84,10 @@ IV, or species eligibility. Mega includes active Mega forms and a reported Mega 
 Gigantamax is also included in Dynamax. Unsupported or omitted export fields cannot
 be inferred reliably. The expandable export-details view shows form/status fields
 for the two highest-CP hundos of a selected species (#6 for Charizard), without account
-details, to help diagnose export versions that encode forms differently.
+details, to help diagnose export versions that encode forms differently. PGSharp's
+`pokemonDisplay.breadModeEnum: 1` is recognized as Dynamax, including traded Pokémon.
+Other numeric enum values are not guessed from this example; existing explicit
+Gigantamax flags and form names remain supported.
 
 ## Game artwork and optional local assets
 

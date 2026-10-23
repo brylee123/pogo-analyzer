@@ -28,6 +28,29 @@ def export(stamp='2026-01-31T12:00:00Z', xp=100):
 
 
 class CollectionParsingTests(unittest.TestCase):
+    def test_traded_dynamax_blissey_bread_mode_enum(self):
+        raw=export()
+        raw['pokemons']=[{
+            'id':'example-blissey','pokemonId':242,'cp':2689,
+            'cpMultiplier':0.5974000096321106,
+            'additionalCpMultiplier':0.19290000200271606,
+            'individualAttack':15,'individualDefense':7,'individualStamina':12,
+            'tradedTimeMs':1,
+            'breadMoves':[{'moveLevel':2,'moveType':kind} for kind in (1,3,2)],
+            'pokemonDisplay':{'alignment':0,'breadModeEnum':1,'costume':0,'formName':'Unset'}
+        }]
+        for value in (1,'1'):
+            with self.subTest(breadModeEnum=value):
+                raw['pokemons'][0]['pokemonDisplay']['breadModeEnum']=value
+                pokemon=parse_pgo_json(raw)['pokemons'][0]
+                self.assertEqual(('Blissey',242), (pokemon['species_name'],pokemon['pid']))
+                self.assertTrue(pokemon['dynamax'])
+                self.assertFalse(pokemon['gigantamax'])
+        for value in (0,None,99):
+            with self.subTest(breadModeEnum=value):
+                raw['pokemons'][0]['pokemonDisplay']['breadModeEnum']=value
+                self.assertFalse(parse_pgo_json(raw)['pokemons'][0]['dynamax'])
+
     def test_species_identity_and_distinct_event_counters(self):
         data=parse_pgo_json(export())
         pokemon=data['pokemons'][0]
