@@ -80,28 +80,42 @@ nickname, or Pokédex number. The **PoGO search builder** has its own sidebar me
 
 **Special forms & status** groups Mega evolution, Dynamax, Gigantamax, purified,
 costumed, and Shadow Pokémon. Classification uses explicit exported fields, not CP,
-IV, or species eligibility. Mega includes active Mega forms and a reported Mega level;
+IV, or species eligibility. Mega includes active Mega forms, reported levels, and explicit
+evolution history. PGSharp levels nested under `pokemonDisplay.megaEvolutionLevel.level`
+are supported alongside older scalar fields. Expired temporary-evolution fields do not
+by themselves mean the Pokémon is actively Mega evolved.
+
+The box displays clickable **Dmax**, **Gmax**, **Purified**, and **Mega** tags. Use the
+tag checkboxes to match all selected statuses, combined with search and the existing
+box filter (for example, Shiny + Purified + Mega). **Clear tags** resets these checkboxes.
+Mega tags distinguish active evolution, reported level, and history without a level.
 Gigantamax is also included in Dynamax. Unsupported or omitted export fields cannot
 be inferred reliably. The expandable export-details view shows form/status fields
 for the two highest-CP hundos of a selected species (#6 for Charizard), without account
 details, to help diagnose export versions that encode forms differently. PGSharp's
 `pokemonDisplay.breadModeEnum: 1` is recognized as Dynamax, including traded Pokémon;
 `breadModeEnum: 2` identifies Gigantamax even when the exported form name remains normal.
-Gigantamax appears in both Max categories. Other numeric values are not guessed;
+Gigantamax appears in both Max categories. `breadModeEnum: 4` remains unclassified;
+crowned Zacian/Zamazenta retain their named forms without being labeled Dmax or Gmax.
+Other numeric values are not guessed;
 explicit Max flags and form names remain supported.
 
 ## Game artwork and optional local assets
 
-Pokémon, item, and in-game artwork is embedded directly from the
-[Pokémon GO Wiki on Fandom](https://pokemongo.fandom.com/wiki/Pok%C3%A9mon_GO_Wiki)
-using its `Special:FilePath` image redirects. Some generated filenames do not match the
-wiki, and redirects, hotlink restrictions, or unavailable variants may prevent images
-loading. These links are best-effort, not a verified image catalogue.
+Pokémon and item artwork is embedded directly from
+[PokeMiners' Pokémon GO assets](https://github.com/PokeMiners/pogo_assets).
+Images use raw GitHub URLs and a bundled index of verified repository paths for normal,
+shiny, and named-form Pokémon and supported inventory items. Known form artwork is
+tried first, followed by available base artwork; missing variants use an unavailable
+icon. Historical Mega levels do not make the artwork show an active Mega form.
+The index contains filenames only. To refresh it from GitHub's file metadata, run
+`python tools/update_pokeminers_catalog.py`; this does not download any artwork.
 
 The application never automatically downloads, proxies, or saves game images. You can
 optionally provide your own files on the computer running the server. Open **Settings →
-Images & local assets** and choose local first (default, with wiki fallback), local only,
-or wiki only. Local-only mode prevents remote game-art requests. Preferences are per
+Images & local assets** and choose local first (default, with PokeMiners fallback), local only,
+or PokeMiners only. Existing remote-only preferences migrate automatically.
+Local-only mode prevents remote game-art requests. Preferences are per
 profile; the supplied asset library is shared by signed-in users on that server.
 
 From the application folder, create an empty asset structure:
@@ -139,10 +153,11 @@ remotely from Google Fonts. UI icons use inline SVG paths from
 [Pictogrammers Material Design Icons](https://pictogrammers.com/library/mdi/), with
 attribution in `LICENSE-MDI.txt`; no icon font is required.
 
-Artwork requires internet access. Missing filenames, unavailable variants, blocked hotlinks,
-or Fandom outages fall back to an image-unavailable icon while names and controls remain usable.
-Pokémon artwork belongs to its respective rights holders; the wiki is the artwork source,
-not an affiliation or endorsement. See each source page for attribution and licensing details.
+Remote artwork requires internet access. Missing files or GitHub outages fall back to an
+image-unavailable icon while names and controls remain usable. Pokémon artwork belongs
+to The Pokémon Company and Niantic; PokeMiners supplies the mined asset collection.
+See the source repository's disclaimer for attribution; this app is not affiliated with
+or endorsed by those organizations.
 
 ### Why the inventory showed many “Event Points” rows
 
@@ -205,7 +220,7 @@ The search generator bar above the Pokémon table generates queries compatible w
 
 ## 💾 SQLite Caching & Local State
 
-- **Local profile storage:** Exports, profiles, and preferences are stored in `baza_pogo.db` on your server. Optional AI analysis sends the supplied analysis data to your configured provider. Remote fonts, charts, and wiki artwork make browser requests to their respective hosts.
+- **Local profile storage:** Exports, profiles, and preferences are stored in `baza_pogo.db` on your server. Optional AI analysis sends the supplied analysis data to your configured provider. Remote fonts, charts, and PokeMiners artwork make browser requests to their respective hosts.
 - **Response Cache:** AI responses are cached using a cryptographic hash of the input query (IVs, CP, shininess, level). Identical requests bypass the API and return instantly, saving request tokens.
 - **Session Restoration:** Upon page reload, the server automatically reads the last uploaded raw JSON from the database and restores your dashboard.
 

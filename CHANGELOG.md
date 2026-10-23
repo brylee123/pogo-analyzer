@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2026-10-22
 
 ### Changed
+- Read nested PGSharp Mega levels and explicit evolution history; added clickable,
+  combinable Dmax, Gmax, Purified, and Mega tag filters.
+- Switched remote artwork to verified PokeMiners asset paths, with normal/shiny/form
+  lookup, local-first fallback, and migration of saved remote-only preferences.
 - Added History & sessions with session changes, UTC day/week/month/year reports,
   date ranges, historical imports, and automatic full-JSON upload tracking.
 - Show species and Pokédex numbers independently of nicknames; added special-form
@@ -22,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   sign-in, setup, and trainer verification pages.
 - Added per-profile System/Light/Dark modes and Automatic/Mystic/Valor/Instinct accents.
   Automatic follows the trainer's team, with Mystic blue when no team is available.
-- Embedded remote Pokémon GO Wiki artwork with graceful fallbacks. No game-image
+- Embedded remote PokeMiners artwork with graceful fallbacks. No game-image
   files are downloaded, proxied, bundled, or cached by the application.
 - Versioned English AI cache keys and added profile/theme regression tests.
 

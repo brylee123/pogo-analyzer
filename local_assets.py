@@ -11,7 +11,7 @@ from database import get_db
 bp = Blueprint('assets', __name__)
 ASSET_ROOT = Path(os.environ.get('PGS_ASSET_DIR') or config.BASE_DIR / 'local_assets').resolve()
 EXTENSIONS = {'.png','.webp','.jpg','.jpeg','.gif','.svg'}
-MODES = ('local-first','local-only','wiki')
+MODES = ('local-first','local-only','pokeminers')
 
 
 def init_assets():
@@ -19,6 +19,7 @@ def init_assets():
         db.execute('''CREATE TABLE IF NOT EXISTS user_asset_preferences(
             user_id INTEGER PRIMARY KEY REFERENCES app_users(id),
             mode TEXT NOT NULL DEFAULT 'local-first')''')
+        db.execute("UPDATE user_asset_preferences SET mode='pokeminers' WHERE mode='wiki'")
 
 
 def safe_asset(relative):
@@ -72,7 +73,7 @@ def asset_catalog():
 def asset_preferences():
     data=request.get_json(silent=True)
     if not isinstance(data,dict) or set(data)!={'mode'} or data['mode'] not in MODES:
-        return jsonify({'error':'Choose local-first, local-only, or wiki'}),400
+        return jsonify({'error':'Choose local-first, local-only, or pokeminers'}),400
     with closing(get_db()) as db, db:
         db.execute('''INSERT INTO user_asset_preferences(user_id,mode) VALUES(?,?)
             ON CONFLICT(user_id) DO UPDATE SET mode=excluded.mode''',(current_user_id(),data['mode']))

@@ -28,6 +28,14 @@
     </div>
   </div>
 
+  <fieldset class="status-filters">
+    <legend>Filter by tags · match all selected</legend>
+    <label><input type="checkbox" data-status-filter="dynamax"> Dmax (Dynamax)</label>
+    <label><input type="checkbox" data-status-filter="gigantamax"> Gmax (Gigantamax)</label>
+    <label><input type="checkbox" data-status-filter="purified"> Purified</label>
+    <label><input type="checkbox" data-status-filter="mega"> Mega evolution / history</label>
+    <button type="button" class="btn btn-outline btn-sm" id="clear-status-filters">Clear tags</button>
+  </fieldset>
   <div class="toolbar">
     <input type="text" id="poke-search" placeholder="Species, nickname, or Pokédex number…">
     <select id="poke-filter">
