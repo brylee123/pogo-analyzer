@@ -144,6 +144,37 @@ tbody tr:hover{background:var(--bg3)}
 .box-tag-stat{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--border2);font-size:13px;min-width:0}
 .box-tag-stat>span{display:flex;align-items:center;gap:9px;min-width:0}
 .box-tag-stat strong{font-family:var(--fm);font-size:13px;white-space:nowrap}
+.dex-overview{display:flex;align-items:center;gap:24px;justify-content:space-between;margin-top:20px}
+.dex-overview h2{font-size:28px;margin:6px 0;font-weight:500}
+.dex-overview progress{width:40%;height:12px;accent-color:var(--accent)}
+.dex-categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0}
+.dex-category>span{display:flex;align-items:center;gap:8px}
+.dex-category small{font-size:13px;font-weight:400}
+.dex-toolbar{align-items:end;flex-wrap:wrap}
+.dex-toolbar label{min-width:140px}
+.dex-table-wrap{max-height:720px;overflow:auto;isolation:isolate}
+#dex-table{min-width:1350px;border-collapse:separate;border-spacing:0}
+#dex-table thead th{position:sticky;top:0;background:var(--bg3);z-index:2;white-space:nowrap;text-align:center}
+#dex-table thead th>.game-art{display:block;margin:0 auto 5px}
+#dex-table .dex-species-heading,#dex-table .dex-species{position:sticky;left:0;min-width:230px;width:230px;background:var(--bg2);z-index:1;text-align:left}
+#dex-table .dex-species-heading{z-index:3;background:var(--bg3)}
+.dex-species-content{display:flex;align-items:center;gap:8px;min-height:50px}
+.dex-name,.dex-species summary{display:flex;flex-direction:column;gap:4px}
+.dex-species details{min-width:0}
+.dex-species summary{cursor:pointer}
+.dex-species summary::after{content:'Show held forms';font-size:10px;color:var(--accent);font-weight:400}
+.dex-species details[open] summary::after{content:'Hide held forms'}
+.dex-held-forms{font-size:11px;color:var(--muted);padding:8px 0 0 16px;max-width:180px;overflow-wrap:anywhere}
+.dex-held-forms li{margin:5px 0}
+.dex-cell-status{text-align:center;font-size:12px;white-space:nowrap}
+.dex-cell-status .mdi-shell{width:16px;height:16px;margin-right:3px}
+.dex-cell-status .mdi-icon{width:16px;height:16px}
+.dex-owned{color:var(--green);font-weight:600}
+.dex-missing,.dex-unknown,.dex-not_catalogued{color:var(--muted)}
+#dex-table .dex-selected-column{background:var(--accent-container);color:var(--on-accent-container)}
+.dex-unowned>.game-art img{filter:grayscale(1);opacity:.35}
+.dex-notes{margin-top:20px}
+@media(max-width:600px){.dex-overview{align-items:stretch;flex-direction:column;gap:12px}.dex-overview progress{width:100%}.dex-categories{grid-template-columns:repeat(2,minmax(0,1fr))}.dex-toolbar label{flex:1;min-width:120px}.dex-toolbar input,.dex-toolbar select{width:100%;min-width:0}#dex-table .dex-species-heading,#dex-table .dex-species{min-width:170px;width:170px}.dex-species-content{gap:3px}.dex-species-content>.game-art{width:30px;height:30px;margin-right:3px}.dex-species strong{font-size:12px}}
 .history-metrics,.form-categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:18px 0}
 .metric-tile{border:1px solid var(--border2);border-radius:16px;background:var(--bg2);padding:16px;text-align:left;color:var(--text);display:flex;flex-direction:column;gap:6px}
 .metric-tile span{font-size:12px;color:var(--muted)}

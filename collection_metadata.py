@@ -31,6 +31,16 @@ def _mega_form(value, pid):
     return token in ('mega', 'megax', 'megay', 'megaevolution')
 
 
+def exported_size(raw):
+    """PGSharp size enum: 0 unset, 1 XXS, 2 XS, 3 average, 4 XL, 5 XXL."""
+    value = raw.get('sizeName') or raw.get('size')
+    if isinstance(value, bool):
+        return None
+    token = str(value).strip().upper()
+    return {'1':'xxs','2':'xs','3':'average','4':'xl','5':'xxl',
+            'XXS':'xxs','XS':'xs','M':'average','AVERAGE':'average','XL':'xl','XXL':'xxl'}.get(token)
+
+
 def pokemon_metadata(raw):
     display = raw.get('pokemonDisplay') or {}
     form = str(display.get('formName') or raw.get('formName') or '')
@@ -51,10 +61,12 @@ def pokemon_metadata(raw):
     bread_dynamax = display.get('breadModeEnum') in (1, '1')
     dynamax = bread_dynamax or gigantamax or 'dynamax' in form.lower() or any(_enabled(raw.get(k)) or _enabled(display.get(k)) for k in ('isDynamax', 'dynamax', 'dynamaxLevel'))
     purified = alignment in (2, '2', 'PURIFIED', 'Purified') or _enabled(raw.get('isPurified'))
+    size = exported_size(raw)
     return {
         'species_name': DEX.get(raw.get('pokemonId'), f"Species #{raw.get('pokemonId', '?')}"),
         'form': form, 'form_slug': slug(form), 'purified': purified,
         'hatched': _enabled(raw.get('hatchedFromEgg')),
+        'size': size, 'size_known': size is not None, 'xxl': size == 'xxl', 'xxs': size == 'xxs',
         'mega_active': bool(mega_active), 'mega_level': mega_level,
         'mega_history': bool(mega_history or mega_level),
         'mega': bool(mega_active or mega_history or mega_level),

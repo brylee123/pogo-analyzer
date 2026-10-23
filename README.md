@@ -59,6 +59,34 @@ Open **Appearance** in the sidebar, even before uploading a file, or **Settings 
 
 ## History, Pokémon identity, and special forms
 
+### Living Pokédex
+
+Open **Pokédex** in the sidebar to compare your current collection with the national
+catalog (#1–#1025). One held Pokémon of any form fills its Pokédex number in **All Pokémon**.
+Shiny, Lucky, XXL, XXS, Gmax, Mega, Shadow, Purified, and Hundo each have a separate
+checklist. Categories overlap: one Pokémon can fill several entries. Counts within
+each row show individual Pokémon held; completion counts distinct Pokédex numbers.
+
+Choose a category and **Owned**, **Missing**, or **Unknown**, search by species or number,
+and browse pages of 40 species. Expand an owned species to see held forms. Refresh
+or upload a newer collection to update ownership; historical exports do not fill the
+living dex. Removing the last held specimen makes that entry missing again.
+
+Size comes from PGSharp's explicit `size`/`sizeName` category (1=XXS, 5=XXL). Unset,
+missing, or unsupported size values remain unknown. A missing XXL/XXS entry is not
+confirmed if a held specimen's size is unknown. Mega includes currently held Pokémon
+with active forms, reported levels, or explicit Mega history; it does not require
+remaining actively Mega evolved. Gmax uses the existing confirmed export status.
+
+Mega/Gmax denominators use the bundled named-form asset catalog, extended by any
+explicit matching status in your own export. A dash means no catalogued form. This
+is not a release calendar: national species and variants may not yet be obtainable,
+and the checklist does not determine which species can be traded. Species names
+through #1025 follow the [PokeAPI species dataset](https://github.com/PokeAPI/pokeapi/blob/master/data/v2/csv/pokemon_species.csv);
+named-form paths come from PokeMiners. No game images are bundled.
+
+### Export history
+
 Open **History & sessions** in the sidebar for individual export comparisons, daily,
 weekly (ISO weeks), monthly, yearly, and custom date-range reports. Select a session
 to see Pokémon added, removed, or changed, plus inventory, currency, and trainer-stat

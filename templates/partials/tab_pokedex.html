@@ -1,0 +1,23 @@
+<section class="panel" id="panel-pokedex">
+  <div class="panel-title">{{ mdi('pokeball') }}<span>Pokédex</span></div>
+  <p class="supporting-text">Your living dex: only Pokémon currently in your collection count. Any variant fills its Pokédex number; the other categories are separate checklists.</p>
+  <div class="card dex-overview">
+    <div><span class="supporting-text" id="dex-category-title">All Pokémon</span><h2 id="dex-progress-text">Loading collection…</h2><p class="supporting-text" id="dex-progress-detail"></p></div>
+    <progress id="dex-progress" value="0" max="1" aria-label="Living dex completion"></progress>
+  </div>
+  <div id="dex-categories" class="dex-categories" aria-label="Pokédex categories"></div>
+  <div class="toolbar dex-toolbar">
+    <label>Category<select id="dex-category"><option value="all">All Pokémon</option></select></label>
+    <label>Show<select id="dex-ownership"><option value="all">Owned & missing</option><option value="owned">Owned</option><option value="missing">Missing</option><option value="unknown">Unknown</option></select></label>
+    <label>Search<input id="dex-search" type="search" placeholder="Species or Pokédex number"></label>
+    <button id="dex-refresh" class="btn btn-outline" type="button">{{ mdi('refresh') }}Refresh</button>
+  </div>
+  <p id="dex-status" class="supporting-text" role="status"></p>
+  <div class="tbl-wrap dex-table-wrap"><table id="dex-table"><thead id="dex-head"></thead><tbody id="dex-body"></tbody></table></div>
+  <div class="toolbar pagination"><button id="dex-prev" class="btn btn-outline btn-sm" type="button">Previous</button><span id="dex-page"></span><button id="dex-next" class="btn btn-outline btn-sm" type="button">Next</button></div>
+  <details class="card dex-notes"><summary>How this checklist works</summary>
+    <p class="supporting-text">One row per national Pokédex number, with all held forms grouped together. Counts show how many matching Pokémon you currently hold. Expand an owned species to see its exported forms. A Pokémon can fill several categories at once.</p>
+    <p class="supporting-text">XXL and XXS use the export's size classification. Unknown means a held Pokémon has no usable size field, so absence of that size cannot be confirmed. Mega counts currently held Pokémon with an active Mega form, a Mega level, or explicit evolution history.</p>
+    <p class="supporting-text">The national catalog includes species and variants that may not yet be obtainable in Pokémon GO. A dash means no Mega/Gmax form is listed in the bundled catalog. This is a collection checklist, not a release calendar or trading-eligibility guide.</p>
+  </details>
+</section>
