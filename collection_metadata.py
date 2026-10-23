@@ -54,6 +54,7 @@ def pokemon_metadata(raw):
     return {
         'species_name': DEX.get(raw.get('pokemonId'), f"Species #{raw.get('pokemonId', '?')}"),
         'form': form, 'form_slug': slug(form), 'purified': purified,
+        'hatched': _enabled(raw.get('hatchedFromEgg')),
         'mega_active': bool(mega_active), 'mega_level': mega_level,
         'mega_history': bool(mega_history or mega_level),
         'mega': bool(mega_active or mega_history or mega_level),

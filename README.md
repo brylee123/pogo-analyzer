@@ -85,10 +85,17 @@ evolution history. PGSharp levels nested under `pokemonDisplay.megaEvolutionLeve
 are supported alongside older scalar fields. Expired temporary-evolution fields do not
 by themselves mean the Pokémon is actively Mega evolved.
 
-The box displays clickable **Dmax**, **Gmax**, **Purified**, and **Mega** tags. Use the
+The box displays clickable **Dmax**, **Gmax**, **Purified**, **Mega**, and **Hatched** tags. Use the
 tag checkboxes to match all selected statuses, combined with search and the existing
 box filter (for example, Shiny + Purified + Mega). **Clear tags** resets these checkboxes.
 Mega tags distinguish active evolution, reported level, and history without a level.
+Hatched comes from the explicit PGSharp `hatchedFromEgg` flag. Eggs still waiting to
+hatch are excluded from the Pokémon list, and missing origin fields are not inferred.
+
+Expand **Box Analytics** to see the full collection total, Stardust, and counts for
+Shiny, Hundo, Nando (all three IVs zero), Shadow, Lucky, Dmax, Gmax, Purified, Mega,
+Hatched, Costumed, Favorite, and Event tags. These counts overlap and always describe
+the whole collection. The sidebar is reserved for the player profile and navigation.
 Gigantamax is also included in Dynamax. Unsupported or omitted export fields cannot
 be inferred reliably. The expandable export-details view shows form/status fields
 for the two highest-CP hundos of a selected species (#6 for Charizard), without account
@@ -110,6 +117,15 @@ tried first, followed by available base artwork; missing variants use an unavail
 icon. Historical Mega levels do not make the artwork show an active Mega form.
 The index contains filenames only. To refresh it from GitHub's file metadata, run
 `python tools/update_pokeminers_catalog.py`; this does not download any artwork.
+
+Status icons use PokeMiners' Filters, Evolution, and Menu Icons artwork, plus the
+Stardust inventory icon. Their original pixels and colors are preserved across light,
+dark, and team themes. A dark backing keeps white game icons visible on light surfaces.
+Tags without a verified game icon keep a vector fallback and a text label. Nando does
+not use the zero-star appraisal icon, because zero stars does not mean zero IVs.
+You can supply `local_assets/icons/shiny.png`, `icons/hatched.png`, etc., or use
+`icon:shiny` keys in the local manifest. Local-only mode also blocks remote status-icon
+requests; text labels and vector fallbacks remain available.
 
 The application never automatically downloads, proxies, or saves game images. You can
 optionally provide your own files on the computer running the server. Open **Settings →

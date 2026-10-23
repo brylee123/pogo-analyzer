@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2026-10-22
 
 ### Changed
+- Replaced placeholder status symbols with original-color PokeMiners game icons.
+- Added an explicit Hatched tag and filter, including CSV output, and moved the
+  sidebar counters into Box Analytics with counts for every displayed tag.
 - Read nested PGSharp Mega levels and explicit evolution history; added clickable,
   combinable Dmax, Gmax, Purified, and Mega tag filters.
 - Switched remote artwork to verified PokeMiners asset paths, with normal/shiny/form
