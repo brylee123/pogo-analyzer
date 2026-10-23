@@ -95,7 +95,7 @@ function renderBoxTagStats() {
 }
 function uploadHistoryNotice(result) {
   const target=$('upload-history-status');
-  if(target && result?.history)target.textContent=result.history.message || (result.history.status==='duplicate'?'This export is already in history.':'Export recorded in History & sessions.');
+  if(target && result?.history)target.textContent=result.history.message || (result.history.status==='duplicate'?'This export is already in history.':'Export recorded in History.');
 }
 
 // ── Upload ────────────────────────────────────────────────────────────────────

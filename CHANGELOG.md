@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2026-10-22
 
 ### Changed
+- Added a drawn Poké Ball browser favicon, reordered navigation by collection tools,
+  battle tools, and utilities, and standardized menu/page labels to title case: Workshop,
+  History, Query Builder, Special Forms, and Tier List.
 - Replaced imported navigation artwork with theme-aware inline drawings for Raids, PvP,
   and Power up & evolve; drew a Pokédex device for its menu and page heading. Renamed
   Develop to Power up & evolve and matched the corresponding page-heading icons.

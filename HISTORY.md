@@ -1,6 +1,6 @@
 # Historical PGSharp snapshots
 
-Open **History & sessions** in the sidebar. This screen is available even when no
+Open **History** in the sidebar. This screen is available even when no
 current collection is loaded. Normal full JSON uploads are recorded automatically;
 use the history import controls to add multiple older exports or the current export.
 

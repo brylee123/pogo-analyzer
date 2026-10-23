@@ -94,7 +94,7 @@ named-form paths come from PokeMiners. No game images are bundled.
 
 ### Export history
 
-Open **History & sessions** in the sidebar for individual export comparisons, daily,
+Open **History** in the sidebar for individual export comparisons, daily,
 weekly (ISO weeks), monthly, yearly, and custom date-range reports. Select a session
 to see Pokémon added, removed, or changed, plus inventory, currency, and trainer-stat
 changes. A session means the interval between two exports, not a recorded play/login
@@ -111,9 +111,9 @@ means absent from the next export, not proof of a transfer.
 
 The Pokémon list always displays species, Pokédex number, CP, IV, and level. Nicknames
 appear separately instead of replacing the species name. Search accepts species,
-nickname, or Pokédex number. The **PoGO search builder** has its own sidebar menu.
+nickname, or Pokédex number. The **Query Builder** has its own sidebar menu.
 
-**Special forms & status** groups Mega evolution, Dynamax, Gigantamax, purified,
+**Special Forms** groups Mega evolution, Dynamax, Gigantamax, purified,
 costumed, and Shadow Pokémon. Classification uses explicit exported fields, not CP,
 IV, or species eligibility. Mega includes active Mega forms, reported levels, and explicit
 evolution history. PGSharp levels nested under `pokemonDisplay.megaEvolutionLevel.level`
@@ -177,9 +177,9 @@ league-specific eligibility, Events ingestion, and inventory grouping.
 | :--- | :--- |
 | 🧑‍💼 **Player Profile** | Beautiful sidebar profile card displaying your username, trainer level, team affiliation (Mystic ❄️, Valor 🔥, Instinct ⚡), PokéCoins, and total Stardust. |
 | 🎮 **Pokémon Box** | Visible species, Pokédex number, nickname, CP, IV, and level with searching, sorting, and filters. |
-| **History & sessions** | Session detail, day/week/month/year summaries, custom ranges, and historical JSON imports. |
-| **Special forms & status** | Mega, Dynamax, Gigantamax, purified, costumed, and Shadow filters based on exported status. |
-| **PoGO search builder** | Dedicated transfer/search string generator for bulk box management. |
+| **History** | Session detail, day/week/month/year summaries, custom ranges, and historical JSON imports. |
+| **Special Forms** | Mega, Dynamax, Gigantamax, purified, costumed, and Shadow filters based on exported status. |
+| **Query Builder** | Dedicated transfer/search string generator for bulk box management. |
 | ⚔️ **Raid Attackers** | PVE attacker ranks utilizing a custom DPS×TDO proxy combined with meta tier list multipliers to identify your top attackers. |
 | 🏆 **PvP Analyzer** | Evaluates Great, Ultra, and Master League candidates with **IV Rank** (stat-product, matching PvPoke methodology) and displays detailed badge indicators. |
 | 🤖 **PvP Team Builder** | AI-powered 3-pokemon team builder (Lead, Safe Switch, Closer) tailored to your box, analyzing type synergies and meta counters. |
