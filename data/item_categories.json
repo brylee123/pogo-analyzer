@@ -1,0 +1,812 @@
+{
+  "fusionresourceblackkyurem": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": false
+  },
+  "fusionresourcedawnwingsnecrozma": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": false
+  },
+  "fusionresourceduskmanenecrozma": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": false
+  },
+  "fusionresourcewhitekyurem": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": false
+  },
+  "battlepassticket": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "beans": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": false
+  },
+  "beastball": {
+    "category": "ITEM_CATEGORY_POKEBALL",
+    "order": 2,
+    "in_bag": true
+  },
+  "blukberry": {
+    "category": "ITEM_CATEGORY_FOOD",
+    "order": 3,
+    "in_bag": true
+  },
+  "breakfast": {
+    "category": "ITEM_CATEGORY_UTILITES",
+    "order": 9,
+    "in_bag": true
+  },
+  "dragonscale": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": true
+  },
+  "1410": {
+    "category": "ITEM_CATEGORY_ENHANCED_CURRENCY",
+    "order": 99,
+    "in_bag": false
+  },
+  "1411": {
+    "category": "ITEM_CATEGORY_ENHANCED_CURRENCY_HOLDER",
+    "order": 9,
+    "in_bag": true
+  },
+  "eventpasspointgofest01": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "eventpasspointgofest02": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "eventpasspointgotour01": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "eventpasspointgotour02": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "eventpasspointgowildarea01": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "eventpasspointliveops01": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "eventpasspointliveops02": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "eventpasspointliveops03": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "eventpasspointliveops04": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "2105": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "2106": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "2107": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "2108": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "2109": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "2110": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "2151": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "2152": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "2153": {
+    "category": "ITEM_CATEGORY_EVENT_PASS_POINT",
+    "order": 99,
+    "in_bag": false
+  },
+  "eventticket02": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket02togift": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket03": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket03togift": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket04": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket04togift": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket05": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket05togift": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket06": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket06togift": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket07": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket07togift": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket08": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket08togift": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket09": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket09togift": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket10": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticket10togift": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticketgray": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticketgraytogift": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticketpink": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "eventticketpinktogift": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2205": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2237": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2206": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2238": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2207": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2208": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2240": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2210": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2211": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2243": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2212": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2244": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2213": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2214": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2246": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2216": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "2248": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "evergreenticket": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "evergreentickettogift": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "freeraidticket": {
+    "category": "ITEM_CATEGORY_RAID_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "friendgiftbox": {
+    "category": "ITEM_CATEGORY_FRIEND_GIFT_BOX",
+    "order": 4,
+    "in_bag": true
+  },
+  "gen4evolutionstone": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": true
+  },
+  "gen5evolutionstone": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": true
+  },
+  "giovannimap": {
+    "category": "ITEM_CATEGORY_INCIDENT_TICKET",
+    "order": 6,
+    "in_bag": true
+  },
+  "globaleventticket": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "globaleventtickettogift": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "goldenpinapberry": {
+    "category": "ITEM_CATEGORY_FOOD",
+    "order": 3,
+    "in_bag": true
+  },
+  "goldenrazzberry": {
+    "category": "ITEM_CATEGORY_FOOD",
+    "order": 3,
+    "in_bag": true
+  },
+  "greatball": {
+    "category": "ITEM_CATEGORY_POKEBALL",
+    "order": 2,
+    "in_bag": true
+  },
+  "hyperpotion": {
+    "category": "ITEM_CATEGORY_MEDICINE",
+    "order": 1,
+    "in_bag": true
+  },
+  "incensebelugabox": {
+    "category": "ITEM_CATEGORY_INCENSE",
+    "order": 5,
+    "in_bag": true
+  },
+  "incensedailyadventure": {
+    "category": "ITEM_CATEGORY_INCENSE",
+    "order": 5,
+    "in_bag": true
+  },
+  "incensedaybonus": {
+    "category": "ITEM_CATEGORY_INCENSE",
+    "order": 5,
+    "in_bag": true
+  },
+  "incensenightbonus": {
+    "category": "ITEM_CATEGORY_INCENSE",
+    "order": 5,
+    "in_bag": true
+  },
+  "incenseordinary": {
+    "category": "ITEM_CATEGORY_INCENSE",
+    "order": 5,
+    "in_bag": true
+  },
+  "incensesparkly": {
+    "category": "ITEM_CATEGORY_INCENSE",
+    "order": 5,
+    "in_bag": true
+  },
+  "incubatorbasic": {
+    "category": "ITEM_CATEGORY_INCUBATOR",
+    "order": 6,
+    "in_bag": true
+  },
+  "incubatorbasicunlimited": {
+    "category": "ITEM_CATEGORY_INCUBATOR",
+    "order": 6,
+    "in_bag": true
+  },
+  "905": {
+    "category": "ITEM_CATEGORY_INCUBATOR",
+    "order": 6,
+    "in_bag": false
+  },
+  "incubatorsuper": {
+    "category": "ITEM_CATEGORY_INCUBATOR",
+    "order": 6,
+    "in_bag": true
+  },
+  "incubatortimed": {
+    "category": "ITEM_CATEGORY_INCUBATOR",
+    "order": 6,
+    "in_bag": true
+  },
+  "itemstorageupgrade": {
+    "category": "ITEM_CATEGORY_INVENTORY_UPGRADE",
+    "order": 99,
+    "in_bag": false
+  },
+  "kingsrock": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": true
+  },
+  "leadermap": {
+    "category": "ITEM_CATEGORY_INCIDENT_TICKET",
+    "order": 6,
+    "in_bag": true
+  },
+  "leadermapfragment": {
+    "category": "ITEM_CATEGORY_INCIDENT_TICKET",
+    "order": 6,
+    "in_bag": true
+  },
+  "luckyegg": {
+    "category": "ITEM_CATEGORY_XP_BOOST",
+    "order": 5,
+    "in_bag": true
+  },
+  "luckyfriendapplicator": {
+    "category": "ITEM_CATEGORY_XP_BOOST",
+    "order": 5,
+    "in_bag": true
+  },
+  "masterball": {
+    "category": "ITEM_CATEGORY_POKEBALL",
+    "order": 2,
+    "in_bag": true
+  },
+  "maxboost": {
+    "category": "ITEM_CATEGORY_BOOST",
+    "order": 5,
+    "in_bag": true
+  },
+  "maxpotion": {
+    "category": "ITEM_CATEGORY_MEDICINE",
+    "order": 1,
+    "in_bag": true
+  },
+  "maxrevive": {
+    "category": "ITEM_CATEGORY_MEDICINE",
+    "order": 1,
+    "in_bag": true
+  },
+  "metalcoat": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": true
+  },
+  "movererollelitefastattack": {
+    "category": "ITEM_CATEGORY_MOVE_REROLL",
+    "order": 10,
+    "in_bag": true
+  },
+  "movererollelitespecialattack": {
+    "category": "ITEM_CATEGORY_MOVE_REROLL",
+    "order": 10,
+    "in_bag": true
+  },
+  "movererollfastattack": {
+    "category": "ITEM_CATEGORY_MOVE_REROLL",
+    "order": 10,
+    "in_bag": true
+  },
+  "movererollotherspecialattacka": {
+    "category": "ITEM_CATEGORY_MOVE_REROLL",
+    "order": 10,
+    "in_bag": true
+  },
+  "movererollspecialattack": {
+    "category": "ITEM_CATEGORY_MOVE_REROLL",
+    "order": 10,
+    "in_bag": true
+  },
+  "mp": {
+    "category": "ITEM_CATEGORY_MP",
+    "order": 99,
+    "in_bag": false
+  },
+  "mpreplenish": {
+    "category": "ITEM_CATEGORY_BREAD",
+    "order": 6,
+    "in_bag": true
+  },
+  "nanabberry": {
+    "category": "ITEM_CATEGORY_FOOD",
+    "order": 3,
+    "in_bag": true
+  },
+  "otherevolutionstonea": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": false
+  },
+  "otherevolutionstonemaplea": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": false
+  },
+  "otherevolutionstonemapleb": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": false
+  },
+  "otherevolutionstonemaplec": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": false
+  },
+  "paidraidticket": {
+    "category": "ITEM_CATEGORY_RAID_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "pinapberry": {
+    "category": "ITEM_CATEGORY_FOOD",
+    "order": 3,
+    "in_bag": true
+  },
+  "poffin": {
+    "category": "ITEM_CATEGORY_BUDDY_EXCLUSIVE_FOOD",
+    "order": 6,
+    "in_bag": true
+  },
+  "pokemonstorageupgrade": {
+    "category": "ITEM_CATEGORY_INVENTORY_UPGRADE",
+    "order": 99,
+    "in_bag": false
+  },
+  "pokeball": {
+    "category": "ITEM_CATEGORY_POKEBALL",
+    "order": 2,
+    "in_bag": true
+  },
+  "postcardinventory": {
+    "category": "ITEM_CATEGORY_POSTCARD_INVENTORY",
+    "order": 4,
+    "in_bag": true
+  },
+  "postcardstorageupgrade": {
+    "category": "ITEM_CATEGORY_INVENTORY_UPGRADE",
+    "order": 99,
+    "in_bag": false
+  },
+  "potion": {
+    "category": "ITEM_CATEGORY_MEDICINE",
+    "order": 1,
+    "in_bag": true
+  },
+  "premierball": {
+    "category": "ITEM_CATEGORY_POKEBALL",
+    "order": 2,
+    "in_bag": true
+  },
+  "rarecandy": {
+    "category": "ITEM_CATEGORY_CANDY",
+    "order": 6,
+    "in_bag": true
+  },
+  "razzberry": {
+    "category": "ITEM_CATEGORY_FOOD",
+    "order": 3,
+    "in_bag": true
+  },
+  "remoteraidticket": {
+    "category": "ITEM_CATEGORY_RAID_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "resourcecrownedzacian": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": false
+  },
+  "resourcecrownedzamazenta": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": false
+  },
+  "revive": {
+    "category": "ITEM_CATEGORY_MEDICINE",
+    "order": 1,
+    "in_bag": true
+  },
+  "1407": {
+    "category": "ITEM_CATEGORY_ROUTE_MAKER",
+    "order": 9,
+    "in_bag": true
+  },
+  "shadowgem": {
+    "category": "ITEM_CATEGORY_INCIDENT_TICKET",
+    "order": 6,
+    "in_bag": true
+  },
+  "shadowgemfragment": {
+    "category": "ITEM_CATEGORY_INCIDENT_TICKET",
+    "order": 6,
+    "in_bag": true
+  },
+  "singlestatincrease": {
+    "category": "ITEM_CATEGORY_STAT_INCREASE",
+    "order": 6,
+    "in_bag": true
+  },
+  "804": {
+    "category": "ITEM_CATEGORY_UTILITES",
+    "order": 9,
+    "in_bag": true
+  },
+  "specialcamera": {
+    "category": "ITEM_CATEGORY_CAMERA",
+    "order": 9,
+    "in_bag": true
+  },
+  "starpiece": {
+    "category": "ITEM_CATEGORY_STARDUST_BOOST",
+    "order": 5,
+    "in_bag": true
+  },
+  "stickerinventory": {
+    "category": "ITEM_CATEGORY_STICKER",
+    "order": 4,
+    "in_bag": true
+  },
+  "sunstone": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": true
+  },
+  "superpotion": {
+    "category": "ITEM_CATEGORY_MEDICINE",
+    "order": 1,
+    "in_bag": true
+  },
+  "teamchange": {
+    "category": "ITEM_CATEGORY_TEAM_CHANGE",
+    "order": 6,
+    "in_bag": true
+  },
+  "ticketcitysafari00": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "ticketcitysafari01": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "ticketcitysafari02": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "ticketcitysafari04": {
+    "category": "ITEM_CATEGORY_GLOBAL_EVENT_TICKET",
+    "order": 7,
+    "in_bag": true
+  },
+  "triplestatincrease": {
+    "category": "ITEM_CATEGORY_STAT_INCREASE",
+    "order": 6,
+    "in_bag": true
+  },
+  "troydisk": {
+    "category": "ITEM_CATEGORY_DISK",
+    "order": 8,
+    "in_bag": true
+  },
+  "troydiskglacial": {
+    "category": "ITEM_CATEGORY_DISK",
+    "order": 8,
+    "in_bag": true
+  },
+  "troydiskmagnetic": {
+    "category": "ITEM_CATEGORY_DISK",
+    "order": 8,
+    "in_bag": true
+  },
+  "troydiskmossy": {
+    "category": "ITEM_CATEGORY_DISK",
+    "order": 8,
+    "in_bag": true
+  },
+  "troydiskrainy": {
+    "category": "ITEM_CATEGORY_DISK",
+    "order": 8,
+    "in_bag": true
+  },
+  "troydisksparkly": {
+    "category": "ITEM_CATEGORY_DISK",
+    "order": 8,
+    "in_bag": true
+  },
+  "ultraball": {
+    "category": "ITEM_CATEGORY_POKEBALL",
+    "order": 2,
+    "in_bag": true
+  },
+  "upgrade": {
+    "category": "ITEM_CATEGORY_EVOLUTION_REQUIREMENT",
+    "order": 11,
+    "in_bag": true
+  },
+  "weparberry": {
+    "category": "ITEM_CATEGORY_FOOD",
+    "order": 3,
+    "in_bag": true
+  },
+  "wildball": {
+    "category": "ITEM_CATEGORY_POKEBALL",
+    "order": 2,
+    "in_bag": true
+  },
+  "wildballpremier": {
+    "category": "ITEM_CATEGORY_POKEBALL",
+    "order": 2,
+    "in_bag": true
+  },
+  "xlrarecandy": {
+    "category": "ITEM_CATEGORY_CANDY",
+    "order": 6,
+    "in_bag": true
+  },
+  "xattack": {
+    "category": "ITEM_CATEGORY_BOOST",
+    "order": 5,
+    "in_bag": true
+  },
+  "xdefense": {
+    "category": "ITEM_CATEGORY_BOOST",
+    "order": 5,
+    "in_bag": true
+  },
+  "xmiracle": {
+    "category": "ITEM_CATEGORY_BOOST",
+    "order": 5,
+    "in_bag": true
+  }
+}

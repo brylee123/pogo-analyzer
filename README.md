@@ -32,7 +32,6 @@ For a direct start that overrides an existing `.env`:
 .venv\Scripts\python.exe app.py --host 0.0.0.0
 ```
 
-For local-only access, start directly with `--host 127.0.0.1`. A direct start
 without command-line options honors `HOST` and `PORT` from the environment or
 `.env`, falling back to `0.0.0.0` and `6090`. `--port` overrides the port.
 Debug mode remains disabled. Do not port-forward this development server.
@@ -135,91 +134,34 @@ crowned Zacian/Zamazenta retain their named forms without being labeled Dmax or 
 Other numeric values are not guessed;
 explicit Max flags and form names remain supported.
 
-## Game artwork and optional local assets
+## Game artwork
 
-Pokémon and item artwork is embedded directly from
-[PokeMiners' Pokémon GO assets](https://github.com/PokeMiners/pogo_assets).
-Images use raw GitHub URLs and a bundled index of verified repository paths for normal,
-shiny, and named-form Pokémon and supported inventory items. Known form artwork is
-tried first, followed by available base artwork; missing variants use an unavailable
-icon. Historical Mega levels do not make the artwork show an active Mega form.
-The index contains filenames only. To refresh it from GitHub's file metadata, run
-`python tools/update_pokeminers_catalog.py`; this does not download any artwork.
+Artwork and game icons load directly from [PokeMiners](https://github.com/PokeMiners/pogo_assets).
+The bundled catalog contains verified filenames only, with form and base-art fallbacks.
+Run `python tools/update_pokeminers_catalog.py` to refresh the index without downloading images.
+Variant badges use game-inspired colors on a blue backing; Stardust and team emblems retain
+their original colors. Missing images show a vector placeholder.
 
-Status icons use PokeMiners' Filters, Evolution, and Menu Icons artwork, plus the
-Stardust inventory icon. Their original pixels and colors are preserved across light,
-dark, and team themes. A dark backing keeps white game icons visible on light surfaces.
-Tags without a verified game icon keep a vector fallback and a text label. Nando does
-not use the zero-star appraisal icon, because zero stars does not mean zero IVs.
-You can supply `local_assets/icons/shiny.png`, `icons/hatched.png`, etc., or use
-`icon:shiny` keys in the local manifest. Local-only mode also blocks remote status-icon
-requests; text labels and vector fallbacks remain available.
+## Inventory and progression
 
-The application never automatically downloads, proxies, or saves game images. You can
-optionally provide your own files on the computer running the server. Open **Settings →
-Images & local assets** and choose local first (default, with PokeMiners fallback), local only,
-or PokeMiners only. Existing remote-only preferences migrate automatically.
-Local-only mode prevents remote game-art requests. Preferences are per
-profile; the supplied asset library is shared by signed-in users on that server.
+Inventory has one item per row in two columns: Bag and Other owned items. Bag categories
+follow PokeMiners Game Master's `ITEM_INVENTORY_UPDATE_SETTINGS`; items within each category
+sort by item ID. Unknown items stay visible in Other. Event/GO Pass points, Max Particles,
+and Gimmighoul Coins appear with other resources.
 
-From the application folder, create an empty asset structure:
-
-```powershell
-python prepare_assets.py
-```
-
-If using the Windows virtual environment, use `.venv\Scripts\python.exe prepare_assets.py`.
-The script creates folders and instructions only, downloads nothing, and never
-overwrites existing files. Add files such as:
-
-```text
-local_assets/pokemon/normal/0025.png
-local_assets/pokemon/shiny/0025.png
-local_assets/pokemon/forms/0006-charizard-mega-x.png
-local_assets/items/1.png
-local_assets/types/fire.png
-local_assets/teams/mystic.png
-local_assets/icons/image-off-outline.svg
-```
-
-PNG, WebP, JPG/JPEG, GIF, and SVG are supported. Pokémon filenames use Pokédex numbers;
-item filenames use export item IDs. Form filenames use the exported form name as a
-lowercase hyphenated slug. For custom mappings, copy `manifest.example.json` to
-`manifest.json` and edit its keys and relative paths; the generated README documents
-normal, shiny, form, item, team, type, and icon mappings. Set `PGS_ASSET_DIR` in `.env`
-and run `python prepare_assets.py --root "D:\MyPokemonAssets"` to use a custom folder.
-Click **Refresh asset list** after adding files. Paths are resolved on the server,
-so other LAN devices can use the same supplied pictures. The default folder is ignored
-by Git. Only place artwork you are entitled to use in it.
-
-Normal browser HTTP caching is controlled by the browser and remote host. Roboto loads
-remotely from Google Fonts. UI icons use inline SVG paths from
-[Pictogrammers Material Design Icons](https://pictogrammers.com/library/mdi/), with
-attribution in `LICENSE-MDI.txt`; no icon font is required.
-
-Remote artwork requires internet access. Missing files or GitHub outages fall back to an
-image-unavailable icon while names and controls remain usable. Pokémon artwork belongs
-to The Pokémon Company and Niantic; PokeMiners supplies the mined asset collection.
-See the source repository's disclaimer for attribution; this app is not affiliated with
-or endorsed by those organizations.
-
-### Why the inventory showed many “Event Points” rows
-
-The old label collapsed every `EventPassPoint*` export identifier into the same name.
-These are Event/GO Pass progress counters, separate from usable bag items. They now
-have their own inventory section with the original identifier, item ID, quantity, and
-an explanation. The export alone does not identify the associated event, expiry, or
-whether a counter remains active, so the application does not invent those details.
+The profile uses exported cumulative XP thresholds. Level 80 shows a full bar; missing
+thresholds are identified. History charts show period gains/net changes and follow the same
+account, date, and period filters as the session table.
 
 ## Verification
 
 Run `python -m unittest discover -s tests -v` after installing `requirements.txt`.
 The suite covers legacy database migration, profile preference isolation, validation,
 automatic team selection, and shared English templates. `node --test tests/test_ui.cjs`
-checks system-theme changes, manual overrides, save failures, and local/remote asset
-selection. Python tests also cover period/range reporting, profile isolation, automatic
+checks system-theme changes, manual overrides, save failures, and PokeMiners artwork
+fallbacks. Python tests also cover period/range reporting, profile isolation, automatic
 history recording, zero-change intervals, species/form parsing, event-counter labels,
-and local asset path restrictions and folder creation.
+league-specific eligibility, Events ingestion, and inventory grouping.
 
 ## 🌟 Key Features
 

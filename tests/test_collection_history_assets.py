@@ -12,9 +12,6 @@ from database import get_db
 from parser import parse_pgo_json
 from history import ingest
 from history_reports import history_report, date_bound, session_detail
-from local_assets import init_assets, safe_asset, catalog
-from prepare_assets import prepare
-import local_assets
 
 
 def export(stamp='2026-01-31T12:00:00Z', xp=100):
@@ -186,16 +183,10 @@ class HistoryAssetTests(unittest.TestCase):
 
     def setUp(self):
         appearance_fixture.AppearanceTests.setUp(self)
-        init_assets()
-        self.asset_root=Path(self.tmp.name)/'assets'
-        self.asset_root.mkdir()
-        self.asset_patch=patch.object(local_assets,'ASSET_ROOT',self.asset_root)
-        self.asset_patch.start()
         with closing(get_db()) as db, db:
             db.executemany('INSERT INTO trainer_ownership(trainer,user_id) VALUES(?,?)',[('Ash',1),('Misty',2)])
 
     def tearDown(self):
-        self.asset_patch.stop()
         appearance_fixture.AppearanceTests.tearDown(self)
 
     def history(self):
@@ -264,44 +255,3 @@ class HistoryAssetTests(unittest.TestCase):
         self.assertNotIn('account',data['records'][0])
         self.assertTrue(data['records'][0]['fields']['pokemonDisplay']['isDynamax'])
         self.assertEqual(400,self.client.get('/api/pokemons/form-diagnostics?pid=no').status_code)
-
-    def test_local_assets_catalog_and_preferences(self):
-        prepare(self.asset_root)
-        image=self.asset_root/'pokemon/normal/0025.png'
-        image.write_bytes(b'local test fixture')
-        (self.asset_root/'manifest.json').write_text(json.dumps({'pokemon:25':'pokemon/normal/0025.png','item:1':'../outside.png'}),encoding='utf-8')
-        data=catalog(1)
-        self.assertEqual(1,data['count'])
-        self.assertIn('pokemon:25',data['overrides'])
-        self.assertTrue(data['issues'])
-        response=self.client.get('/local-assets/pokemon/normal/0025.png')
-        self.assertEqual(200,response.status_code)
-        response.close()
-        self.assertIsNone(safe_asset('../outside.png'))
-        self.assertIsNone(safe_asset('../profile.db'))
-        response=self.client.put('/api/assets/preferences',json={'mode':'local-only'},headers={'Origin':'http://localhost'})
-        self.assertEqual(200,response.status_code)
-        self.assertEqual('local-only',catalog(1)['mode'])
-        self.assertEqual('local-first',catalog(2)['mode'])
-        self.assertEqual(401,self.app.test_client().get('/local-assets/pokemon/normal/0025.png').status_code)
-
-    def test_asset_preparation_never_overwrites_files(self):
-        prepare(self.asset_root)
-        readme=self.asset_root/'README.md'
-        readme.write_text('my instructions',encoding='utf-8')
-        prepare(self.asset_root)
-        self.assertEqual('my instructions',readme.read_text(encoding='utf-8'))
-        self.assertFalse((self.asset_root/'manifest.json').exists())
-
-    def test_old_remote_preference_migrates_to_pokeminers_per_profile(self):
-        with closing(get_db()) as db, db:
-            db.execute("INSERT INTO user_asset_preferences(user_id,mode) VALUES(1,'wiki')")
-        init_assets()
-        self.assertEqual('pokeminers',catalog(1)['mode'])
-        self.assertEqual('local-first',catalog(2)['mode'])
-        response=self.client.put('/api/assets/preferences',json={'mode':'pokeminers'},headers={'Origin':'http://localhost'})
-        self.assertEqual(200,response.status_code)
-
-
-if __name__=='__main__':
-    unittest.main()

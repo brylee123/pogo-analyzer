@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2026-10-22
 
 ### Changed
+- Centered and colored status badges, added explicit location-card Background tags,
+  and replaced PvP/Raids/Develop menu symbols with PokeMiners game assets.
+- Added chronological XP, Stardust, and acquired-Pokémon line graphs to History & sessions.
+- Split Inventory into game-ordered Bag rows and other owned resources using Game Master
+  visibility/category metadata; corrected lure, Max Particles, and coin labels/artwork.
+- Fixed local team suggestions and selected-league Hidden Gems for Great, Ultra, and Master;
+  duplicate species no longer exhaust the team pool, and over-cap evolutions are excluded.
+- Fixed Events ingestion for undated feed entries and official event IDs; added independent
+  page loading, refresh status, cached-event fallback, and protection from old-event crowding.
+- Removed local artwork providers, routes, preferences, tools, and controls. All game images
+  now use PokeMiners. Appearance controls remain in Settings and were removed from the sidebar.
+- Added team emblems, XP/Stardust, and an exported-threshold XP bar to the profile, full at 80.
 - Added a profile-scoped living Pokédex with owned/missing/unknown checklists for
   all species, Shiny, Lucky, XXL, XXS, Gmax, Mega, Shadow, Purified, and Hundo;
   category completion, search, held forms, and pagination use the current box only.

@@ -28,7 +28,7 @@ def fetch(url):
 def metadata():
     directories = {row['name']: row for row in fetch(API + '/contents/Images?ref=master')}
     result = {}
-    for name in (POKEMON_DIR, 'Items', 'Filters', 'Menu Icons', 'Evolution'):
+    for name in (POKEMON_DIR, 'Items', 'Filters', 'Menu Icons', 'Evolution', 'Raids', 'Pokestops and Gyms'):
         tree = fetch(directories[name]['git_url'] + '?recursive=1')
         if tree.get('truncated'):
             raise ValueError('Incomplete asset tree: ' + name)
@@ -56,7 +56,8 @@ def build(source):
         '1': 'pokeball_sprite.png', '2': 'greatball_sprite.png',
         '3': 'ultraball_sprite.png', '4': 'masterball_sprite.png',
         '301': 'luckyegg.png', '401': 'Incense_0.png',
-        '501': 'Item_1201.png', '502': 'Item_1202.png',
+        '501': 'TroyKey.png', '502': 'TroyKey_glacial.png',
+        '503':'TroyKey_moss.png', '504':'TroyKey_magnetic.png', '505':'TroyKey_rainy.png', '506':'TroyKey_sparkly.png',
         '708': 'Item_0707.png', '709': 'poffin.3.png',
         '801': 'tx_ar_photo_camera.png',
         '901': 'EggIncubatorUnlimited_Empty.png', '902': 'EggIncubatorIAP_Empty.png',
@@ -68,12 +69,17 @@ def build(source):
         '1302': 'RareXLCandy_PSD.png', '1303': 'Item_1406.png',
         '1404': 'starpiece.png', '1410': 'Item_COIN_01.png',
         '1502': 'Item_Leader_MapCompass.png', '1505': 'Item_ShadowGem.png',
-        '1506': 'pokemon_details_mega_candy.png',
+        '1352':'item_kyuremBlackFusionResource.png', '1353':'item_kyuremWhiteFusionResource.png',
+        '1153':'sword_fusionResource.png', '1154':'shield_fusionResource.png',
     })
     if not all(path in item_files for path in item_map.values()):
         raise ValueError('A mapped item path is no longer in the asset repository')
     items = {iid: 'Items/' + path for iid, path in item_map.items()}
     icons = {
+        'pvp': 'Menu Icons/btn_battle.png', 'raid': 'Raids/ActivityLogRaidLogo.png',
+        'develop': 'Filters/ic_evolvable.png',
+        'team1': 'Pokestops and Gyms/team_blue.png', 'team2': 'Pokestops and Gyms/team_red.png',
+        'team3': 'Pokestops and Gyms/team_yellow.png', 'team0': 'Pokestops and Gyms/TeamLess.png',
         'total': 'Filters/ic_pokedex.png', 'shiny': 'Filters/ic_shiny_white.png',
         'shadow': 'Filters/ic_shadow_filter.png', 'lucky': 'Filters/ic_lucky_icon.png',
         'purified': 'Filters/ic_purified_filter.png', 'hatched': 'Filters/ic_hatched.png',
@@ -90,7 +96,7 @@ def build(source):
             'pokemon': dict(sorted(pokemon.items())),
             'names': {normalize(name): pid for pid, name in DEX.items()},
             'items': items, 'icons': icons,
-            'itemNames': {normalize(ITEMS[int(iid)]): path for iid, path in items.items()}}
+            'itemNames': {normalize(ITEMS[int(iid)]): path for iid, path in items.items() if int(iid) in ITEMS}}
 
 
 if __name__ == '__main__':

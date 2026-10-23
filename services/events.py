@@ -33,12 +33,14 @@ def fetch_events(force: bool = False) -> list[dict]:
     try:
         resp = requests.get(config.SCRAPEDDUCK_URL, headers=config.SCRAPE_HEADERS, timeout=15)
         resp.raise_for_status()
-        events_raw: list[dict] = resp.json()
+        events_raw = resp.json()
+        if not isinstance(events_raw,list) or any(not isinstance(ev,dict) for ev in events_raw):
+            raise ValueError("Unexpected Events feed format")
         now_str = _now_iso()
         with get_db() as db:
             for ev in events_raw:
-                ev_id = ev.get("id") or hashlib.md5(
-                    (ev.get("name", "") + ev.get("start", "")).encode()
+                ev_id = ev.get("eventID") or ev.get("id") or hashlib.md5(
+                    ((ev.get("name") or "") + (ev.get("start") or "")).encode()
                 ).hexdigest()[:12]
                 db.execute(
                     "INSERT OR REPLACE INTO events "
@@ -64,7 +66,7 @@ def fetch_events(force: bool = False) -> list[dict]:
         log.error("Events fetch failed: %s", exc)
         with get_db() as db:
             db.execute(
-                "INSERT OR REPLACE INTO scrape_log (source, last_err) VALUES ('events', ?)",
+                "INSERT INTO scrape_log (source, last_err) VALUES ('events', ?) ON CONFLICT(source) DO UPDATE SET last_err=excluded.last_err",
                 (str(exc),),
             )
         return []
@@ -84,11 +86,11 @@ def get_events() -> list[dict]:
     with get_db() as db:
         rows = db.execute(
             "SELECT id, name, start_time, end_time, event_type, raw_json "
-            "FROM events ORDER BY start_time ASC LIMIT 80"
+            "FROM events ORDER BY start_time ASC"
         ).fetchall()
 
     now = _now()
-    upcoming, active, ended = [], [], []
+    upcoming, active, ended, undated = [], [], [], []
 
     for row in rows:
         try:
@@ -115,7 +117,7 @@ def get_events() -> list[dict]:
 
         # Extract pokemons
         featured_pokemons = []
-        extra = raw.get("extraData", {})
+        extra = raw.get("extraData") or {}
         
         def add_poke(p_name, source, image=None, can_be_shiny=None):
             if not p_name:
@@ -191,7 +193,7 @@ def get_events() -> list[dict]:
                 add_poke(p, "Event")
 
         # Extract bonuses
-        bonuses = raw.get("bonuses", [])
+        bonuses = list(raw.get("bonuses") or [])
         if not bonuses:
             if "communityday" in extra and "bonuses" in extra["communityday"]:
                 for b in extra["communityday"]["bonuses"]:
@@ -218,9 +220,9 @@ def get_events() -> list[dict]:
             "extraData":          extra,
             "featured_pokemons":  featured_pokemons,
         }
-        (upcoming if status == "upcoming" else active if status == "active" else ended).append(entry)
+        (upcoming if status == "upcoming" else active if status == "active" else undated if status == "unknown" else ended).append(entry)
 
     upcoming.sort(key=lambda e: e["start"] or "")
     active.sort(key=lambda e: e["start"] or "", reverse=True)
     ended.sort(key=lambda e: e["end"] or "", reverse=True)
-    return upcoming + active + ended
+    return active + upcoming + undated + ended[:80]

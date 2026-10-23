@@ -17,5 +17,4 @@ PGSStats.json
 scratch/
 .agents/
 
-# Optional user-supplied artwork and generated manifests
-local_assets/
+!data/item_categories.json

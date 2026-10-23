@@ -53,13 +53,13 @@ test('failed preference save restores previous appearance and shows error',async
   assert.equal(control.disabled,false);
   assert.equal(t.status.textContent,'Save failed');
 });
-async function assets(catalog={mode:'local-first',files:{},overrides:{},count:0,issues:[]}) {
+async function assets() {
   const events={};
   const ctx={POGO_MDI:JSON.parse(fs.readFileSync(path.join(root,'static/mdi-icons.json'),'utf8')),
     addEventListener(name,fn){events['window:'+name]=fn;},
     Event:class {constructor(type){this.type=type;}},
     document:{addEventListener(name,fn){events[name]=fn;},querySelectorAll(){return [];},querySelector(){return null;}},
-    fetch:async()=>({ok:true,json:async()=>catalog})};
+    fetch:async()=>({ok:true,json:async()=>({})})};
   ctx.window=ctx;
   vm.createContext(ctx);vm.runInContext(source('mdi.js'),ctx);vm.runInContext(source('pokeminers-data.js'),ctx);vm.runInContext(source('assets.js'),ctx);
   await ctx.assetReady;
@@ -76,12 +76,10 @@ test('remote references escape attributes and fall back to an MDI icon without i
   events.error({target:{matches:selector=>selector==='.remote-game-art',dataset:{},parentElement:{classList:{add(){}},title:''},remove(){removed=true;}}});
   assert.ok(removed);assert.match(html,/mdi-icon/);
 });
-test('local catalog picks Pokédex IDs and local-only mode never references remote artwork',async()=>{
-  const {ctx}=await assets({mode:'local-only',files:{'pokemon/shiny/0025.webp':'/local-assets/pokemon/shiny/0025.webp'},overrides:{},count:1,issues:[]});
-  const html=ctx.gameAsset('pokemon','Pikachu',true,{pid:25});
-  assert.match(html,/src="\/local-assets\/pokemon\/shiny\/0025.webp/);
-  assert.doesNotMatch(html,/https:/);
-  assert.doesNotMatch(ctx.gameAsset('item','Potion',false,{id:101}),/remote-game-art/);
+test('PokeMiners is the only asset provider',async()=>{
+  const {ctx}=await assets();
+  assert.match(ctx.gameAsset('pokemon','Pikachu',true,{pid:25}),/raw.githubusercontent.com/);
+  assert.doesNotMatch(source('assets.js'),/api\/assets|catalog\.mode|local-assets|localStorage/);
 });
 test('all browser scripts parse and language toggles have been removed',()=>{
   for(const name of fs.readdirSync(path.join(root,'static/js'))){
@@ -91,7 +89,7 @@ test('all browser scripts parse and language toggles have been removed',()=>{
 });
 
 test('PokeMiners resolves named forms, shiny sprites, item IDs, and name-only callers',async()=>{
-  const {ctx}=await assets({mode:'pokeminers',files:{'pokemon/normal/0025.png':'/local-assets/test.png'},overrides:{},count:1,issues:[]});
+  const {ctx}=await assets();
   assert.match(ctx.gameAsset('pokemon','Lapras',false,{pid:131,form:'LaprasNormal',gigantamax:true}),/pm131.fGIGANTAMAX.icon.png/);
   assert.match(ctx.gameAsset('pokemon','Charizard',true,{pid:6,form:'CharizardMegaX'}),/pm6.fMEGA_X.s.icon.png/);
   assert.match(ctx.gameAsset('pokemon','Zacian',false,{pid:888,form:'ZacianCrownedSword'}),/pm888.fCROWNED_SWORD.icon.png/);
@@ -102,14 +100,12 @@ test('PokeMiners resolves named forms, shiny sprites, item IDs, and name-only ca
   assert.doesNotMatch(ctx.gameAsset('item','Unknown item',false,{id:999999}),/remote-game-art/);
 });
 
-test('local artwork precedes PokeMiners and missing images advance through candidates',async()=>{
-  const {ctx,events}=await assets({mode:'local-first',files:{'pokemon/normal/0025.png':'/local-assets/test.png'},overrides:{},count:1,issues:[]});
-  const candidates=ctx.AssetLibrary.candidates('pokemon','Pikachu',false,{pid:25});
-  assert.equal(candidates[0],'/local-assets/test.png');
-  assert.match(candidates[1],/raw.githubusercontent.com\/PokeMiners/);
+test('failed form artwork advances to verified base artwork',async()=>{
+  const {ctx,events}=await assets();
+  const candidates=ctx.AssetLibrary.candidates('pokemon','Charizard',true,{pid:6,form:'CharizardMegaX'});
+  assert.ok(candidates.length>1);
   const image={matches:selector=>selector==='.remote-game-art',dataset:{sources:JSON.stringify(candidates),sourceIndex:'0'}};
-  events.error({target:image});
-  assert.equal(image.src,candidates[1]);
+  events.error({target:image});assert.equal(image.src,candidates[1]);
 });
 
 test('status filters combine with search and shiny filter, and badges keep coexisting tags',()=>{
@@ -128,14 +124,10 @@ test('status filters combine with search and shiny filter, and badges keep coexi
   assert.match(ctx.statusBadges({mega:true,mega_active:true}),/Mega active/);
 });
 
-test('status icons use original PokeMiners files, honor local-only mode, and support local overrides',async()=>{
+test('game status and navigation icons use verified PokeMiners files',async()=>{
   const {ctx}=await assets();
-  for(const [key,file] of Object.entries({shiny:'ic_shiny_white.png',shadow:'ic_shadow_filter.png',lucky:'ic_lucky_icon.png',hatched:'ic_hatched.png',purified:'ic_purified_filter.png',stardust:'stardust_painted.png'})) {
-    assert.ok(ctx.gameStatusIcon(key).includes(file));
-  }
-  const local=await assets({mode:'local-only',files:{'icons/shiny.png':'/local-assets/icons/shiny.png'},overrides:{},count:1,issues:[]});
-  assert.match(local.ctx.gameStatusIcon('shiny'),/src="\/local-assets\/icons\/shiny.png/);
-  assert.doesNotMatch(local.ctx.gameStatusIcon('lucky'),/https:/);
+  for(const [key,file] of Object.entries({shiny:'ic_shiny_white.png',shadow:'ic_shadow_filter.png',lucky:'ic_lucky_icon.png',purified:'ic_purified_filter.png',pvp:'btn_battle.png',raid:'ActivityLogRaidLogo.png',develop:'ic_evolvable.png',team1:'team_blue.png'}))assert.ok(ctx.gameStatusIcon(key).includes(file));
+  assert.match(ctx.gameStatusIcon('gigantamax'),/status-gigantamax/);
 });
 
 test('analytics counts all overlapping tags in the full collection and Hatched filters combine',()=>{
@@ -169,4 +161,19 @@ test('living dex filters separate owned, missing, unknown, and unlisted forms',(
   assert.equal(ctx.filterDexRows(rows,'mega','all','').length,1);
   assert.equal(ctx.filterDexRows(rows,'all','all','#0006')[0].pid,6);
   assert.equal(ctx.filterDexRows(rows,'all','all','pika')[0].pid,25);
+});
+
+
+test('history graphs use chronological timestamps and handle negative, single and empty data',()=>{
+  const script=source('history-ui.js');
+  const charts={innerHTML:''};
+  const ctx={report:{period:'day',records:[{period:'2026-01-01',xp:0,stardust:-10,acquired:1},{period:'2026-01-02',xp:10,stardust:20,acquired:2},{period:'2026-01-10',xp:20,stardust:0,acquired:1}]},el:()=>charts,escapeHtml:String,number:String,stamp:String};
+  vm.runInNewContext(script.slice(script.indexOf('  function renderCharts()'),script.indexOf('  function render()')),ctx);
+  ctx.renderCharts();
+  assert.equal((charts.innerHTML.match(/<polyline/g)||[]).length,3);
+  const points=charts.innerHTML.match(/points="([^"]+)"/)[1].split(' ').map(x=>Number(x.split(',')[0]));
+  assert.ok(points[1]-points[0]<(points[2]-points[1])/2,'Irregular time intervals retain their spacing');
+  assert.ok(charts.innerHTML.includes('-10'));
+  for(const records of [[],[{period:'2026-01-01',xp:0}]]){ctx.report.records=records;ctx.renderCharts();assert.doesNotMatch(charts.innerHTML,/NaN|Infinity/);}
+  ctx.report.period='week';ctx.report.records=[{period:'2026-W01',xp:1},{period:'2026-W03',xp:2}];ctx.renderCharts();assert.doesNotMatch(charts.innerHTML,/NaN|Infinity/);
 });
