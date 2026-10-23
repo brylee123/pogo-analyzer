@@ -233,6 +233,7 @@ async function loadPokemons() {
   renderPokemons();
   renderForms();
   updateAnalytics();
+  window.dispatchEvent(new Event('collectionchange'));
 }
 
 $("poke-search").addEventListener("input", e => { S.search = e.target.value.toLowerCase(); renderPokemons(); });

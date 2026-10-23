@@ -155,3 +155,18 @@ test('analytics counts all overlapping tags in the full collection and Hatched f
   const sidebar=fs.readFileSync(path.join(root,'templates/partials/sidebar.html'),'utf8');
   assert.doesNotMatch(sidebar,/stats-bar|stat-chip/);
 });
+
+test('living dex filters separate owned, missing, unknown, and unlisted forms',()=>{
+  const script=source('pokedex-ui.js');
+  const ctx={};
+  vm.runInNewContext(script.slice(0,script.indexOf('\n(() =>')),ctx);
+  const rows=[{pid:6,species_name:'Charizard',states:{all:'owned',xxl:'unknown',mega:'owned'}},
+    {pid:25,species_name:'Pikachu',states:{all:'missing',xxl:'missing',mega:'not_catalogued'}}];
+  assert.equal(ctx.filterDexRows(rows,'all','owned','').length,1);
+  assert.equal(ctx.filterDexRows(rows,'all','missing','').length,1);
+  assert.equal(ctx.filterDexRows(rows,'xxl','missing','').length,1);
+  assert.equal(ctx.filterDexRows(rows,'xxl','unknown','').length,1);
+  assert.equal(ctx.filterDexRows(rows,'mega','all','').length,1);
+  assert.equal(ctx.filterDexRows(rows,'all','all','#0006')[0].pid,6);
+  assert.equal(ctx.filterDexRows(rows,'all','all','pika')[0].pid,25);
+});

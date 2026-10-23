@@ -39,6 +39,7 @@
   <div id="main-ui" style="display:none">
 
     {% include 'partials/tab_pokemons.html' %}
+    {% include 'partials/tab_pokedex.html' %}
     {% include 'partials/tab_history.html' %}
     {% include 'partials/tab_forms.html' %}
     {% include 'partials/tab_search.html' %}
@@ -74,6 +75,7 @@
 <script src="{{ url_for('static', filename='js/pokeminers-data.js') }}"></script>
 <script src="{{ url_for('static', filename='js/assets.js') }}"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pokedex-ui.js') }}"></script>
 <script src="{{ url_for('static', filename='js/auth-ui.js') }}"></script>
 <script src="{{ url_for('static', filename='js/history-ui.js') }}"></script>
 </body>

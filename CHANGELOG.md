@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased] - 2026-10-22
 
 ### Changed
+- Added a profile-scoped living Pokédex with owned/missing/unknown checklists for
+  all species, Shiny, Lucky, XXL, XXS, Gmax, Mega, Shadow, Purified, and Hundo;
+  category completion, search, held forms, and pagination use the current box only.
+- Extended species names through national #1025 and preserved explicit size categories.
 - Replaced placeholder status symbols with original-color PokeMiners game icons.
 - Added an explicit Hatched tag and filter, including CSV output, and moved the
   sidebar counters into Box Analytics with counts for every displayed tag.

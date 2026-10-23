@@ -220,6 +220,12 @@ DEX: dict[int, str] = {
     990:"Iron Treads",991:"Iron Bundle",992:"Iron Hands",993:"Iron Jugulis",
     994:"Iron Moth",995:"Iron Thorns",996:"Frigibax",997:"Arctibax",
     998:"Baxcalibur",999:"Gimmighoul",1000:"Gholdengo",
+    1001:"Wo-Chien",1002:"Chien-Pao",1003:"Ting-Lu",1004:"Chi-Yu",
+    1005:"Roaring Moon",1006:"Iron Valiant",1007:"Koraidon",1008:"Miraidon",
+    1009:"Walking Wake",1010:"Iron Leaves",1011:"Dipplin",1012:"Poltchageist",
+    1013:"Sinistcha",1014:"Okidogi",1015:"Munkidori",1016:"Fezandipiti",
+    1017:"Ogerpon",1018:"Archaludon",1019:"Hydrapple",1020:"Gouging Fire",
+    1021:"Raging Bolt",1022:"Iron Boulder",1023:"Iron Crown",1024:"Terapagos",1025:"Pecharunt",
 }
 
 ITEMS: dict[int, str] = {

@@ -18,6 +18,7 @@ from routes.ai_routes import bp as ai_bp
 from routes.analysis import bp as analysis_bp
 from routes.misc import bp as misc_bp
 from routes.pokemon import bp as pokemon_bp
+from routes.pokedex import bp as pokedex_bp
 from services.tiers import _tier_refresh_needed, scrape_pokebase
 from history_integration import attach as attach_history
 from auth import bp as auth_bp, init_auth, auth_gate, current_user_id
@@ -54,6 +55,7 @@ def appearance_context():
     return {"appearance": profile_appearance(current_user_id()), 'mdi':mdi_icon, 'mdi_paths':MDI_PATHS}
 
 app.register_blueprint(pokemon_bp)
+app.register_blueprint(pokedex_bp)
 app.register_blueprint(analysis_bp)
 app.register_blueprint(ai_bp)
 app.register_blueprint(misc_bp)
