@@ -85,9 +85,10 @@ Gigantamax is also included in Dynamax. Unsupported or omitted export fields can
 be inferred reliably. The expandable export-details view shows form/status fields
 for the two highest-CP hundos of a selected species (#6 for Charizard), without account
 details, to help diagnose export versions that encode forms differently. PGSharp's
-`pokemonDisplay.breadModeEnum: 1` is recognized as Dynamax, including traded Pokémon.
-Other numeric enum values are not guessed from this example; existing explicit
-Gigantamax flags and form names remain supported.
+`pokemonDisplay.breadModeEnum: 1` is recognized as Dynamax, including traded Pokémon;
+`breadModeEnum: 2` identifies Gigantamax even when the exported form name remains normal.
+Gigantamax appears in both Max categories. Other numeric values are not guessed;
+explicit Max flags and form names remain supported.
 
 ## Game artwork and optional local assets
 

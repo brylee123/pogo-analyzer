@@ -28,6 +28,25 @@ def export(stamp='2026-01-31T12:00:00Z', xp=100):
 
 
 class CollectionParsingTests(unittest.TestCase):
+    def test_gigantamax_lapras_with_normal_form_name(self):
+        raw=export()
+        raw['pokemons']=[{
+            'id':'example-lapras','pokemonId':131,'cp':1469,
+            'cpMultiplier':0.5974000096321106,
+            'individualAttack':12,'individualDefense':14,'individualStamina':11,
+            'breadMoves':[{'moveLevel':1,'moveType':1}],
+            'pokemonDisplay':{'alignment':0,'breadModeEnum':2,'costume':0,
+                              'form':322,'formName':'LaprasNormal'}
+        }]
+        for value in (2,'2'):
+            with self.subTest(breadModeEnum=value):
+                raw['pokemons'][0]['pokemonDisplay']['breadModeEnum']=value
+                pokemon=parse_pgo_json(raw)['pokemons'][0]
+                self.assertEqual(('Lapras',131), (pokemon['species_name'],pokemon['pid']))
+                self.assertTrue(pokemon['gigantamax'])
+                self.assertTrue(pokemon['dynamax'])
+                self.assertFalse(pokemon['costumed'])
+
     def test_traded_dynamax_blissey_bread_mode_enum(self):
         raw=export()
         raw['pokemons']=[{

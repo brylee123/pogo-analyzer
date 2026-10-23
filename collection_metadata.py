@@ -22,9 +22,10 @@ def pokemon_metadata(raw):
     temporary = display.get('temporaryEvolution') or raw.get('temporaryEvolution') or ''
     mega_active = any(_enabled(raw.get(k)) or _enabled(display.get(k)) for k in ('isMega', 'isMegaEvolved'))
     mega_active = mega_active or 'mega' in form.lower() or 'mega' in str(temporary).lower()
-    gigantamax = 'gigantamax' in form.lower() or any(_enabled(raw.get(k)) or _enabled(display.get(k)) for k in ('isGigantamax', 'gigantamax'))
-    # PGSharp reports Dynamax as breadModeEnum=1, including traded Pokémon.
-    # Do not treat other enum values or breadMoves alone as confirmed Max status.
+    # Confirmed PGSharp export values: 1 = Dynamax, 2 = Gigantamax.
+    # The form name may remain normal; breadMoves alone does not prove Max status.
+    bread_gigantamax = display.get('breadModeEnum') in (2, '2')
+    gigantamax = bread_gigantamax or 'gigantamax' in form.lower() or any(_enabled(raw.get(k)) or _enabled(display.get(k)) for k in ('isGigantamax', 'gigantamax'))
     bread_dynamax = display.get('breadModeEnum') in (1, '1')
     dynamax = bread_dynamax or gigantamax or 'dynamax' in form.lower() or any(_enabled(raw.get(k)) or _enabled(display.get(k)) for k in ('isDynamax', 'dynamax', 'dynamaxLevel'))
     purified = alignment in (2, '2', 'PURIFIED', 'Purified') or _enabled(raw.get('isPurified'))
