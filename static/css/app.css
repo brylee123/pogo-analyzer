@@ -54,18 +54,6 @@ code{font-family:var(--fm);background:var(--bg3);border:1px solid var(--border);
 }
 
 /* stats in sidebar */
-#stats-bar{
-  display:none;flex-direction:column;gap:0;
-  padding:10px 16px;border-bottom:1px solid var(--border);
-}
-.stat-chip{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:5px 0;font-size:12px;color:var(--muted);
-  border-bottom:1px solid var(--border2);
-}
-.stat-chip:last-child{border-bottom:none}
-.stat-chip b{font-family:var(--fm);font-size:13px;font-weight:600;color:var(--text)}
-
 /* nav */
 #tabs{
   display:none;flex-direction:column;
@@ -362,9 +350,6 @@ tr:hover td{background:rgba(var(--accent-rgb),.025)}
   #sidebar::before{position:absolute;top:0;left:0;right:0;width:100%;height:2px}
   .sidebar-header{border-bottom:none;border-right:1px solid var(--border);padding:10px 12px;flex-shrink:0}
   .logo{font-size:13px}
-  #stats-bar{flex-direction:row;border-bottom:none;border-right:1px solid var(--border);padding:8px 12px;gap:10px;flex-wrap:nowrap}
-  .stat-chip{border:none;padding:0}
-  .stat-chip b{font-size:11px}
   #tabs{flex-direction:row;padding:8px 6px;flex:1;overflow-x:auto;gap:3px;align-items:center}
   .tab{flex-shrink:0;font-size:11px;padding:6px 10px}
   .sidebar-hint{display:none}

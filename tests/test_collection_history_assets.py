@@ -28,6 +28,18 @@ def export(stamp='2026-01-31T12:00:00Z', xp=100):
 
 
 class CollectionParsingTests(unittest.TestCase):
+    def test_hatched_tag_uses_explicit_origin_and_skips_unhatched_eggs(self):
+        raw=export()
+        pokemon=raw['pokemons'][0]
+        for value,expected in ((True,True),(1,True),('true',True),(False,False),(None,False),('false',False)):
+            with self.subTest(value=value):
+                pokemon['hatchedFromEgg']=value
+                self.assertEqual(expected,parse_pgo_json(raw)['pokemons'][0]['hatched'])
+        pokemon.pop('hatchedFromEgg')
+        self.assertFalse(parse_pgo_json(raw)['pokemons'][0]['hatched'])
+        raw['pokemons'].append(dict(pokemon,id='egg',isEgg=True,hatchedFromEgg=False))
+        self.assertEqual(1,len(parse_pgo_json(raw)['pokemons']))
+
     def test_nested_pgsharp_mega_level_and_expired_evolution_history(self):
         raw=export()
         pokemon=raw['pokemons'][0]

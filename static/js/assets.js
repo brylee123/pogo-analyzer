@@ -22,6 +22,8 @@
       }
     } else if(kind==='item') {
       paths.push(index.items[String(meta.id)],index.itemNames[normalize(name)]);
+    } else if(kind==='status') {
+      paths.push(index.icons?.[name]);
     }
     return [...new Set(paths.filter(Boolean))].map(path=>remoteRoot+path.split('/').map(encodeURIComponent).join('/'));
   }
@@ -29,7 +31,7 @@
     const id=String(meta.pid ?? meta.id ?? '');
     const form=meta.form_slug || slug(meta.form);
     const suffix=shiny?':shiny':'';
-    const keys=[kind+':'+id+(form?':'+form:'')+suffix,kind+':'+id+suffix,kind+':'+name+suffix];
+    const keys=[...(kind==='status'?['icon:'+name]:[]),kind+':'+id+(form?':'+form:'')+suffix,kind+':'+id+suffix,kind+':'+name+suffix];
     const paths=[];
     if(kind==='pokemon') {
       const ids=id?[id.padStart(4,'0'),id]:[];
@@ -37,7 +39,8 @@
       ids.forEach(n=>paths.push('pokemon/'+(shiny?'shiny':'normal')+'/'+n));
       paths.push('pokemon/'+(shiny?'shiny':'normal')+'/'+slug(name));
       if(shiny) ids.forEach(n=>paths.push('pokemon/normal/'+n));
-    } else paths.push(kind+'s/'+id,kind+'s/'+slug(name));
+    } else if(kind==='status') paths.push('icons/'+name);
+    else paths.push(kind+'s/'+id,kind+'s/'+slug(name));
     const local=keys.map(k=>catalog.overrides[k]).filter(Boolean);
     for(const path of paths) for(const ext of ['png','webp','jpg','jpeg','gif','svg']) {
       if(catalog.files[path+'.'+ext]) local.push(catalog.files[path+'.'+ext]);
@@ -48,10 +51,16 @@
   window.gameAsset=(kind,name,shiny=false,meta={})=>{
     const urls=candidates(kind,name,shiny,meta);
     const custom=catalog.overrides['icon:image-off-outline'] || catalog.files['icons/missing.svg'];
-    const fallback=mdiIcon('image-off-outline')+(custom?'<img class="custom-fallback" src="'+escapeHtml(custom)+'" alt="">':'');
-    return '<span class="game-art" title="'+escapeHtml(name)+'">'+fallback+
+    const statusFallback={nando:'close',dynamax:'dna',gigantamax:'dna',fav:'check'};
+    const fallback=mdiIcon(kind==='status'?(statusFallback[name]||'information-outline'):'image-off-outline')+(custom?'<img class="custom-fallback" src="'+escapeHtml(custom)+'" alt="">':'');
+    return '<span class="game-art'+(kind==='status'?' game-status-icon':'')+'"'+(kind==='status'?' aria-hidden="true"':'')+' title="'+escapeHtml(name)+'">'+fallback+
       (urls.length?'<img class="remote-game-art" src="'+escapeHtml(urls[0])+'" data-sources="'+escapeHtml(JSON.stringify(urls))+'" data-source-index="0" alt="'+escapeHtml(name)+'" loading="lazy" decoding="async" referrerpolicy="no-referrer">':'')+'</span>';
   };
+  window.gameStatusIcon=name=>window.gameAsset('status',name);
+  function hydrateStatusIcons() {
+    document.querySelectorAll('[data-status-icon]').forEach(el=>el.innerHTML=window.gameStatusIcon(el.dataset.statusIcon));
+  }
+  window.addEventListener('assetschange',hydrateStatusIcons);
   document.addEventListener('error',event=>{
     const img=event.target;
     if(img.matches?.('.local-ui-icon')){img.parentElement.classList.remove('has-custom-icon');img.remove();return;}
@@ -69,6 +78,7 @@
       const response=await fetch('/api/assets/catalog');
       if(!response.ok) throw Error('Unable to load asset catalog');
       catalog=await response.json();
+      hydrateStatusIcons();
       document.querySelectorAll('[data-user-icon]').forEach(shell=>{
         shell.querySelector('.local-ui-icon')?.remove();shell.classList.remove('has-custom-icon');
         const name=shell.dataset.userIcon,custom=catalog.overrides['icon:'+name]||catalog.files['icons/'+name+'.svg']||catalog.files['icons/'+name+'.png'];

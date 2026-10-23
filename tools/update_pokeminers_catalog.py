@@ -28,7 +28,7 @@ def fetch(url):
 def metadata():
     directories = {row['name']: row for row in fetch(API + '/contents/Images?ref=master')}
     result = {}
-    for name in (POKEMON_DIR, 'Items'):
+    for name in (POKEMON_DIR, 'Items', 'Filters', 'Menu Icons', 'Evolution'):
         tree = fetch(directories[name]['git_url'] + '?recursive=1')
         if tree.get('truncated'):
             raise ValueError('Incomplete asset tree: ' + name)
@@ -73,11 +73,23 @@ def build(source):
     if not all(path in item_files for path in item_map.values()):
         raise ValueError('A mapped item path is no longer in the asset repository')
     items = {iid: 'Items/' + path for iid, path in item_map.items()}
+    icons = {
+        'total': 'Filters/ic_pokedex.png', 'shiny': 'Filters/ic_shiny_white.png',
+        'shadow': 'Filters/ic_shadow_filter.png', 'lucky': 'Filters/ic_lucky_icon.png',
+        'purified': 'Filters/ic_purified_filter.png', 'hatched': 'Filters/ic_hatched.png',
+        'hundo': 'Filters/ic_appraisal_04.png', 'costumed': 'Filters/ic_event.png',
+        'mega': 'Evolution/mega_evolution_icon.png', 'fav': 'Menu Icons/ic_fav_pressed.png',
+        'event': 'Menu Icons/calendar_icon.png', 'stardust': 'Items/stardust_painted.png',
+    }
+    for path in icons.values():
+        directory, filename = path.split('/', 1)
+        if filename not in source[directory]['paths']:
+            raise ValueError('Missing status icon: ' + path)
     return {'source': 'https://github.com/PokeMiners/pogo_assets',
             'trees': {key: value['sha'] for key, value in source.items()},
             'pokemon': dict(sorted(pokemon.items())),
             'names': {normalize(name): pid for pid, name in DEX.items()},
-            'items': items,
+            'items': items, 'icons': icons,
             'itemNames': {normalize(ITEMS[int(iid)]): path for iid, path in items.items()}}
 
 

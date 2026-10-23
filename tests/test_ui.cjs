@@ -56,6 +56,7 @@ test('failed preference save restores previous appearance and shows error',async
 async function assets(catalog={mode:'local-first',files:{},overrides:{},count:0,issues:[]}) {
   const events={};
   const ctx={POGO_MDI:JSON.parse(fs.readFileSync(path.join(root,'static/mdi-icons.json'),'utf8')),
+    addEventListener(name,fn){events['window:'+name]=fn;},
     Event:class {constructor(type){this.type=type;}},
     document:{addEventListener(name,fn){events[name]=fn;},querySelectorAll(){return [];},querySelector(){return null;}},
     fetch:async()=>({ok:true,json:async()=>catalog})};
@@ -113,7 +114,7 @@ test('local artwork precedes PokeMiners and missing images advance through candi
 
 test('status filters combine with search and shiny filter, and badges keep coexisting tags',()=>{
   const app=source('app.js');
-  const ctx={S:{search:'latios',filter:'shiny',statusFilters:['purified','mega']},escapeHtml:value=>String(value)};
+  const ctx={S:{search:'latios',filter:'shiny',statusFilters:['purified','mega']},escapeHtml:value=>String(value),gameStatusIcon:()=>'',tagBadge:()=>''};
   const functions=['filterPoke','statusBadges'].map(name=>app.slice(app.indexOf('function '+name+'('),app.indexOf('\n}',app.indexOf('function '+name+'('))+2)).join('\n');
   vm.runInNewContext(functions,ctx);
   const pokemon={name:'Latios',shiny:true,purified:true,mega:true,mega_level:2,dynamax:true,gigantamax:true};
@@ -125,4 +126,32 @@ test('status filters combine with search and shiny filter, and badges keep coexi
   for(const label of ['Dmax','Gmax','Purified','Mega level 2'])assert.ok(badges.includes(label));
   assert.match(ctx.statusBadges({mega:true}),/Mega history/);
   assert.match(ctx.statusBadges({mega:true,mega_active:true}),/Mega active/);
+});
+
+test('status icons use original PokeMiners files, honor local-only mode, and support local overrides',async()=>{
+  const {ctx}=await assets();
+  for(const [key,file] of Object.entries({shiny:'ic_shiny_white.png',shadow:'ic_shadow_filter.png',lucky:'ic_lucky_icon.png',hatched:'ic_hatched.png',purified:'ic_purified_filter.png',stardust:'stardust_painted.png'})) {
+    assert.ok(ctx.gameStatusIcon(key).includes(file));
+  }
+  const local=await assets({mode:'local-only',files:{'icons/shiny.png':'/local-assets/icons/shiny.png'},overrides:{},count:1,issues:[]});
+  assert.match(local.ctx.gameStatusIcon('shiny'),/src="\/local-assets\/icons\/shiny.png/);
+  assert.doesNotMatch(local.ctx.gameStatusIcon('lucky'),/https:/);
+});
+
+test('analytics counts all overlapping tags in the full collection and Hatched filters combine',()=>{
+  const app=source('app.js');
+  const start=app.indexOf('const collectionTags=');
+  const end=app.indexOf('function renderBoxTagStats',start);
+  const ctx={S:{search:'',filter:'hatched',statusFilters:['purified']}};
+  const filterStart=app.indexOf('function filterPoke(');
+  vm.runInNewContext(app.slice(start,end)+app.slice(filterStart,app.indexOf('\n}',filterStart)+2),ctx);
+  const rows=[{hatched:true,purified:true,shiny:true,mega:true,fav:true,event_tags:['Event'],iv_a:0,iv_d:0,iv_s:0},
+    {dynamax:true,gigantamax:true,lucky:true,hundo:true,iv_a:15,iv_d:15,iv_s:15},{}];
+  const counts=ctx.collectionTagCounts(rows);
+  for(const key of ['hatched','purified','shiny','mega','fav','event','nando','dynamax','gigantamax','lucky','hundo'])assert.equal(counts[key],1,key);
+  assert.equal(counts.shadow,0);
+  assert.equal(ctx.filterPoke(rows[0]),true);
+  assert.equal(ctx.filterPoke(rows[1]),false);
+  const sidebar=fs.readFileSync(path.join(root,'templates/partials/sidebar.html'),'utf8');
+  assert.doesNotMatch(sidebar,/stats-bar|stat-chip/);
 });

@@ -2,6 +2,7 @@
 const S = {
   pokemons: [],
   items:    [],
+  player:   null,
   events:   [],
   tiers:    {},
   filter:   "all",
@@ -68,10 +69,28 @@ function pokemonIdentity(p) {
     +(p.nick?'<span class="pokemon-nickname">Nickname: '+escapeHtml(p.nick)+'</span>':'')+'</div>';
 }
 function statusBadges(p) {
-  const flags={mega:p.mega_active?'Mega active':p.mega_level?'Mega level '+p.mega_level:'Mega history',dynamax:'Dmax',gigantamax:'Gmax',purified:'Purified',costumed:'Costumed'};
+  const flags={mega:p.mega_active?'Mega active':p.mega_level?'Mega level '+p.mega_level:'Mega history',dynamax:'Dmax',gigantamax:'Gmax',purified:'Purified',hatched:'Hatched',costumed:'Costumed'};
   return Object.entries(flags).filter(([key])=>p[key]).map(([key,label])=>key==='costumed'
-    ?'<span class="badge form-badge">'+escapeHtml(label)+'</span>'
-    :'<button type="button" class="badge form-badge status-tag" data-status-tag="'+key+'" title="Filter Pokémon by '+key+'">'+escapeHtml(label)+'</button>').join('');
+    ?tagBadge(key,label)
+    :'<button type="button" class="badge form-badge game-tag status-tag" data-status-tag="'+key+'" title="Filter Pokémon by '+key+'">'+gameStatusIcon(key)+escapeHtml(label)+'</button>').join('');
+}
+function tagBadge(key,label) {
+  return '<span class="badge game-tag">'+gameStatusIcon(key)+escapeHtml(label)+'</span>';
+}
+const collectionTags={shiny:'Shiny',hundo:'Hundo',nando:'Nando',shadow:'Shadow',lucky:'Lucky',
+  dynamax:'Dmax',gigantamax:'Gmax',purified:'Purified',mega:'Mega evolution / history',
+  hatched:'Hatched',costumed:'Costumed',fav:'Favorite',event:'Event'};
+function collectionTagCounts(pokemons) {
+  return Object.fromEntries(Object.keys(collectionTags).map(key=>[key,pokemons.filter(p=>
+    key==='nando'?p.iv_a===0&&p.iv_d===0&&p.iv_s===0:
+    key==='event'?p.event_tags?.length>0:!!p[key]).length]));
+}
+function renderBoxTagStats() {
+  const counts=collectionTagCounts(S.pokemons);
+  const rows=[['total','Pokémon',S.pokemons.length],...Object.entries(collectionTags).map(([key,label])=>[key,label,counts[key]]),
+    ['stardust','Stardust',S.player?.stardust??null]];
+  $('box-tag-stats').innerHTML=rows.map(([key,label,count])=>'<div class="box-tag-stat">'
+    +'<span>'+gameStatusIcon(key)+escapeHtml(label)+'</span><strong>'+(count===null?'—':Number(count).toLocaleString('en-US'))+'</strong></div>').join('');
 }
 function uploadHistoryNotice(result) {
   const target=$('upload-history-status');
@@ -122,28 +141,20 @@ function showErr(msg) {
 }
 
 async function onUploadSuccess(stats, player, pvp_stats) {
+  S.player=player||null;
   hasLatestExport=true;
   $("panel-pokemon").hidden=false;
   await window.assetReady;
   $("upload-zone").style.display   = "none";
   $("upload-err").style.display    = "none";
   $("main-ui").style.display       = "block";
-  $("stats-bar").style.display     = "flex";
   $("upload-small").style.display  = "block";
   $("tabs").style.display          = "flex";
   $("header-sub").textContent      = "Your Pokémon GO account";
   const hint = document.querySelector(".sidebar-hint");
   if (hint) hint.style.display = "none";
 
-  $("s-total").textContent  = stats.total;
-  $("s-shiny").textContent  = stats.shinies;
-  $("s-hundo").textContent  = stats.hundos;
-  $("s-nando").textContent  = stats.nandos || 0;
-  $("s-shadow").textContent = stats.shadows;
-  $("s-lucky").textContent  = stats.luckies;
   $("tb-poke").textContent  = stats.total;
-  if (stats.stardust) $("s-dust").textContent = stats.stardust.toLocaleString("en-US");
-  updateAnalytics();
 
   // Handle Player Card in Sidebar
   window.PogoAppearance?.updateTeam(player?.team);
@@ -221,6 +232,7 @@ async function loadPokemons() {
   S.pokemons = await api("/api/pokemons");
   renderPokemons();
   renderForms();
+  updateAnalytics();
 }
 
 $("poke-search").addEventListener("input", e => { S.search = e.target.value.toLowerCase(); renderPokemons(); });
@@ -252,6 +264,9 @@ function filterPoke(p) {
     case "dynamax": return !!p.dynamax;
     case "gigantamax": return !!p.gigantamax;
     case "purified": return !!p.purified;
+    case "hatched": return !!p.hatched;
+    case "fav": return !!p.fav;
+    case "nando": return p.iv_a===0&&p.iv_d===0&&p.iv_s===0;
     case "costumed": return !!p.costumed;
     case "hundo":   return p.hundo;
     case "shiny":   return p.shiny;
@@ -313,12 +328,14 @@ function renderPokemons() {
       .map(([cat, t]) => `<span class="badge badge-${t.charAt(0).toLowerCase()}" data-tooltip="${cat}">${cat.split("_").pop().toUpperCase()} ${t}</span>`)
       .join("");
     const evTags = (p.event_tags || []).slice(0, 2)
-      .map(ev => `<span class="badge badge-event" data-tooltip="${ev}">📅</span>`).join("");
+      .map(ev => tagBadge('event',ev)).join("");
     const tags = [
-      p.shiny  ? `<span class="badge badge-shiny" data-tooltip="Shiny">✨</span>` : "",
-      p.shadow ? `<span class="badge badge-shadow" data-tooltip="Shadow (+20% ATK)">Shadow</span>` : "",
-      p.hundo  ? `<span class="badge badge-hundo" data-tooltip="100% IV">💯</span>` : "",
-      p.lucky  ? `<span class="badge badge-lucky" data-tooltip="Lucky (reduced power-up cost)">🍀</span>` : "",
+      p.shiny  ? `${tagBadge('shiny','Shiny')}` : "",
+      p.shadow ? `${tagBadge('shadow','Shadow')}` : "",
+      p.hundo  ? `${tagBadge('hundo','Hundo')}` : "",
+      p.lucky  ? `${tagBadge('lucky','Lucky')}` : "",
+      p.fav ? tagBadge('fav','Favorite') : '',
+      p.iv_a===0&&p.iv_d===0&&p.iv_s===0 ? tagBadge('nando','Nando') : '',
       statusBadges(p),
       evTags,
     ].join("");
@@ -513,7 +530,7 @@ function buildPogoQuery() {
 $("btn-export-csv").addEventListener("click", () => {
   const list = sortPokes(S.pokemons);
   const headers = ["Nazwa","Pseudonim","CP","Lvl","IV%","Atk","Def","Sta","Year",
-                   "Shiny","Shadow","Lucky","Hundo","Ulubiony","Tier","Events"];
+                   "Shiny","Shadow","Lucky","Hundo","Ulubiony","Hatched","Tier","Events"];
   const esc = v => `"${String(v ?? "").replace(/"/g,'""')}"`;
   const rows = list.map(p => [
     p.name, p.nick || "", p.cp, p.lvl, p.iv_pct,
@@ -523,6 +540,7 @@ $("btn-export-csv").addEventListener("click", () => {
     p.lucky  ? "TAK" : "",
     p.hundo  ? "TAK" : "",
     p.fav    ? "TAK" : "",
+    p.hatched ? 'Yes' : '',
     p.best_tier || "",
     (p.event_tags || []).join("; "),
   ]);
@@ -766,7 +784,7 @@ function renderEvents() {
       });
       
       const pokeCards = sortedPokes.map(p => {
-        const shinyBadge = p.can_be_shiny ? `<span style="color:var(--yellow); font-size:11px;" title="Shiny available">✨</span>` : "";
+        const shinyBadge = p.can_be_shiny ? tagBadge('shiny','Shiny available') : "";
         const evoLabel = p.is_evolution && p.evolves_to ? `<div class="event-poke-evo">Evolves into: <b>${p.evolves_to}</b></div>` : "";
         const sourceTag = p.source ? `<span class="event-poke-source">${p.source}</span>` : "";
         
@@ -958,9 +976,9 @@ async function showRaidCounters(bossName) {
           <tbody>`;
           
       data.counters.forEach(c => {
-        const shinyBadge = c.shiny ? `<span style="color:var(--yellow)" title="Shiny">✨</span>` : "";
-        const shadowBadge = c.shadow ? `<span class="badge badge-shadow" style="font-size:8px;padding:1px 4px">Shadow</span>` : "";
-        const luckyBadge = c.lucky ? `<span style="color:var(--accent)" title="Lucky">🍀</span>` : "";
+        const shinyBadge = c.shiny ? `${tagBadge('shiny','Shiny')}` : "";
+        const shadowBadge = c.shadow ? `${tagBadge('shadow','Shadow')}` : "";
+        const luckyBadge = c.lucky ? `${tagBadge('lucky','Lucky')}` : "";
         
         html += `<tr>
           <td style="font-weight:700">
@@ -1032,10 +1050,10 @@ function renderRaid() {
     const tb = Object.entries(tiers).map(([cat, t]) =>
       `<span class="badge badge-${t.charAt(0).toLowerCase()}">${cat.split("_").pop().toUpperCase()} ${t}</span>`).join("");
     const tags = [
-      p.shiny  ? `<span class="badge badge-shiny">✨</span>` : "",
-      p.shadow ? `<span class="badge badge-shadow">Shadow</span>` : "",
-      p.hundo  ? `<span class="badge badge-hundo">💯</span>` : "",
-      p.lucky  ? `<span class="badge badge-lucky">🍀</span>` : "",
+      p.shiny  ? `${tagBadge('shiny','Shiny')}` : "",
+      p.shadow ? `${tagBadge('shadow','Shadow')}` : "",
+      p.hundo  ? `${tagBadge('hundo','Hundo')}` : "",
+      p.lucky  ? `${tagBadge('lucky','Lucky')}` : "",
     ].join("");
     
     let movesetHtml = '<div style="display: flex; flex-direction: column; gap: 4px; line-height: 1.2;">';
@@ -1266,10 +1284,10 @@ function renderPvP() {
       tb = `<span class="badge badge-${t.charAt(0).toLowerCase()}">${_pvpLeague} ${t}</span>`;
     }
     const tags = [
-      p.shiny  ? `<span class="badge badge-shiny">✨</span>` : "",
-      p.shadow ? `<span class="badge badge-shadow">Shadow</span>` : "",
-      p.hundo  ? `<span class="badge badge-hundo">💯</span>` : "",
-      p.lucky  ? `<span class="badge badge-lucky">🍀</span>` : "",
+      p.shiny  ? `${tagBadge('shiny','Shiny')}` : "",
+      p.shadow ? `${tagBadge('shadow','Shadow')}` : "",
+      p.hundo  ? `${tagBadge('hundo','Hundo')}` : "",
+      p.lucky  ? `${tagBadge('lucky','Lucky')}` : "",
     ].join("");
     const rankBadge = pvpRankBadge(p.pvp_rank, p.pvp_rank_total, p.pvp_rank_pct);
     return `<tr>
@@ -1352,9 +1370,9 @@ function renderPvpGems() {
     const pIdx = S.pokemons.indexOf(S.pokemons.find(x => x.pid === g.pid && x.cp === g.cp));
     const leagueBadge = g.gem_league.startsWith("GL") ? "badge-gl" : g.gem_league.startsWith("UL") ? "badge-ul" : "badge-ll";
     const tags = [
-      g.shiny ? `<span class="badge badge-shiny">✨</span>` : "",
-      g.shadow ? `<span class="badge badge-shadow">Shadow</span>` : "",
-      g.lucky ? `<span class="badge badge-lucky">🍀</span>` : ""
+      g.shiny ? `${tagBadge('shiny','Shiny')}` : "",
+      g.shadow ? `${tagBadge('shadow','Shadow')}` : "",
+      g.lucky ? `${tagBadge('lucky','Lucky')}` : ""
     ].join("");
     return `<tr>
       <td class="name-cell">${gameAsset("pokemon", g.name, g.shiny)}${g.name} ${tags}</td>
@@ -1413,7 +1431,7 @@ async function showPurifyComparison(index) {
         <!-- Purified Card -->
         <div class="compare-card purified-compare">
           <div class="compare-header" style="color:var(--cyan);">
-            <span>✨ Purified</span>
+            <span>${gameStatusIcon('purified')} Purified</span>
             <span class="badge badge-gl" style="font-size:9px; background:rgba(56,189,248,.12); color:#38bdf8; border:1px solid rgba(56,189,248,.3);">${"-10% cost"}</span>
           </div>
           <div class="compare-stat-row">
@@ -1438,7 +1456,7 @@ async function showPurifyComparison(index) {
       <!-- Cost Section -->
       <div style="background:var(--bg3); padding:10px 14px; border-radius:8px; border:1px solid var(--border2); margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; font-size:13px;">
         <span>💰 ${"Purification cost:"}</span>
-        <b style="color:var(--yellow); font-family:var(--fm)">✨ ${data.purify_dust.toLocaleString()} Dust &nbsp;💊 ${data.purify_candy} Candy</b>
+        <b style="color:var(--yellow); font-family:var(--fm)">${gameStatusIcon('stardust')} ${data.purify_dust.toLocaleString()} Dust &nbsp;💊 ${data.purify_candy} Candy</b>
       </div>
 
       <!-- Verdict Section -->
@@ -1478,8 +1496,8 @@ function renderDevelop() {
   const d = _developData;
 
   $("dev-evolve-tbody").innerHTML = d.evolve.map(p => {
-    const tags = [p.shiny ? `<span class="badge badge-shiny">✨</span>` : "",
-                  p.lucky ? `<span class="badge badge-lucky">🍀</span>` : ""].join("");
+    const tags = [p.shiny ? `${tagBadge('shiny','Shiny')}` : "",
+                  p.lucky ? `${tagBadge('lucky','Lucky')}` : ""].join("");
     const tc = (p.final_tier && p.final_tier.startsWith("S")) ? "badge-s" : "badge-a";
     
     let limitBadge = "";
@@ -1774,6 +1792,7 @@ function toggleAnalytics() {
 }
 
 function updateAnalytics() {
+  renderBoxTagStats();
   if (!$("analytics-content") || $("analytics-content").style.display === "none") return;
   if (!S.pokemons || !S.pokemons.length) return;
 
@@ -1908,7 +1927,7 @@ async function recalcPowerup(select, idx) {
     container.innerHTML = `
       <div style="font-size:10px; line-height:1.3; color:var(--muted);">
         <strong style="color:var(--accent);">CP ${res.target_cp}</strong><br>
-        ✨${res.stardust.toLocaleString("en-US")} · 🍬${res.candy}${xlText}
+        ${gameStatusIcon('stardust')}${res.stardust.toLocaleString("en-US")} · 🍬${res.candy}${xlText}
       </div>
     `;
   } catch (e) {
@@ -1962,12 +1981,12 @@ function renderForms() {
   $('form-categories').innerHTML=Object.entries(formLabels).map(([key,label])=>'<button class="metric-tile '+(category===key?'selected':'')+'" data-form-kind="'+key+'"><span>'+label+'</span><strong>'+S.pokemons.filter(p=>p[key]).length+'</strong></button>').join('');
   const rows=S.pokemons.filter(p=>p[category]&&[p.name,p.species_name,p.nick,p.pid].join(' ').toLowerCase().includes(search));
   $('forms-count').textContent=rows.length+' matching Pokémon';
-  $('forms-tbody').innerHTML=rows.map(p=>'<tr><td class="mono">'+dexLabel(p)+'</td><td>'+gameAsset('pokemon',p.species_name||p.name,p.shiny,p)+pokemonIdentity(p)+'</td><td>'+p.cp+'</td><td>'+p.iv_pct+'%</td><td>'+p.lvl+'</td><td>'+statusBadges(p)+(p.shadow?'<span class="badge">Shadow</span>':'')+(p.costume?'<span class="supporting-text">'+escapeHtml(p.costume)+'</span>':'')+'</td></tr>').join('')||'<tr><td colspan="6">No matching exported status. Missing flags are not inferred from species or nickname.</td></tr>';
+  $('forms-tbody').innerHTML=rows.map(p=>'<tr><td class="mono">'+dexLabel(p)+'</td><td>'+gameAsset('pokemon',p.species_name||p.name,p.shiny,p)+pokemonIdentity(p)+'</td><td>'+p.cp+'</td><td>'+p.iv_pct+'%</td><td>'+p.lvl+'</td><td>'+statusBadges(p)+(p.shadow?tagBadge('shadow','Shadow'):'')+(p.costume?'<span class="supporting-text">'+escapeHtml(p.costume)+'</span>':'')+'</td></tr>').join('')||'<tr><td colspan="6">No matching exported status. Missing flags are not inferred from species or nickname.</td></tr>';
 }
 $('forms-filter').addEventListener('change',renderForms);
 $('forms-search').addEventListener('input',renderForms);
 $('form-categories').addEventListener('click',event=>{const button=event.target.closest('[data-form-kind]');if(button){$('forms-filter').value=button.dataset.formKind;renderForms();}});
-window.addEventListener('assetschange',()=>{renderPokemons();renderItems();renderForms();});
+window.addEventListener('assetschange',()=>{renderPokemons();renderItems();renderForms();renderBoxTagStats();});
 $('tabs').style.display='flex';
 $('main-ui').style.display='block';
 $('panel-pokemon').hidden=!hasLatestExport;
