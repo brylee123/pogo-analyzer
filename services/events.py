@@ -155,7 +155,7 @@ def get_events() -> list[dict]:
             featured_pokemons.append({
                 "name": p_name,
                 "source": source,
-                "image": None,  # Artwork is referenced directly by the browser via Pokémon GO Wiki.
+                "image": None,  # Artwork is referenced directly by the browser via PokeMiners.
                 "can_be_shiny": can_be_shiny,
                 "tiers": tiers,
                 "is_evolution": is_evo,

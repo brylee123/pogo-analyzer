@@ -1,9 +1,30 @@
-/* Local file references or remote wiki URLs. Only catalog JSON is fetched here. */
+/* Local artwork or verified PokeMiners paths. No game-image downloads or proxy. */
 (() => {
-  const wiki='https://pokemongo.fandom.com/wiki/';
+  const remoteRoot='https://raw.githubusercontent.com/PokeMiners/pogo_assets/master/Images/';
   let catalog={mode:'local-first',files:{},overrides:{},count:0,issues:[]};
   const slug=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-  const aliases={'Poke Ball':'Poké Ball','Pokeball':'Poké Ball','Nidoran-F':'Nidoran♀','Nidoran-M':'Nidoran♂',"Farfetchd":"Farfetch'd"};
+  const normalize=value=>String(value||'').replace(/♀/g,'female').replace(/♂/g,'male').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  function remoteCandidates(kind,name,shiny,meta) {
+    const index=window.PokeMinersAssets;
+    if(!index)return [];
+    const paths=[];
+    if(kind==='pokemon') {
+      const species=String(meta.species_name||name||'').split(' (')[0];
+      const id=meta.pid ?? meta.species ?? index.names[normalize(species)];
+      if(!id)return [];
+      let form=normalize(meta.form||meta.form_slug||String(name||'').match(/\(([^)]+)\)/)?.[1]);
+      const speciesKey=normalize(species);
+      if(form.startsWith(speciesKey))form=form.slice(speciesKey.length);
+      if(['normal','unset'].includes(form))form='';
+      const forms=[...(meta.gigantamax?['gigantamax']:[]),form,''];
+      for(const variant of (shiny?[':shiny','']:[''])) {
+        for(const token of forms)paths.push(index.pokemon[id+':'+token+variant]);
+      }
+    } else if(kind==='item') {
+      paths.push(index.items[String(meta.id)],index.itemNames[normalize(name)]);
+    }
+    return [...new Set(paths.filter(Boolean))].map(path=>remoteRoot+path.split('/').map(encodeURIComponent).join('/'));
+  }
   function candidates(kind,name,shiny,meta={}) {
     const id=String(meta.pid ?? meta.id ?? '');
     const form=meta.form_slug || slug(meta.form);
@@ -21,10 +42,8 @@
     for(const path of paths) for(const ext of ['png','webp','jpg','jpeg','gif','svg']) {
       if(catalog.files[path+'.'+ext]) local.push(catalog.files[path+'.'+ext]);
     }
-    const title=aliases[name]||String(name||'').split(' (')[0].trim();
-    const remote=title&&!title.startsWith('#')?[wiki+'Special:FilePath/'+encodeURIComponent((title+(shiny&&kind==='pokemon'?' shiny':'')+'.png').replaceAll(' ','_'))]:[];
-    if(shiny && remote.length) remote.push(wiki+'Special:FilePath/'+encodeURIComponent((title+'.png').replaceAll(' ','_')));
-    return [...new Set(catalog.mode==='local-only'?local:catalog.mode==='wiki'?remote:[...local,...remote])];
+    const remote=catalog.mode==='local-only'?[]:remoteCandidates(kind,name,shiny,meta);
+    return [...new Set(catalog.mode==='local-only'?local:catalog.mode==='pokeminers'?remote:[...local,...remote])];
   }
   window.gameAsset=(kind,name,shiny=false,meta={})=>{
     const urls=candidates(kind,name,shiny,meta);

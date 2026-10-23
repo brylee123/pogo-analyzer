@@ -28,6 +28,48 @@ def export(stamp='2026-01-31T12:00:00Z', xp=100):
 
 
 class CollectionParsingTests(unittest.TestCase):
+    def test_nested_pgsharp_mega_level_and_expired_evolution_history(self):
+        raw=export()
+        pokemon=raw['pokemons'][0]
+        pokemon.update(pokemonId=448,hasMegaEvolved=True,megaEvolvedForms=[1])
+        pokemon['pokemonDisplay']={'formName':'LucarioNormal',
+            'megaEvolutionLevel':{'level':3,'points':30},
+            'currentTempEvolution':1,'temporaryEvolutionFinishMs':1}
+        parsed=parse_pgo_json(raw)['pokemons'][0]
+        self.assertEqual(3,parsed['mega_level'])
+        self.assertTrue(parsed['mega'])
+        self.assertTrue(parsed['mega_history'])
+        self.assertFalse(parsed['mega_active'])
+        pokemon.pop('hasMegaEvolved');pokemon.pop('megaEvolvedForms')
+        for level in (None,{}, {'points':30}, {'level':'bad'}, {'level':True}, -1):
+            with self.subTest(level=level):
+                pokemon['pokemonDisplay']['megaEvolutionLevel']=level
+                parsed=parse_pgo_json(raw)['pokemons'][0]
+                self.assertEqual(0,parsed['mega_level'])
+                self.assertFalse(parsed['mega'])
+
+    def test_mega_history_without_level_and_active_form_are_distinct(self):
+        raw=export()
+        pokemon=raw['pokemons'][0]
+        pokemon.update(pokemonId=6,hasMegaEvolved=True)
+        parsed=parse_pgo_json(raw)['pokemons'][0]
+        self.assertTrue(parsed['mega'])
+        self.assertFalse(parsed['mega_active'])
+        pokemon['pokemonDisplay']['formName']='CharizardMegaX'
+        self.assertTrue(parse_pgo_json(raw)['pokemons'][0]['mega_active'])
+        pokemon.update(pokemonId=154,hasMegaEvolved=False)
+        pokemon['pokemonDisplay']['formName']='MeganiumNormal'
+        self.assertFalse(parse_pgo_json(raw)['pokemons'][0]['mega'])
+
+    def test_unknown_bread_mode_preserves_crowned_form_without_max_tags(self):
+        raw=export()
+        raw['pokemons'][0].update(pokemonId=888)
+        raw['pokemons'][0]['pokemonDisplay']={'breadModeEnum':4,'formName':'ZacianCrownedSword'}
+        parsed=parse_pgo_json(raw)['pokemons'][0]
+        self.assertEqual('ZacianCrownedSword',parsed['form'])
+        self.assertFalse(parsed['dynamax'])
+        self.assertFalse(parsed['gigantamax'])
+
     def test_purified_shiny_lucky_latios_statuses_coexist(self):
         raw=export()
         raw['pokemons']=[{
@@ -238,6 +280,15 @@ class HistoryAssetTests(unittest.TestCase):
         prepare(self.asset_root)
         self.assertEqual('my instructions',readme.read_text(encoding='utf-8'))
         self.assertFalse((self.asset_root/'manifest.json').exists())
+
+    def test_old_remote_preference_migrates_to_pokeminers_per_profile(self):
+        with closing(get_db()) as db, db:
+            db.execute("INSERT INTO user_asset_preferences(user_id,mode) VALUES(1,'wiki')")
+        init_assets()
+        self.assertEqual('pokeminers',catalog(1)['mode'])
+        self.assertEqual('local-first',catalog(2)['mode'])
+        response=self.client.put('/api/assets/preferences',json={'mode':'pokeminers'},headers={'Origin':'http://localhost'})
+        self.assertEqual(200,response.status_code)
 
 
 if __name__=='__main__':

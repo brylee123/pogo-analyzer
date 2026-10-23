@@ -5,6 +5,7 @@ const S = {
   events:   [],
   tiers:    {},
   filter:   "all",
+  statusFilters: [],
   search:   "",
   sort:     "cp",
 };
@@ -67,8 +68,10 @@ function pokemonIdentity(p) {
     +(p.nick?'<span class="pokemon-nickname">Nickname: '+escapeHtml(p.nick)+'</span>':'')+'</div>';
 }
 function statusBadges(p) {
-  const flags={mega:p.mega_active?'Mega active':'Mega level '+p.mega_level,dynamax:'Dynamax',gigantamax:'Gigantamax',purified:'Purified',costumed:'Costumed'};
-  return Object.entries(flags).filter(([key])=>p[key]).map(([key,label])=>'<span class="badge form-badge">'+escapeHtml(label)+'</span>').join('');
+  const flags={mega:p.mega_active?'Mega active':p.mega_level?'Mega level '+p.mega_level:'Mega history',dynamax:'Dmax',gigantamax:'Gmax',purified:'Purified',costumed:'Costumed'};
+  return Object.entries(flags).filter(([key])=>p[key]).map(([key,label])=>key==='costumed'
+    ?'<span class="badge form-badge">'+escapeHtml(label)+'</span>'
+    :'<button type="button" class="badge form-badge status-tag" data-status-tag="'+key+'" title="Filter Pokémon by '+key+'">'+escapeHtml(label)+'</button>').join('');
 }
 function uploadHistoryNotice(result) {
   const target=$('upload-history-status');
@@ -224,7 +227,25 @@ $("poke-search").addEventListener("input", e => { S.search = e.target.value.toLo
 $("poke-filter").addEventListener("change", e => { S.filter = e.target.value; renderPokemons(); });
 $("poke-sort").addEventListener("change",   e => { S.sort   = e.target.value; renderPokemons(); });
 
+function setStatusFilters(tags) {
+  S.statusFilters=tags;
+  $$('[data-status-filter]').forEach(control=>control.checked=tags.includes(control.dataset.statusFilter));
+  renderPokemons();
+}
+$$('[data-status-filter]').forEach(control=>control.addEventListener('change',()=>{
+  setStatusFilters([...$$('[data-status-filter]')].filter(el=>el.checked).map(el=>el.dataset.statusFilter));
+}));
+$('clear-status-filters').addEventListener('click',()=>setStatusFilters([]));
+document.addEventListener('click',event=>{
+  const tag=event.target.closest('[data-status-tag]');
+  if(!tag)return;
+  const key=tag.dataset.statusTag;
+  setStatusFilters(S.statusFilters.includes(key)?S.statusFilters.filter(value=>value!==key):[...S.statusFilters,key]);
+  document.querySelector('.tab[data-tab="pokemon"]').click();
+});
+
 function filterPoke(p) {
+  if (S.statusFilters.some(key=>!p[key])) return false;
   if (S.search && ![p.name,p.species_name,p.nick,p.pid].join(' ').toLowerCase().includes(S.search.replace(/^#/,''))) return false;
   switch (S.filter) {
     case "mega": return !!p.mega;
