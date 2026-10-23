@@ -13,6 +13,13 @@ def api_events():
     return jsonify(get_events())
 
 
+@bp.route('/api/events/status')
+def api_events_status():
+    with get_db() as db:
+        row = db.execute("SELECT last_ok,last_err FROM scrape_log WHERE source='events'").fetchone()
+    return jsonify(dict(row) if row else {'last_ok':None,'last_err':None})
+
+
 @bp.route("/api/events/refresh", methods=["POST"])
 def api_refresh_events():
     evs = fetch_events(force=True)

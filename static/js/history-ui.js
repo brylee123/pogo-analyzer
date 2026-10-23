@@ -29,8 +29,27 @@
       el('history-legacy-message').textContent=data.unassigned_snapshots+' preserved exports match trainers linked to your profile.';
       const metrics={caught:'Caught',acquired:'Acquired',removed:'Removed',shinies:'New shiny',hundos:'New hundo',xp:'XP gained',stardust:'Stardust net',coins:'Coins net',distance_km:'Distance km'};
       el('history-metrics').innerHTML=Object.entries(metrics).map(([key,label])=>'<div class="metric-tile"><span>'+label+'</span><strong>'+number(data.totals[key])+'</strong></div>').join('');
-      render();
+      renderCharts();render();
     }catch(error){if(id===requestId)el('history-status').textContent=error.message;}
+  }
+  function renderCharts() {
+    const rows=report?.records||[];
+    el('history-charts').innerHTML=[['xp','XP gained'],['stardust','Stardust net'],['acquired','Pokémon acquired']].map(([key,title])=>{
+      if(!rows.length)return '<section class="card"><h3>'+title+'</h3><p>No sessions in this range. Import at least two exports.</p></section>';
+      const values=rows.map(r=>Number(r[key])||0),low=Math.min(0,...values),high=Math.max(1,...values),range=high-low;
+      const time=r=>{
+        const value=r.end||r.period;
+        const week=String(value).match(/^(\d{4})-W(\d{2})$/);
+        if(week){const jan4=new Date(Date.UTC(+week[1],0,4));return +jan4-((jan4.getUTCDay()+6)%7)*86400000+(+week[2]-1)*604800000;}
+        return Date.parse(value);
+      };
+      const times=rows.map(time),first=times[0],last=times.at(-1);
+      const x=i=>55+(first===last?255:(times[i]-first)*510/(last-first)), y=v=>155-(v-low)/range*120;
+      const label=r=>report.period==='session'?stamp(r.end||r.period):r.period;
+      const points=values.map((v,i)=>x(i)+','+y(v)).join(' ');
+      const svg='<svg viewBox="0 0 600 200" role="img" aria-label="'+title+' over time"><title>'+title+' per '+escapeHtml(report.period)+'</title><path d="M55 25V155H565" fill="none" stroke="var(--border)"/><path d="M55 '+y(0)+'H565" stroke="var(--muted)" opacity=".3"/><text x="0" y="30">'+number(high)+'</text><text x="0" y="155">'+number(low)+'</text><polyline points="'+points+'" fill="none" stroke="var(--accent)" stroke-width="2.5"/>'+values.map((v,i)=>'<circle cx="'+x(i)+'" cy="'+y(v)+'" r="4" fill="var(--accent)"><title>'+escapeHtml(label(rows[i]))+': '+number(v)+'</title></circle>').join('')+'<text x="55" y="180">'+escapeHtml(label(rows[0]).slice(0,10))+'</text><text x="565" y="180" text-anchor="end">'+escapeHtml(label(rows.at(-1)).slice(0,10))+'</text></svg>';
+      return '<section class="card"><h3>'+title+'</h3><p class="supporting-text">Per '+escapeHtml(report.period)+' · earliest to latest · values in the table below</p>'+svg+'</section>';
+    }).join('');
   }
   function render() {
     const records=[...(report?.records||[])].reverse(),pages=Math.max(1,Math.ceil(records.length/size));

@@ -117,11 +117,8 @@ tbody tr:hover{background:var(--bg3)}
 [hidden]{display:none!important}
 .mdi-icon{width:24px;height:24px;fill:currentColor;display:inline-block;vertical-align:middle;flex-shrink:0}
 .mdi-shell{width:24px;height:24px;display:inline-flex;position:relative;vertical-align:middle;flex-shrink:0}
-.mdi-shell>.local-ui-icon{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
-.mdi-shell.has-custom-icon>.mdi-icon{visibility:hidden}
 .sort-indicator .mdi-shell{width:14px;height:14px}
 .game-art>.mdi-icon{width:24px;height:24px;color:var(--muted)}
-.game-art .custom-fallback{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .pokemon-identity{display:inline-flex;vertical-align:middle;flex-direction:column;gap:2px;max-width:240px}
 .pokemon-identity strong{color:var(--text);font-size:14px}
 .pokemon-nickname{font-size:12px;color:var(--muted);font-weight:400}
@@ -207,3 +204,42 @@ tbody tr:hover{background:var(--bg3)}
 .sort-indicator{display:inline-flex;margin-left:4px;vertical-align:middle}
 .sort-indicator .mdi-icon{width:14px;height:14px}
 @media(max-width:768px){.history-filters{grid-template-columns:1fr 1fr}.history-filters select,.history-filters input{max-width:100%;min-width:0}.history-import .toolbar{flex-direction:column;align-items:stretch}.form-categories{grid-template-columns:repeat(2,minmax(0,1fr))}.history-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.metric-tile{padding:12px}.metric-tile strong{font-size:20px}.name-cell{min-width:230px}}
+
+/* Centered game pictograms with semantic in-game colors on a blue backing. */
+.game-art.game-status-icon {background:#203e59;color:#e9f2ff;vertical-align:middle;flex:0 0 24px}
+.game-status-icon>.mdi-shell {display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+.game-status-icon .mdi-icon {color:inherit}
+.game-status-icon.status-fav {color:#ffcf40}
+.game-status-icon.status-shiny {color:#fff0ad}
+.game-status-icon.status-purified {color:#a5eaff}
+.game-status-icon.status-shadow {color:#c390ed}
+.game-status-icon.status-lucky {color:#f5dfa0}
+.game-status-icon.status-dynamax {color:#fa6ca9}
+.game-status-icon.status-gigantamax {color:#e32971}
+.menu-game-icon {display:inline-flex;align-items:center;justify-content:center;width:24px;flex:0 0 24px}
+.menu-game-icon .game-status-icon {background:transparent;border-radius:0}
+.inventory-columns {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.inventory-list {display:flex;flex-direction:column;gap:8px}
+.inventory-list .item-card {display:flex;align-items:center;gap:10px;width:100%;min-width:0}
+.inventory-list .item-copy {flex:1;min-width:0;overflow-wrap:anywhere}
+.inventory-list .item-copy strong,.inventory-list .item-copy>.supporting-text {display:block}
+.inventory-list .item-count {margin-left:auto;white-space:nowrap}
+#sidebar-player>div:last-child {flex:1}
+#s-player-avatar.profile-team {width:44px!important;height:44px!important;border-color:var(--team-color)!important;background:color-mix(in srgb,var(--team-color) 15%,var(--bg3))!important}
+.team-0 {--team-color:#a9b7c2}.team-1 {--team-color:#479cfa}.team-2 {--team-color:#ed5262}.team-3 {--team-color:#f4cd47}
+#s-player-avatar .game-status-icon {width:34px;height:34px;min-width:34px;background:transparent}
+#s-player-progress {height:5px;background:var(--bg3);border-radius:9px;margin:5px 0;overflow:hidden}
+#s-player-progress>span {display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#6dd5bc,#b7e87a);transition:width .25s}
+#s-player-resources,#s-player-progress-label {font-size:10px}
+.history-charts {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.history-charts .card {min-width:0}.history-charts svg {width:100%;height:auto;overflow:visible}
+.history-charts svg text {fill:var(--muted);font-size:11px;font-family:var(--fm)}
+@media(max-width:900px){.history-charts{grid-template-columns:1fr}}
+@media(max-width:700px){.inventory-columns{grid-template-columns:1fr}}
+
+.game-status-icon.status-background {color:#78bfff}
+
+.status-glyph {position:absolute;inset:3px;background:currentColor;mask-image:var(--status-image);mask-position:center;mask-size:contain;mask-repeat:no-repeat;pointer-events:none}
+.game-status-icon:has(.status-glyph) .remote-game-art {opacity:0!important}
+.menu-game-icon .game-status-icon {color:inherit}
+.history-charts svg text {font-size:18px}

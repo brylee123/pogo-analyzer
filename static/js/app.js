@@ -60,6 +60,7 @@ function mdToHtml(md) {
 
 
 let hasLatestExport = false;
+let pvpGeneration=0;
 function dexLabel(p) { return '#' + String(p.pid ?? p.species ?? '?').padStart(4,'0'); }
 function pokemonIdentity(p) {
   const species=p.species_name || p.name || 'Unknown species';
@@ -69,7 +70,7 @@ function pokemonIdentity(p) {
     +(p.nick?'<span class="pokemon-nickname">Nickname: '+escapeHtml(p.nick)+'</span>':'')+'</div>';
 }
 function statusBadges(p) {
-  const flags={mega:p.mega_active?'Mega active':p.mega_level?'Mega level '+p.mega_level:'Mega history',dynamax:'Dmax',gigantamax:'Gmax',purified:'Purified',hatched:'Hatched',costumed:'Costumed'};
+  const flags={mega:p.mega_active?'Mega active':p.mega_level?'Mega level '+p.mega_level:'Mega history',dynamax:'Dmax',gigantamax:'Gmax',purified:'Purified',background:'Background',hatched:'Hatched',costumed:'Costumed'};
   return Object.entries(flags).filter(([key])=>p[key]).map(([key,label])=>key==='costumed'
     ?tagBadge(key,label)
     :'<button type="button" class="badge form-badge game-tag status-tag" data-status-tag="'+key+'" title="Filter Pokémon by '+key+'">'+gameStatusIcon(key)+escapeHtml(label)+'</button>').join('');
@@ -79,7 +80,7 @@ function tagBadge(key,label) {
 }
 const collectionTags={shiny:'Shiny',hundo:'Hundo',nando:'Nando',shadow:'Shadow',lucky:'Lucky',
   dynamax:'Dmax',gigantamax:'Gmax',purified:'Purified',mega:'Mega evolution / history',
-  hatched:'Hatched',costumed:'Costumed',fav:'Favorite',event:'Event'};
+  hatched:'Hatched',background:'Background',costumed:'Costumed',fav:'Favorite',event:'Event'};
 function collectionTagCounts(pokemons) {
   return Object.fromEntries(Object.keys(collectionTags).map(key=>[key,pokemons.filter(p=>
     key==='nando'?p.iv_a===0&&p.iv_d===0&&p.iv_s===0:
@@ -140,7 +141,32 @@ function showErr(msg) {
   setTimeout(() => { el.style.display = "none"; }, 5000);
 }
 
+function renderPlayer(player) {
+  window.PogoAppearance?.updateTeam(player?.team);
+  if (player) {
+    $("sidebar-player").style.display = "flex";
+    $("s-player-name").textContent = player.name || "Trainer";
+    $("s-player-level").textContent = `Lvl ${player.level || "?"} · ${player.kmWalked || 0} km`;
+
+    const avatar=$("s-player-avatar"),team=Number(player.team)||0;
+    avatar.className='profile-team team-'+team;
+    avatar.innerHTML=gameStatusIcon('team'+team);
+    const xp=Number(player.experience)||0,previous=Number(player.prevLevelExp),next=Number(player.nextLevelExp);
+    const max=Number(player.level)>=80;
+    const known=player.prevLevelExp!=null&&player.nextLevelExp!=null&&next>previous;
+    const progress=max?100:known?Math.min(100,Math.max(0,(xp-previous)/(next-previous)*100)):0;
+    $('s-player-resources').textContent=xp.toLocaleString()+' XP · '+Number(player.stardust||0).toLocaleString()+' Stardust';
+    $('s-player-progress').setAttribute('aria-valuenow',String(Math.round(progress)));
+    $('s-player-progress').firstElementChild.style.width=progress+'%';
+    $('s-player-progress-label').textContent=max?'Maximum level':known?Math.max(0,next-xp).toLocaleString()+' XP to level '+(Number(player.level)+1):'Next level XP not reported';
+  } else {
+    $("sidebar-player").style.display = "none";
+  }
+
+}
+
 async function onUploadSuccess(stats, player, pvp_stats) {
+  pvpGeneration++;
   S.player=player||null;
   hasLatestExport=true;
   $("panel-pokemon").hidden=false;
@@ -157,29 +183,7 @@ async function onUploadSuccess(stats, player, pvp_stats) {
   $("tb-poke").textContent  = stats.total;
 
   // Handle Player Card in Sidebar
-  window.PogoAppearance?.updateTeam(player?.team);
-  if (player) {
-    $("sidebar-player").style.display = "flex";
-    $("s-player-name").textContent = player.name || "Trainer";
-    $("s-player-level").textContent = `Lvl ${player.level || "?"} · ${player.kmWalked || 0} km`;
-    
-    const avatar = $("s-player-avatar");
-    avatar.className = "";
-    if (player.team === 1) {
-      avatar.classList.add("team-mystic-bg");
-      avatar.textContent = "❄️";
-    } else if (player.team === 2) {
-      avatar.classList.add("team-valor-bg");
-      avatar.textContent = "🔥";
-    } else if (player.team === 3) {
-      avatar.classList.add("team-instinct-bg");
-      avatar.textContent = "⚡";
-    } else {
-      avatar.textContent = "👤";
-    }
-  } else {
-    $("sidebar-player").style.display = "none";
-  }
+  renderPlayer(player);
 
   // Handle PvP Battle stats dashboard
   if (pvp_stats && pvp_stats.season_battles > 0) {
@@ -208,9 +212,10 @@ async function onUploadSuccess(stats, player, pvp_stats) {
 
   await Promise.all([loadPokemons(), loadItems(), loadEvents(), loadTiers(), loadCacheStats(), loadConfig()]);
   loadRaid();
-  loadPvP("GL");
+  _pvpData={GL:[],UL:[],ML:[]};
+  loadPvP(_pvpLeague);
   loadDevelop();
-  loadPvpGems();
+  _pvpGems=[];renderPvpGems();loadPvpGems();
   updatePogoQuery();
 }
 
@@ -266,6 +271,7 @@ function filterPoke(p) {
     case "gigantamax": return !!p.gigantamax;
     case "purified": return !!p.purified;
     case "hatched": return !!p.hatched;
+    case "background": return !!p.background;
     case "fav": return !!p.fav;
     case "nando": return p.iv_a===0&&p.iv_d===0&&p.iv_s===0;
     case "costumed": return !!p.costumed;
@@ -609,9 +615,9 @@ async function loadItems() {
 }
 
 function renderItems() {
-  const render=items=>items.map(it=>'<article class="item-card">'+(it.category==='event_points'?mdiIcon('information-outline'):gameAsset('item',it.name,false,it))+'<div class="item-copy"><strong>'+escapeHtml(it.name)+'</strong><span class="supporting-text">Item #'+escapeHtml(it.id)+'</span><code>'+escapeHtml(it.raw_name||'No export name supplied')+'</code><p class="supporting-text">'+escapeHtml(it.description||'Inventory item reported by the export.')+'</p></div><span class="item-count">×'+Number(it.count).toLocaleString('en-US')+'</span></article>').join('');
-  $('items-grid').innerHTML=render(S.items.filter(it=>it.category!=='event_points'))||'<p>No inventory items reported.</p>';
-  $('event-points-grid').innerHTML=render(S.items.filter(it=>it.category==='event_points'))||'<p>No event-pass counters reported.</p>';
+  const render=items=>items.map(it=>'<article class="item-card">'+(!it.in_bag?mdiIcon('information-outline'):gameAsset('item',it.name,false,it))+'<div class="item-copy"><strong>'+escapeHtml(it.name)+'</strong><span class="supporting-text">'+escapeHtml(it.game_category?.replace('ITEM_CATEGORY_','').replaceAll('_',' ').toLowerCase()||'Other resource')+'</span><details><summary>Details</summary><code>#'+escapeHtml(it.id)+' · '+escapeHtml(it.raw_name||'')+'</code></details></div><span class="item-count">×'+Number(it.count).toLocaleString('en-US')+'</span></article>').join('');
+  $('items-grid').innerHTML=render(S.items.filter(it=>it.in_bag))||'<p>No inventory items reported.</p>';
+  $('event-points-grid').innerHTML=render(S.items.filter(it=>!it.in_bag))||'<p>No other owned items reported.</p>';
 }
 
 $("btn-analyze-items").addEventListener("click", async () => {
@@ -632,15 +638,20 @@ $("btn-analyze-items").addEventListener("click", async () => {
 
 // ── Events ────────────────────────────────────────────────────────────────────
 async function loadEvents() {
-  S.events = await api("/api/events");
-  renderEvents();
+  const status=$('events-status');status.textContent='Loading events…';
+  try {
+    S.events=await api('/api/events');renderEvents();
+    const state=await api('/api/events/status');
+    status.textContent=(state.last_err?'Unable to refresh the feed. '+(S.events.length?'Showing saved events. ':''):'')+(S.events.length?S.events.length+' events · Undated events have dates to be announced.':'No events available. Try Refresh events.');
+  } catch(error){status.textContent='Events could not load: '+error.message;}
+
 }
 
 $("btn-refresh-events").addEventListener("click", async () => {
   $("btn-refresh-events").textContent = "⏳";
-  await api("/api/events/refresh", { method: "POST", body: "{}" });
-  await loadEvents();
-  $("btn-refresh-events").textContent = "🔄 Refresh events";
+  try{await api("/api/events/refresh", {method:"POST",body:"{}"});await loadEvents();}
+  catch(error){$('events-status').textContent='Refresh failed: '+error.message;}
+  finally{$("btn-refresh-events").textContent="🔄 Refresh events";}
 });
 
 $("events-filter").addEventListener("change", renderEvents);
@@ -715,7 +726,7 @@ function renderEvents() {
   });
 
   function getEventTimeStatus(ev) {
-    if (!ev.start || !ev.end) return "";
+    if (!ev.start || !ev.end) return '<span class="supporting-text">Dates to be announced</span>';
     const now = new Date();
     const start = new Date(ev.start);
     const end = new Date(ev.end);
@@ -1116,6 +1127,8 @@ $$(".tab-sub").forEach(btn => {
     $$(".tab-sub").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     _pvpLeague = btn.dataset.league;
+    _pvpGems=[];renderPvpGems();loadPvpGems(_pvpLeague);
+    renderLocalTeams([]);renderBestByRole(null);
     $("pvp-ai-result").style.display = "none";
     if (!_pvpData[_pvpLeague].length) {
       loadPvP(_pvpLeague);
@@ -1128,7 +1141,9 @@ $$(".tab-sub").forEach(btn => {
 });
 
 async function loadPvP(league) {
+  const generation=pvpGeneration;
   const res = await api(`/api/pvp-candidates?league=${league}`);
+  if(generation!==pvpGeneration)return;
   _pvpData[league] = res.candidates || [];
   _pvpLocalTeams[league] = res.local_teams || [];
   _pvpBestByRole[league] = res.best_by_role || { leads: [], switches: [], closers: [] };
@@ -1337,10 +1352,12 @@ $("btn-analyze-pvp").addEventListener("click", async () => {
 
 // ── PvP Gems & Purify Comparison ──────────────────────────────────────────────
 let _pvpGems = [];
-async function loadPvpGems() {
+async function loadPvpGems(league=_pvpLeague) {
+  const generation=pvpGeneration;
   try {
-    const res = await api("/api/pvp-hidden-gems");
-    _pvpGems = res || [];
+    const res = await api("/api/pvp-hidden-gems?league="+league);
+    if(league!==_pvpLeague||generation!==pvpGeneration)return;
+    _pvpGems = (res || []).filter(g=>g.gem_league.startsWith(league)&&g.cp<=({GL:1500,UL:2500,ML:100000}[league]));
     renderPvpGems();
   } catch (e) {
     console.error("Failed to load PvP gems:", e);
@@ -1997,3 +2014,5 @@ $('form-diagnostics-load').addEventListener('click',async()=>{
   try{target.textContent=JSON.stringify(await api('/api/pokemons/form-diagnostics?pid='+encodeURIComponent($('form-diagnostics-pid').value)),null,2);}
   catch(error){target.textContent=error.message;}
 });
+
+window.addEventListener('panelchange',event=>{if(event.detail==='events')loadEvents();});

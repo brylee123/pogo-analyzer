@@ -237,8 +237,9 @@ ITEMS: dict[int, str] = {
     201:"Revive", 202:"Max Revive",
     # Misc
     301:"Lucky Egg", 401:"Incense",
-    # TMs (legacy IDs)
-    501:"Fast TM", 502:"Charged TM",
+    # Lure Modules
+    501:"Lure Module", 502:"Glacial Lure Module",
+    503:"Mossy Lure Module",504:"Magnetic Lure Module",505:"Rainy Lure Module",506:"Golden Lure Module",
     # Buddy food
     650:"Buddy Beans", 651:"Buddy Snack",
     # Berries
@@ -258,13 +259,18 @@ ITEMS: dict[int, str] = {
     # Passes
     1303:"Remote Raid Pass", 1401:"Raid Pass", 1402:"Premium Raid Pass",
     # Misc collectibles
-    1404:"Star Piece", 1410:"PokéCoins", 1411:"Coin Bag",
-    1502:"Rocket Radar", 1505:"Shadow Gem", 1506:"Mega Energy",
+    1404:"Star Piece", 1410:"Gimmighoul Coins", 1411:"Coin Bag",
+    1502:"Rocket Radar", 1505:"Shadow Gem", 1506:"Max Particles",
 }
 
 # Human-readable fallback for names sourced directly from the JSON
 _ITEM_NAME_MAP: dict[str, str] = {
-    "TroyDisk": "Fast TM",
+    "TroyDisk": "Lure Module",
+    "TroyDiskGlacial": "Glacial Lure Module",
+    "TroyDiskMossy": "Mossy Lure Module",
+    "TroyDiskMagnetic": "Magnetic Lure Module",
+    "TroyDiskRainy": "Rainy Lure Module",
+    "TroyDiskSparkly": "Golden Lure Module",
     "MoveRerollFastAttack": "Fast TM",
     "MoveRerollSpecialAttack": "Charged TM",
     "MoveRerollEliteFastAttack": "Elite Fast TM",
@@ -288,20 +294,20 @@ _ITEM_NAME_MAP: dict[str, str] = {
     "XlRareCandy": "XL Rare Candy",
     "RareCandy": "Rare Candy",
     "StarPiece": "Star Piece",
-    "Mp": "Mega Energy",
+    "Mp": "Max Particles",
     "LeaderMap": "Rocket Radar",
     "ShadowGem": "Shadow Gem",
-    "EnhancedCurrency": "PokéCoins",
+    "EnhancedCurrency": "Gimmighoul Coins",
     "EnhancedCurrencyHolder": "Coin Bag",
 }
 
 
 def _resolve_item_name(iid: int, json_name: str) -> str:
-    """Return human-readable item name. Prefers curated dict, then JSON name mapping."""
-    if iid in ITEMS:
-        return ITEMS[iid]
+    """Prefer curated export names, then stable ID labels and readable raw names."""
     if json_name in _ITEM_NAME_MAP:
         return _ITEM_NAME_MAP[json_name]
+    if iid in ITEMS:
+        return ITEMS[iid]
     if json_name.startswith("EventPassPoint"):
         suffix = json_name[len("EventPassPoint"):].strip('_ -')
         return f"Event/GO Pass points · {suffix or 'counter'} (item #{iid})"

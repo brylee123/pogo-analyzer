@@ -1,3 +1,4 @@
+from functools import lru_cache
 import bisect
 import math
 from typing import Optional
@@ -158,6 +159,7 @@ def pvp_iv_rank(pid: int, iv_a: int, iv_d: int, iv_s: int,
     return (rank, len(table), pct)
 
 
+@lru_cache(maxsize=4096)
 def pvp_ideal_ivs(pid: int, cp_limit: int) -> tuple[int, int, int]:
     """Finds the Rank 1 (highest stat product) IV combination for a species, respecting mythical floors."""
     bs = _BS.get(pid)

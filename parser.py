@@ -122,6 +122,8 @@ def parse_pgo_json(raw: dict) -> dict:
         for iid, cnt in sorted(item_map.items(), key=lambda kv: -kv[1])
     ]
 
+    items.sort(key=lambda it:(it["bag_order"], it["id"]))
+
     # ── Player Info & Currency ────────────────────────────────────────────────
     player_raw = raw.get("player", {})
     account_raw = raw.get("account", {})
@@ -141,6 +143,8 @@ def parse_pgo_json(raw: dict) -> dict:
         "team": account_raw.get("team", 0), # 1: Mystic, 2: Valor, 3: Instinct
         "level": player_raw.get("level", 0),
         "experience": player_raw.get("experience", 0),
+        "prevLevelExp": player_raw.get("prevLevelExp"),
+        "nextLevelExp": player_raw.get("nextLevelExp"),
         "kmWalked": round(player_raw.get("kmWalked", 0.0), 1),
         "pokemonsCaught": player_raw.get("numPokemonCaptured", 0),
         "eggsHatched": player_raw.get("numEggsHatched", 0),

@@ -1,10 +1,6 @@
 <div class="panel" id="panel-items">
   <div class="panel-title"><svg class="material-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 8v12c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V8c0-2.42 1.72-4.44 4-4.9V2h2v1h4V2h2v1.1c2.28.46 4 2.48 4 4.9zM6 12v2h10v2h2v-4H6z"/></svg><span>Inventory</span></div>
-  <div class="card">
-    <div class="card-title">Items</div>
-    <p class="supporting-text">Item IDs and original export names are shown so similarly named resources remain distinguishable.</p><div id="items-grid" class="items-grid"></div>
-  </div>
-  <div class="card"><div class="card-title">Event / GO Pass counters</div><p class="supporting-text">These are exported progress counters, not usable bag items. The old resolver labeled all EventPassPoint identifiers “Event Points”. Each counter now retains its suffix, numeric item ID, and raw export name. The export alone does not tell us its event, expiry, or current availability.</p><div id="event-points-grid" class="items-grid"></div></div>
+  <div class="inventory-columns"><section class="card"><div class="card-title">Bag</div><p class="supporting-text">Grouped in the game’s bag category order.</p><div id="items-grid" class="inventory-list"></div></section><section class="card"><div class="card-title">Other owned items</div><p class="supporting-text">Resources, progress counters, and items outside the bag.</p><div id="event-points-grid" class="inventory-list"></div></section></div>
   <button class="btn btn-primary" id="btn-analyze-items">🤖 AI Analysis — what to use on whom</button>
   <div id="items-ai-result" style="margin-top:16px;display:none" class="card">
     <div class="card-title" id="items-ai-title">Inventory analysis</div>

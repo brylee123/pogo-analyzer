@@ -73,6 +73,10 @@ def api_raid_candidates():
 
 
 def build_local_teams(candidates: list[dict], league: str) -> tuple[list[dict], list[dict], list[dict], list[dict]]:
+    unique = {}
+    for pokemon in candidates:
+        unique.setdefault(pokemon["pid"], pokemon)
+    candidates = list(unique.values())[:20]
     # Typical PvP roles for top meta
     PVP_ROLES = {
         "Lickitung": "Safe Switch", "Cresselia": "Safe Switch", "Gligar": "Safe Switch",
@@ -115,7 +119,7 @@ def build_local_teams(candidates: list[dict], league: str) -> tuple[list[dict], 
     candidates_with_ratio = []
     for c in candidates:
         name = c["name"]
-        role = PVP_ROLES.get(name)
+        role = PVP_ROLES.get(name) if league == "GL" else None
         ratio = 1.5
         bs = _BS.get(c["pid"])
         if bs:
@@ -135,9 +139,9 @@ def build_local_teams(candidates: list[dict], league: str) -> tuple[list[dict], 
     for idx, (c, role, ratio) in enumerate(candidates_with_ratio):
         if not role:
             # lower 33% are closers, upper 33% are switches, middle are leads
-            if idx < int(n * 0.33):
+            if idx < max(1, int(n * 0.33)):
                 role = "Closer"
-            elif idx > int(n * 0.67):
+            elif idx >= max(2, int(n * 0.67)):
                 role = "Safe Switch"
             else:
                 role = "Lead"
@@ -151,6 +155,16 @@ def build_local_teams(candidates: list[dict], league: str) -> tuple[list[dict], 
         elif role == "Closer":
             closers.append(c_with_role)
 
+    # A small box can lack a natural role; keep local suggestions available.
+    if len(candidates) >= 3:
+        for pool, role in ((leads, 'Lead'), (switches, 'Safe Switch'), (closers, 'Closer')):
+            if not pool:
+                pool.extend({**c, 'pvp_role':role} for c in candidates)
+    from data.pokemon_db import POKEMON_DB
+    for c in candidates:
+        entry = POKEMON_DB.get(c['name'].lower(), {})
+        if entry.get('types'):
+            META_TYPES[c['name']] = [t.lower() for t in entry['types']]
     teams = []
     used_ids = set()
 
@@ -233,7 +247,9 @@ def api_pvp_candidates():
     league   = request.args.get("league", "GL")
     limits   = {"GL": 1500, "UL": 2500, "ML": 100000}
     keys     = {"GL": "pvp_great", "UL": "pvp_ultra", "ML": "pvp_master"}
-    cp_limit = limits.get(league, 1500)
+    if league not in limits:
+        return jsonify({"error":"Invalid league"}), 400
+    cp_limit = limits[league]
     lkey     = keys.get(league, "pvp_great")
 
     tiers  = get_tier_list()
@@ -266,7 +282,7 @@ def api_pvp_candidates():
     scored.sort(key=lambda x: -x["pvp_score"])
     top_candidates = scored[:60]
 
-    leads, switches, closers, local_teams = build_local_teams(scored[:20], league)
+    leads, switches, closers, local_teams = build_local_teams(scored, league)
 
     return jsonify({
         "candidates": top_candidates,
@@ -599,84 +615,40 @@ def api_evolve_prediction():
 
 @bp.route("/api/pvp-hidden-gems")
 def api_pvp_hidden_gems():
-    if not _state["loaded"]:
+    league = request.args.get('league', 'GL')
+    limits = {'GL':1500, 'UL':2500, 'ML':100000}
+    if league not in limits:
+        return jsonify({'error':'Invalid league'}), 400
+    if not _state['loaded']:
         return jsonify([])
-        
-    from data.base_stats import _EVOLVE_CHAIN
-    from data.pokedex import DEX
-    from scoring import pvp_iv_rank
-    
+    cap = limits[league]
     gems = []
-    for p in _state["pokemons"]:
-        # Find all possible evolutions
-        evolutions = [p["pid"]]
-        curr = p["pid"]
-        while curr in _EVOLVE_CHAIN:
-            curr = _EVOLVE_CHAIN[curr]
-            evolutions.append(curr)
-            
-        best_find = None
-        for target_pid in evolutions:
-            target_name = DEX.get(target_pid) or p["name"]
-            
-            # Check Great League (1500)
-            gl_rank, gl_total, gl_pct = pvp_iv_rank(target_pid, p["iv_a"], p["iv_d"], p["iv_s"], 1500)
-            if 0 < gl_rank <= 100:
-                if not best_find or gl_rank < best_find["rank"]:
-                    best_find = {
-                        "league": "GL (1500)",
-                        "target_name": target_name,
-                        "rank": gl_rank,
-                        "total": gl_total,
-                        "pct": gl_pct
-                    }
-                    
-            # Check Ultra League (2500)
-            ul_rank, ul_total, ul_pct = pvp_iv_rank(target_pid, p["iv_a"], p["iv_d"], p["iv_s"], 2500)
-            if 0 < ul_rank <= 100:
-                if not best_find or ul_rank < best_find["rank"]:
-                    best_find = {
-                        "league": "UL (2500)",
-                        "target_name": target_name,
-                        "rank": ul_rank,
-                        "total": ul_total,
-                        "pct": ul_pct
-                    }
-                    
-            # Check Little League (500)
-            ll_rank, ll_total, ll_pct = pvp_iv_rank(target_pid, p["iv_a"], p["iv_d"], p["iv_s"], 500)
-            if 0 < ll_rank <= 100:
-                if not best_find or ll_rank < best_find["rank"]:
-                    best_find = {
-                        "league": "LL (500)",
-                        "target_name": target_name,
-                        "rank": ll_rank,
-                        "total": ll_total,
-                        "pct": ll_pct
-                    }
-
-        if best_find:
-            gems.append({
-                "pid": p["pid"],
-                "name": p["name"],
-                "cp": p["cp"],
-                "lvl": p["lvl"],
-                "iv_pct": p["iv_pct"],
-                "iv_a": p["iv_a"],
-                "iv_d": p["iv_d"],
-                "iv_s": p["iv_s"],
-                "shiny": p.get("shiny", False),
-                "shadow": p.get("shadow", False),
-                "lucky": p.get("lucky", False),
-                "fav": p.get("fav", False),
-                "gem_league": best_find["league"],
-                "gem_target": best_find["target_name"],
-                "gem_rank": best_find["rank"],
-                "gem_total": best_find["total"],
-                "gem_pct": best_find["pct"]
-            })
-            
-    gems.sort(key=lambda x: x["gem_rank"])
+    for p in _state['pokemons']:
+        if p.get('isEgg') or p['cp'] > cap:
+            continue
+        evolutions, current = [], p['pid']
+        while current not in evolutions:
+            evolutions.append(current)
+            if current not in _EVOLVE_CHAIN:
+                break
+            current = _EVOLVE_CHAIN[current]
+        best = None
+        for target in evolutions:
+            # Evolution cannot lower a Pokémon's level to meet a league cap.
+            current_cp = calculate_cp_for_level(target,p['iv_a'],p['iv_d'],p['iv_s'],p['lvl'])
+            if not current_cp or current_cp > cap:
+                continue
+            rank,total,pct = pvp_iv_rank(target,p['iv_a'],p['iv_d'],p['iv_s'],cap)
+            level,cp = pvp_cp(target,p['iv_a'],p['iv_d'],p['iv_s'],cap)
+            if level < p['lvl'] or not 0 < rank <= 100:
+                continue
+            if best is None or rank < best['gem_rank']:
+                best = {**p,'gem_league':league+(' (no CP cap)' if league=='ML' else f' ({cap})'),
+                        'gem_target':DEX.get(target,p['name']),'gem_rank':rank,
+                        'gem_total':total,'gem_pct':pct,'gem_cp':cp,'gem_lvl':level}
+        if best:
+            gems.append(best)
+    gems.sort(key=lambda p:p['gem_rank'])
     return jsonify(gems)
 
 
